@@ -41,6 +41,7 @@ class ContourWriter(object):
             for shape in shapes:
                 
                 # Check if polygon is possibly relevant
+                # TODO: handle dateline and pole areas
                 s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
                 if (lon_max < s_lon_ll or lon_min > s_lon_ur or 
                     lat_max < s_lat_ll or lat_min > s_lat_ur):
@@ -134,7 +135,6 @@ class ContourWriter(object):
 
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
-    # TODO: handle dateline and pole areas
     x_ll, y_ll, x_ur, y_ur = area_extent
     x_range = np.linspace(x_ll, x_ur, num=x_size)
     y_range = np.linspace(y_ll, y_ur, num=y_size)
@@ -171,13 +171,3 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
     
     return index_array
                         
-if __name__ == '__main__':
-    img = Image.open('BMNG_clouds_201109181715_areaT2.png')
-    proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
-    area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
-    cw = ContourWriter('/home/esn/data/gshhs')
-    cw.add_coastlines(img, proj4_string, area_extent, resolution='l', level=4)
-    cw.add_rivers(img, proj4_string, area_extent, level=5, outline='blue')
-    cw.add_borders(img, proj4_string, area_extent, outline=(255, 0, 0))
-    img.show()
-
