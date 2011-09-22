@@ -25,8 +25,7 @@ class ContourWriter(object):
         draw = ImageDraw.Draw(image)
         
         # Area and projection info
-        x_size, y_size = image.size
-        x_ll, y_ll, x_ur, y_ur = area_extent
+        x_size, y_size = image.size        
         prj = pyproj.Proj(proj4_string)
         
         
@@ -48,25 +47,14 @@ class ContourWriter(object):
                     # Polygon is irrelevant
                     continue          
                 
-                # Get shape data as array and reproject    
-                shape_data = np.array(shape.points)
-                lons = shape_data[:, 0]
-                lats = shape_data[:, 1]
-
-                x, y = prj(lons, lats)
-                
-                # Convert to pixel index coordinates                
-                l_x = (x_ur - x_ll) / x_size
-                l_y = (y_ur - y_ll) / y_size
-
-                n_x = ((-x_ll + x) / l_x).astype(np.int)
-                n_y = ((y_ur - y) / l_y).astype(np.int)
-
-                index_array = np.vstack((n_x, n_y)).T
+                # Get pixel index coordinates of shape
+                index_array = _get_pixel_index(shape, area_extent, x_size, 
+                                               y_size, prj)
                 
                 # Make PIL draw the polygon or line
                 if feature_type.lower() == 'polygon':
-                    draw.polygon(index_array.flatten().tolist(), fill=fill, outline=outline)
+                    draw.polygon(index_array.flatten().tolist(), fill=fill, 
+                                 outline=outline)
                 elif feature_type.lower() == 'line':
                     draw.line(index_array.flatten().tolist(), fill=outline)
                 else:
@@ -162,7 +150,27 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     lat_max = lats_s2.max()
     
     return lon_min, lon_max, lat_min, lat_max
-        
+    
+def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
+    # Get shape data as array and reproject    
+    shape_data = np.array(shape.points)
+    lons = shape_data[:, 0]
+    lats = shape_data[:, 1]
+
+    x_ll, y_ll, x_ur, y_ur = area_extent
+    x, y = prj(lons, lats)
+    
+    # Convert to pixel index coordinates                
+    l_x = (x_ur - x_ll) / x_size
+    l_y = (y_ur - y_ll) / y_size
+
+    n_x = ((-x_ll + x) / l_x).astype(np.int)
+    n_y = ((y_ur - y) / l_y).astype(np.int)
+
+    index_array = np.vstack((n_x, n_y)).T
+    
+    return index_array
+                        
 if __name__ == '__main__':
     img = Image.open('BMNG_clouds_201109181715_areaT2.png')
     proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
