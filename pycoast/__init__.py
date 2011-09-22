@@ -251,7 +251,7 @@ class ContourWriter(object):
 
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
-    """Get extreem lon and lat values
+    """Get extreme lon and lat values
     """
     
     x_ll, y_ll, x_ur, y_ur = area_extent
@@ -263,11 +263,41 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
     lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
     
-    lon_min = lons_s1.min()
-    lon_max = lons_s3.max()
-    lat_min = lats_s4.min()
-    lat_max = lats_s2.max()
-    
+    angle_sum = 0
+    prev = None
+    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
+        if prev is not None:
+            delta = lon - prev
+            if abs(delta) > 180:
+                delta = (abs(delta) - 360) * np.sign(delta)
+            angle_sum += delta
+        prev = lon
+        
+    if round(angle_sum) == -360:
+        # Covers NP
+        lat_min = min(lats_s1.min(), lats_s2.min(), lats_s3.min(), lats_s4.min())
+        lat_max = 90
+        lon_min = -180
+        lon_max = 180
+    elif round(angle_sum) == -360:
+        # Covers SP
+        lat_min = -90
+        lat_max = max(lats_s1.max(), lats_s2.max(), lats_s3.max(), lats_s4.max())
+        lon_min = -180
+        lon_max = 180        
+    elif round(angle_sum) == 0:
+        # Covers no poles
+        lon_min = lons_s1.min()
+        lon_max = lons_s3.max()
+        lat_min = lats_s4.min()
+        lat_max = lats_s2.max()
+    else:
+        # Pretty strange
+        lat_min = -90
+        lat_max = 90
+        lon_min = -180
+        lon_max = 180
+
     return lon_min, lon_max, lat_min, lat_max
     
 def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
