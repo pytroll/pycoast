@@ -1,0 +1,155 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pycoast &mdash; pycoast v0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pycoast v0.1.0 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">pycoast v0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pycoast">
+<h1>Pycoast<a class="headerlink" href="#pycoast" title="Permalink to this headline">¶</a></h1>
+<p>Pycost is a Python package to add coastlines, borders and rivers to raster images using data from the GSHHS and WDBII datasets</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Pycoast depends on <a class="reference external" href="http://code.google.com/p/pyshp/">pyshp</a> and <a class="reference external" href="http://www.pythonware.com/products/pil/">PIL</a>.</p>
+<p>Install pycoast and dependencies.</p>
+<p>Download the zipped GSHHS and WDBII Shapefiles from <a class="reference external" href="http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html">NOAA</a>.
+Unzip the files to a data directory (hereafter called <em>GSHHS_DATA_ROOT</em>).
+The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
+<div class="highlight-python"><pre>.
+├── GSHHS_shp
+│   ├── c
+│   ├── f
+│   ├── h
+│   ├── i
+│   └── l
+└── WDBII_shp
+    ├── c
+    ├── f
+    ├── h
+    ├── i
+    └── l</pre>
+</div>
+<p>Where each dir on the lowest level contains Shapefiles like <em>GSHHS_shp/c/GSHHS_c_L1.shp</em></p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Pycoast can be used to add coastlines, borders and rivers to a raster image if the geographic projection of the image and the image extent in projection coordinates are known</p>
+<img alt="_images/BMNG_clouds_201109181715_areaT24.png" src="_images/BMNG_clouds_201109181715_areaT24.png" />
+<p>Pycoast can add contours to either a PIL image object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>or to an image file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Where the <tt class="xref py py-attr docutils literal"><span class="pre">area_extent</span></tt> is the extent of the image in projection coordinates as (x_ll, y_ll, x_ur, x_ur) measured at pixel edges.</p>
+<p>The argument to <tt class="xref py py-attr docutils literal"><span class="pre">ContourWriter</span></tt> must be replaced with your <em>GSHHS_DATA_ROOT</em>.</p>
+<img alt="_images/euro_coast1.png" src="_images/euro_coast1.png" />
+<p>The resulting (not so pretty) image shows the effect of the various arguments. The <tt class="xref py py-attr docutils literal"><span class="pre">resolution</span></tt> keyword argument controls the resolution of the dataset used. It defaults to &#8216;c&#8217; for coarse. Increasing the resolution also increases the processing time. The <tt class="xref py py-attr docutils literal"><span class="pre">level</span></tt> keyword argument controls the detail level of the dataset used. It defaults to <em>1</em> for the lowest detail level.</p>
+<p>See method docstrings for information possible argument values see method docstrings.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pycoast</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">pycoast v0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Esben S. Nielsen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

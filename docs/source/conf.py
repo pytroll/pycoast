@@ -49,7 +49,7 @@ copyright = u'2011, Esben S. Nielsen'
 # built documents.
 #
 
-current_version = imp.load_source('pycoast.version', '../pycoast/version.py')
+current_version = imp.load_source('pycoast.version', '../../pycoast/version.py')
 # The short X.Y version.
 version = current_version.__version__
 # The full version, including alpha/beta/rc tags.
