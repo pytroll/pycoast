@@ -289,14 +289,19 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
                 delta = (abs(delta) - 360) * np.sign(delta)
             angle_sum += delta
         prev = lon
-        
+    
+    #From the winding number theorem follows:
+    #angle_sum possiblilities:
+    #-360: area covers north pole
+    # 360: area covers south pole
+    #   0: area covers no poles    
     if round(angle_sum) == -360:
         # Covers NP
         lat_min = min(lats_s1.min(), lats_s2.min(), lats_s3.min(), lats_s4.min())
         lat_max = 90
         lon_min = -180
         lon_max = 180
-    elif round(angle_sum) == -360:
+    elif round(angle_sum) == 360:
         # Covers SP
         lat_min = -90
         lat_max = max(lats_s1.max(), lats_s2.max(), lats_s3.max(), lats_s4.max())
