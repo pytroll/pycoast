@@ -13,7 +13,7 @@ Pycoast depends on pyshp_ and PIL_.
 
 Install pycoast and dependencies.
 
-Download the zipped GSHHS and WDBII Shapefiles from NOAA_.
+Download the zipped GSHHS and WDBII Shapefiles from SOEST_.
 Unzip the files to a data directory (hereafter called *GSHHS_DATA_ROOT*).
 The structure of *GSHHS_DATA_ROOT* should now be::
 
@@ -74,5 +74,5 @@ See method docstrings for information possible argument values see method docstr
 
 .. _pyshp: http://code.google.com/p/pyshp/
 .. _PIL: http://www.pythonware.com/products/pil/
-.. _NOAA: http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
+.. _SOEST: http://www.soest.hawaii.edu/pwessel/gshhs/index.html
 
