@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pycoast &mdash; pycoast v0.1.1 documentation</title>
+    <title>Pycoast &mdash; pycoast v0.1.2 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.1',
+        VERSION:     '0.1.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast v0.1.1 documentation" href="#" /> 
+    <link rel="top" title="pycoast v0.1.2 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -31,7 +31,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="#">pycoast v0.1.1 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast v0.1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -69,7 +69,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>Pycoast can be used to add coastlines, borders and rivers to a raster image if the geographic projection of the image and the image extent in projection coordinates are known</p>
-<img alt="_images/BMNG_clouds_201109181715_areaT26.png" src="_images/BMNG_clouds_201109181715_areaT26.png" />
+<img alt="_images/BMNG_clouds_201109181715_areaT27.png" src="_images/BMNG_clouds_201109181715_areaT27.png" />
 <p>Pycoast can add contours to either a PIL image object:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
@@ -95,9 +95,21 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 </div>
 <p>Where the <tt class="xref py py-attr docutils literal"><span class="pre">area_extent</span></tt> is the extent of the image in projection coordinates as (x_ll, y_ll, x_ur, x_ur) measured at pixel edges.</p>
 <p>The argument to <tt class="xref py py-attr docutils literal"><span class="pre">ContourWriter</span></tt> must be replaced with your <em>GSHHS_DATA_ROOT</em>.</p>
-<img alt="_images/euro_coast3.png" src="_images/euro_coast3.png" />
+<img alt="_images/euro_coast4.png" src="_images/euro_coast4.png" />
 <p>The resulting (not so pretty) image shows the effect of the various arguments. The <tt class="xref py py-attr docutils literal"><span class="pre">resolution</span></tt> keyword argument controls the resolution of the dataset used. It defaults to &#8216;c&#8217; for coarse. Increasing the resolution also increases the processing time. The <tt class="xref py py-attr docutils literal"><span class="pre">level</span></tt> keyword argument controls the detail level of the dataset used. It defaults to <em>1</em> for the lowest detail level.</p>
 <p>See method docstrings for information possible argument values see method docstrings.</p>
+<p>Creating an image with coastlines only:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5570248.4773392612</span><span class="p">,</span> <span class="o">-</span><span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5570248.4773392612</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/geos_coast.png" src="_images/geos_coast.png" />
 </div>
 </div>
 
@@ -144,7 +156,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="#">pycoast v0.1.1 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast v0.1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

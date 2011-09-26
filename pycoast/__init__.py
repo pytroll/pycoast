@@ -1,20 +1,3 @@
-#pycoast, Writing of coastlines, borders and rivers to images in Python
-# 
-#Copyright (C) 2011  Esben S. Nielsen
-#
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
-#
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
-#
-#You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import os
 
 import numpy as np
@@ -55,16 +38,13 @@ class ContourWriter(object):
         lon_min, lon_max, lat_min, lat_max = \
                 _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj) 
         
-        
         # Iterate through detail levels        
         for shapes in self._iterate_db(db_name, tag, resolution, 
                                        level, zero_pad):
 
             # Iterate through shapes
-            for shape in shapes:
-                
+            for i, shape in enumerate(shapes):
                 # Check if polygon is possibly relevant
-                # TODO: handle dateline and pole areas
                 s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
                 if (lon_max < s_lon_ll or lon_min > s_lon_ur or 
                     lat_max < s_lat_ll or lat_min > s_lat_ur):
@@ -72,17 +52,26 @@ class ContourWriter(object):
                     continue          
                 
                 # Get pixel index coordinates of shape
-                index_array = _get_pixel_index(shape, area_extent, x_size, 
-                                               y_size, prj)
                 
+                index_arrays, is_reduced = _get_pixel_index(shape, area_extent, x_size, 
+                                               y_size, prj)       
+                
+                # Skip empty datasets               
+                if len(index_arrays) == 0:
+                    continue
+
                 # Make PIL draw the polygon or line
-                if feature_type.lower() == 'polygon':
-                    draw.polygon(index_array.flatten().tolist(), fill=fill, 
-                                 outline=outline)
-                elif feature_type.lower() == 'line':
-                    draw.line(index_array.flatten().tolist(), fill=outline)
-                else:
-                    raise ValueError('Unknown contour type: %s' % feature_type)
+                for index_array in index_arrays:
+                    if feature_type.lower() == 'polygon' and not is_reduced:
+                        # Draw polygon if dataset has not been reduced
+                        draw.polygon(index_array.flatten().tolist(), fill=fill, 
+                                     outline=outline)
+                    elif feature_type.lower() == 'line' or is_reduced:
+                        # Draw line
+                        
+                        draw.line(index_array.flatten().tolist(), fill=outline)
+                    else:
+                        raise ValueError('Unknown contour type: %s' % feature_type)
             
     def add_coastlines(self, image, proj4_string, area_extent, resolution='c', 
                             level=1, fill=None, outline=None):
@@ -270,7 +259,7 @@ class ContourWriter(object):
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values
     """
-    
+            
     x_ll, y_ll, x_ur, y_ur = area_extent
     x_range = np.linspace(x_ll, x_ur, num=x_size)
     y_range = np.linspace(y_ll, y_ur, num=y_size)
@@ -289,12 +278,7 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
                 delta = (abs(delta) - 360) * np.sign(delta)
             angle_sum += delta
         prev = lon
-    
-    #From the winding number theorem follows:
-    #angle_sum possiblilities:
-    #-360: area covers north pole
-    # 360: area covers south pole
-    #   0: area covers no poles    
+ 
     if round(angle_sum) == -360:
         # Covers NP
         lat_min = min(lats_s1.min(), lats_s2.min(), lats_s3.min(), lats_s4.min())
@@ -320,6 +304,15 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lon_min = -180
         lon_max = 180
 
+    if not (-180 <= lon_min <= 180):
+        lon_min = -180
+    if not (-180 <= lon_max <= 180):
+        lon_max = 180
+    if not (-90 <= lat_min <= 90):
+        lat_min = -90    
+    if not (-90 <= lat_max <= 90):
+        lat_max = 90
+        
     return lon_min, lon_max, lat_min, lat_max
     
 def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
@@ -332,16 +325,46 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
     lats = shape_data[:, 1]
 
     x_ll, y_ll, x_ur, y_ur = area_extent
+
     x, y = prj(lons, lats)
-    
+ 
+    #Handle out of bounds
+    i = 0
+    segments = []
+    if 1e30 in x or 1e30 in y:
+        # Split polygon in line segments within projection
+        is_reduced = True
+        if x[0] == 1e30 or y[0] == 1e30:
+            in_segment = False
+        else:
+            in_segment = True
+            
+        for j in range(x.size):
+            if (x[j] == 1e30 or y[j] == 1e30):
+                if in_segment:
+                    segments.append((x[i:j], y[i:j]))
+                    in_segment = False
+            elif not in_segment:
+                in_segment = True
+                i = j
+        if in_segment:
+            segments.append((x[i:], y[i:]))
+        
+    else:
+        is_reduced = False
+        segments = [(x, y)]
+                
     # Convert to pixel index coordinates                
     l_x = (x_ur - x_ll) / x_size
     l_y = (y_ur - y_ll) / y_size
 
-    n_x = ((-x_ll + x) / l_x).astype(np.int)
-    n_y = ((y_ur - y) / l_y).astype(np.int)
+    index_arrays = []
+    for x, y in segments:
+        n_x = ((-x_ll + x) / l_x).astype(np.int)
+        n_y = ((y_ur - y) / l_y).astype(np.int)
 
-    index_array = np.vstack((n_x, n_y)).T
+        index_array = np.vstack((n_x, n_y)).T
+        index_arrays.append(index_array)
     
-    return index_array
+    return index_arrays, is_reduced
                         

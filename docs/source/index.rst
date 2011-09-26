@@ -70,7 +70,20 @@ The argument to :attr:`ContourWriter` must be replaced with your *GSHHS_DATA_ROO
 
 The resulting (not so pretty) image shows the effect of the various arguments. The :attr:`resolution` keyword argument controls the resolution of the dataset used. It defaults to 'c' for coarse. Increasing the resolution also increases the processing time. The :attr:`level` keyword argument controls the detail level of the dataset used. It defaults to *1* for the lowest detail level.
 
-See method docstrings for information possible argument values see method docstrings.    
+See method docstrings for information possible argument values see method docstrings.
+
+Creating an image with coastlines only:
+
+    >>> from PIL import Image
+    >>> from pycoast import ContourWriter
+    >>> img = Image.new('RGB', (425, 425))
+    >>> proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+    >>> area_extent = (-5570248.4773392612, -5567248.074173444, 5567248.074173444, 5570248.4773392612)
+    >>> cw = ContourWriter('/home/esn/data/gshhs')
+    >>> cw.add_coastlines(img, proj4_string, area_extent, resolution='l')
+    >>> img.show()    
+
+.. image:: images/geos_coast.png
 
 .. _pyshp: http://code.google.com/p/pyshp/
 .. _PIL: http://www.pythonware.com/products/pil/
