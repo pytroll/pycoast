@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pycoast &mdash; pycoast v0.1.2 documentation</title>
+    <title>Pycoast &mdash; pycoast v0.2.0 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.2',
+        VERSION:     '0.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast v0.1.2 documentation" href="#" /> 
+    <link rel="top" title="pycoast v0.2.0 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -31,7 +31,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="#">pycoast v0.1.2 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast v0.2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -69,17 +69,18 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>Pycoast can be used to add coastlines, borders and rivers to a raster image if the geographic projection of the image and the image extent in projection coordinates are known</p>
-<img alt="_images/BMNG_clouds_201109181715_areaT2.png" src="_images/BMNG_clouds_201109181715_areaT2.png" />
+<img alt="_images/BMNG_clouds_201109181715_areaT24.png" src="_images/BMNG_clouds_201109181715_areaT24.png" />
 <p>Pycoast can add contours to either a PIL image object:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -87,29 +88,73 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Where the <tt class="xref py py-attr docutils literal"><span class="pre">area_extent</span></tt> is the extent of the image in projection coordinates as (x_ll, y_ll, x_ur, x_ur) measured at pixel edges.</p>
 <p>The argument to <tt class="xref py py-attr docutils literal"><span class="pre">ContourWriter</span></tt> must be replaced with your <em>GSHHS_DATA_ROOT</em>.</p>
-<img alt="_images/euro_coast.png" src="_images/euro_coast.png" />
+<img alt="_images/euro_coast4.png" src="_images/euro_coast4.png" />
 <p>The resulting (not so pretty) image shows the effect of the various arguments. The <tt class="xref py py-attr docutils literal"><span class="pre">resolution</span></tt> keyword argument controls the resolution of the dataset used. It defaults to &#8216;c&#8217; for coarse. Increasing the resolution also increases the processing time. The <tt class="xref py py-attr docutils literal"><span class="pre">level</span></tt> keyword argument controls the detail level of the dataset used. It defaults to <em>1</em> for the lowest detail level.</p>
-<p>See method docstrings for information possible argument values see method docstrings.</p>
+<p>Instead of a tuple for <tt class="xref py py-attr docutils literal"><span class="pre">area_def</span></tt> a <a class="reference external" href="http://code.google.com/p/pyresample/">pyresample</a> <tt class="xref py py-attr docutils literal"><span class="pre">AreaDefinition</span></tt> object can be used.</p>
+<p>See method docstrings for information about possible argument values see method docstrings.</p>
 <p>Creating an image with coastlines only:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5570248.4773392612</span><span class="p">,</span> <span class="o">-</span><span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5570248.4773392612</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/geos_coast.png" src="_images/geos_coast.png" />
+<img alt="_images/geos_coast4.png" src="_images/geos_coast4.png" />
+</div>
+<div class="section" id="high-quality-contours-using-agg">
+<h2>High quality contours using AGG<a class="headerlink" href="#high-quality-contours-using-agg" title="Permalink to this headline">¶</a></h2>
+<p>The default plotting mode of pycoast uses PIL for rendering of contours. PIL does not support antialiasing and opacity. The AGG engine can be used for making high quality images using the <a class="reference external" href="http://effbot.org/zone/aggdraw-index.htm">aggdraw</a> module.</p>
+<p>First install the <a class="reference external" href="http://effbot.org/zone/aggdraw-index.htm">aggdraw</a> module.</p>
+<p>Tip: if the building of aggdraw files with:</p>
+<div class="highlight-python"><pre>agg_array.h:523: error: cast from ‘agg::int8u*’ to ‘unsigned int’ loses precision</pre>
+</div>
+<p>Try:</p>
+<div class="highlight-python"><pre>export CFLAGS="-fpermissive"</pre>
+</div>
+<p>before building.</p>
+<p>Using pycaost with AGG for making antialiased drawing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5570248.4773392612</span><span class="p">,</span> <span class="o">-</span><span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5570248.4773392612</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">),</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/geos_coast_agg3.png" src="_images/geos_coast_agg3.png" />
+<p>and making the not-so-nice image from the first example nice:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_rivers</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">outline_opacity</span><span class="o">=</span><span class="mi">127</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">outline_opacity</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/euro_coast_agg3.png" src="_images/euro_coast_agg3.png" />
+<p>See docstrings of <tt class="xref py py-attr docutils literal"><span class="pre">ContourWriterAGG</span></tt> methods for argument descriptions.</p>
 </div>
 </div>
 
@@ -124,6 +169,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <li><a class="reference internal" href="#">Pycoast</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#high-quality-contours-using-agg">High quality contours using AGG</a></li>
 </ul>
 </li>
 </ul>
@@ -156,7 +202,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="#">pycoast v0.1.2 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast v0.2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
