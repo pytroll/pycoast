@@ -10,8 +10,9 @@ import pyproj
 class ShapeFileError(Exception):
     pass
 
-class ContourWriter(object):
-    """Adds countours from GSHHS and WDBII to images
+
+class ContourWriterBase(object):
+    """Base class for contourwriters. Do not instantiate.
     
     :Parameters:
     db_root_path : str
@@ -21,13 +22,20 @@ class ContourWriter(object):
     def __init__(self, db_root_path):
         self.db_root_path = db_root_path
 
-    def _add_feature(self, image, proj4_string, area_extent, feature_type, 
+    def _add_feature(self, image, area_def, feature_type, 
                      db_name, tag=None, zero_pad=False, resolution='c', 
-                     level=1, fill=None, outline=None):
+                     level=1, **kwargs):
         """Add a contour feature to image
         """
 
-        draw = ImageDraw.Draw(image)
+        try:
+            proj4_string = area_def.proj4_string
+            area_extent = area_def.area_extent
+        except AttributeError:
+            proj4_string = area_def[0]
+            area_extent = area_def[1]
+
+        draw = self._get_canvas(image)
         
         # Area and projection info
         x_size, y_size = image.size        
@@ -64,165 +72,20 @@ class ContourWriter(object):
                 for index_array in index_arrays:
                     if feature_type.lower() == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
-                        draw.polygon(index_array.flatten().tolist(), fill=fill, 
-                                     outline=outline)
+                        #draw.polygon(index_array.flatten().tolist(), fill=fill, 
+                        #             outline=outline)
+                        self._draw_polygon(draw, index_array.flatten().tolist(), **kwargs)
                     elif feature_type.lower() == 'line' or is_reduced:
                         # Draw line
-                        
-                        draw.line(index_array.flatten().tolist(), fill=outline)
+                        self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
+                        #draw.line(index_array.flatten().tolist(), fill=outline)
                     else:
                         raise ValueError('Unknown contour type: %s' % feature_type)
-            
-    def add_coastlines(self, image, proj4_string, area_extent, resolution='c', 
-                            level=1, fill=None, outline=None):
-        """Add coastlines to a PIL image object
-        
-        :Parameters:
-        image : object
-            PIL image object
-        proj4_string : str
-            Projection of area as Proj.4 string
-        area_extent : list
-            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
-            Dataset resolution to use
-        level : int, optional {1, 2, 3, 4}
-            Detail level of dataset
-        fill : str or (R, G, B)
-            Land color
-        outline : str or (R, G, B)
-            Coastline color
-        """
-        
-        self._add_feature(image, proj4_string, area_extent, 'polygon', 'GSHHS', 
-                          resolution=resolution, level=level, 
-                          fill=fill, outline=outline)
-                              
-    def add_coastlines_to_file(self, filename, proj4_string, area_extent, 
-                               resolution='c', level=1, fill=None, 
-                               outline=None):
-        """Add coastlines to an image file
-        
-        :Parameters:
-        filename : str
-            Image file
-        proj4_string : str
-            Projection of area as Proj.4 string
-        area_extent : list
-            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
-            Dataset resolution to use
-        level : int, optional {1, 2, 3, 4}
-            Detail level of dataset
-        fill : str or (R, G, B)
-            Land color
-        outline : str or (R, G, B)
-            Coastline color        
-        """
-        
-        image = Image.open(filename)
-        self.add_coastlines(image, proj4_string, area_extent, 
-                            resolution=resolution, level=level, 
-                            fill=fill, outline=outline)
-        image.save(filename)
-
-    def add_borders(self, image, proj4_string, area_extent, resolution='c', 
-                            level=1, outline=None):
-                            
-        """Add borders to a PIL image object
-        
-        :Parameters:
-        image : object
-            PIL image object
-        proj4_string : str
-            Projection of area as Proj.4 string
-        area_extent : list
-            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
-            Dataset resolution to use
-        level : int, optional {1, 2, 3}
-            Detail level of dataset
-        outline : str or (R, G, B)
-            Border color
-        """
-        
-        self._add_feature(image, proj4_string, area_extent, 'line', 'WDBII', 
-                          tag='border', resolution=resolution, level=level, 
-                          outline=outline)
-
-    def add_borders_to_file(self, filename, proj4_string, area_extent, 
-                            resolution='c', level=1, outline=None):
-        """Add borders to an image file
-        
-        :Parameters:
-        image : object
-            Image file
-        proj4_string : str
-            Projection of area as Proj.4 string
-        area_extent : list
-            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
-            Dataset resolution to use
-        level : int, optional {1, 2, 3}
-            Detail level of dataset
-        outline : str or (R, G, B)
-            Border color
-        """
-        image = Image.open(filename)
-        self.add_borders(image, proj4_string, area_extent, 
-                         resolution=resolution, level=level, outline=outline)
-        image.save(filename)
-        
-    def add_rivers(self, image, proj4_string, area_extent, resolution='c', 
-                            level=1, outline=None):
-        """Add rivers to a PIL image object
-        
-        :Parameters:
-        image : object
-            PIL image object
-        proj4_string : str
-            Projection of area as Proj.4 string
-        area_extent : list
-            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
-            Dataset resolution to use
-        level : int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
-            Detail level of dataset
-        outline : str or (R, G, B)
-            River color
-        """
-        
-        self._add_feature(image, proj4_string, area_extent, 'line', 'WDBII', 
-                          tag='river', zero_pad=True, resolution=resolution, 
-                          level=level, outline=outline)
-                          
-    def add_rivers_to_file(self, filename, proj4_string, area_extent, 
-                           resolution='c', level=1, outline=None):
-        """Add rivers to an image file
-        
-        :Parameters:
-        image : object
-            Image file
-        proj4_string : str
-            Projection of area as Proj.4 string
-        area_extent : list
-            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
-            Dataset resolution to use
-        level : int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
-            Detail level of dataset
-        outline : str or (R, G, B)
-            River color
-        """
-        
-        image = Image.open(filename)
-        self.add_rivers(image, proj4_string, area_extent, 
-                        resolution=resolution, level=level, outline=outline)
-        image.save(filename)
-
+                        
+        self._finalize(draw)
 
     def _iterate_db(self, db_name, tag, resolution, level, zero_pad):
-        """Iterate troug datasets
+        """Iterate trough datasets
         """
         
         format_string = '%s_%s_'
@@ -252,8 +115,415 @@ class ContourWriter(object):
                 shapes = s.shapes()
             except AttributeError:
                 raise ShapeFileError('Could not find shapefile %s' % shapefilename)
-            yield shapes    
+            yield shapes
+            
+    def _finalize(self, draw):
+        """Do any need finalization of the drawing
+        """
         
+        pass    
+
+
+class ContourWriter(ContourWriterBase):
+    """Adds countours from GSHHS and WDBII to images
+    
+    :Parameters:
+    db_root_path : str
+        Path to root dir of GSHHS and WDBII shapefiles
+    """
+    
+    def _get_canvas(self, image):
+        """Returns PIL image object
+        """
+        
+        return ImageDraw.Draw(image)
+        
+    def _draw_polygon(self, draw, coordinates, **kwargs):
+        """Draw polygon
+        """
+        
+        draw.polygon(coordinates, fill=kwargs['fill'], outline=kwargs['outline'])
+        
+    def _draw_line(self, draw, coordinates, **kwargs):
+        """Draw line
+        """
+        
+        draw.line(coordinates, fill=kwargs['outline'])
+           
+    def add_coastlines(self, image, area_def, resolution='c', 
+                            level=1, fill=None, outline='white'):
+        """Add coastlines to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4}
+            Detail level of dataset
+        fill : str or (R, G, B), optional
+            Land color
+        outline : str or (R, G, B), optional
+            Coastline color
+        """
+        
+        self._add_feature(image, area_def, 'polygon', 'GSHHS', 
+                          resolution=resolution, level=level, 
+                          fill=fill, outline=outline)
+                              
+    def add_coastlines_to_file(self, filename, area_def, 
+                               resolution='c', level=1, fill=None, 
+                               outline='white'):
+        """Add coastlines to an image file
+        
+        :Parameters:
+        filename : str
+            Image file
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4}
+            Detail level of dataset
+        fill : str or (R, G, B)
+            Land color
+        outline : str or (R, G, B), optional
+            Coastline color        
+        """
+        
+        image = Image.open(filename)
+        self.add_coastlines(image, proj4_string, area_extent, 
+                            resolution=resolution, level=level, 
+                            fill=fill, outline=outline)
+        image.save(filename)
+
+    def add_borders(self, image, area_def, resolution='c', 
+                            level=1, outline='white'):
+                            
+        """Add borders to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            Border color
+        """
+        
+        self._add_feature(image, area_def, 'line', 'WDBII', 
+                          tag='border', resolution=resolution, level=level, 
+                          outline=outline)
+
+    def add_borders_to_file(self, filename, area_def, 
+                            resolution='c', level=1, outline='white'):
+        """Add borders to an image file
+        
+        :Parameters:
+        image : object
+            Image file
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            Border color
+        """
+        image = Image.open(filename)
+        self.add_borders(image, area_def, resolution=resolution, 
+                         level=level, outline=outline)
+        image.save(filename)
+        
+    def add_rivers(self, image, area_def, resolution='c', 
+                            level=1, outline='white'):
+        """Add rivers to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            River color
+        """
+        
+        self._add_feature(image, area_def, 'line', 'WDBII', 
+                          tag='river', zero_pad=True, resolution=resolution, 
+                          level=level, outline=outline)
+                          
+    def add_rivers_to_file(self, filename, area_def, 
+                           resolution='c', level=1, outline='white'):
+        """Add rivers to an image file
+        
+        :Parameters:
+        image : object
+            Image file
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            River color
+        """
+        
+        image = Image.open(filename)
+        self.add_rivers(image, area_def, 
+                        resolution=resolution, level=level, outline=outline)
+        image.save(filename)
+
+
+
+class ContourWriterAGG(ContourWriterBase):
+    """Adds countours from GSHHS and WDBII to images 
+       using the AGG engine for high quality images.
+    
+    :Parameters:
+    db_root_path : str
+        Path to root dir of GSHHS and WDBII shapefiles
+    """
+    
+    def _get_canvas(self, image):
+        """Returns AGG image object
+        """
+        
+        import aggdraw
+        return aggdraw.Draw(image)
+        
+    def _draw_polygon(self, draw, coordinates, **kwargs):
+        """Draw polygon
+        """
+        
+        import aggdraw
+        pen = aggdraw.Pen(kwargs['outline'], kwargs['width'], kwargs['outline_opacity'])
+        if kwargs['fill'] is None:
+            fill_opacity = 0
+        else:
+            fill_opacity = kwargs['fill_opacity']
+        brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+        draw.polygon(coordinates, pen, brush)
+        
+    def _draw_line(self, draw, coordinates, **kwargs):
+        """Draw line
+        """
+        
+        import aggdraw
+        pen = aggdraw.Pen(kwargs['outline'], kwargs['width'], kwargs['outline_opacity'])
+        draw.line(coordinates, pen)
+        
+    def _finalize(self, draw):
+        """Flush the AGG image object
+        """
+        
+        draw.flush()
+           
+    def add_coastlines(self, image, area_def, resolution='c', level=1, 
+                       fill=None, fill_opacity=255, outline='white', width=1, 
+                       outline_opacity=255):
+        """Add coastlines to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4}
+            Detail level of dataset
+        fill : str or (R, G, B), optional
+            Land color
+        fill_opacity : int, optional {0; 255}
+            Opacity of land color
+        outline : str or (R, G, B), optional
+            Coastline color
+        width : float, optional
+            Width of coastline
+        outline_opacity : int, optional {0; 255}
+            Opacity of coastline color
+        """
+        
+        self._add_feature(image, area_def, 'polygon', 'GSHHS', 
+                          resolution=resolution, level=level, 
+                          fill=fill, fill_opacity=fill_opacity, 
+                          outline=outline, width=width,
+                          outline_opacity=outline_opacity)
+                              
+    def add_coastlines_to_file(self, filename, area_def, resolution='c', 
+                               level=1, fill=None, fill_opacity=255, 
+                               outline='white', width=1, outline_opacity=255):
+        """Add coastlines to an image file
+        
+        :Parameters:
+        filename : str
+            Image file
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4}
+            Detail level of dataset
+        fill : str or (R, G, B), optional
+            Land color
+        fill_opacity : int, optional {0; 255}
+            Opacity of land color
+        outline : str or (R, G, B), optional
+            Coastline color
+        width : float, optional
+            Width of coastline
+        outline_opacity : int, optional {0; 255}
+            Opacity of coastline color      
+        """
+        
+        image = Image.open(filename)
+        self.add_coastlines(image, area_def, resolution=resolution, 
+                            level=level, fill=fill, 
+                            fill_opacity=fill_opacity, outline=outline, 
+                            width=width, outline_opacity=outline_opacity)
+        image.save(filename)
+
+    def add_borders(self, image, area_def, resolution='c', level=1, 
+                    outline='white', width=1, outline_opacity=255):
+                            
+        """Add borders to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            Border color
+        width : float, optional
+            Width of coastline
+        outline_opacity : int, optional {0; 255}
+            Opacity of coastline color
+        """
+        
+        self._add_feature(image, area_def, 'line', 'WDBII', tag='border', 
+                          resolution=resolution, level=level, outline=outline, 
+                          width=width, outline_opacity=outline_opacity)
+
+    def add_borders_to_file(self, filename, area_def, resolution='c', 
+                            level=1, outline='white', width=1, 
+                            outline_opacity=255):
+        """Add borders to an image file
+        
+        :Parameters:
+        image : object
+            Image file
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            Border color
+        width : float, optional
+            Width of coastline
+        outline_opacity : int, optional {0; 255}
+            Opacity of coastline color
+        """
+        image = Image.open(filename)
+        self.add_borders(image, area_def, resolution=resolution, level=level, 
+                         outline=outline, width=width, 
+                         outline_opacity=outline_opacity)
+        image.save(filename)
+        
+    def add_rivers(self, image, area_def, resolution='c', level=1, 
+                   outline='white', width=1, outline_opacity=255):
+        """Add rivers to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            River color
+        width : float, optional
+            Width of coastline
+        outline_opacity : int, optional {0; 255}
+            Opacity of coastline color
+        """
+        
+        self._add_feature(image, area_def, 'line', 'WDBII', tag='river', 
+                          zero_pad=True, resolution=resolution, level=level, 
+                          outline=outline, width=width, 
+                          outline_opacity=outline_opacity)
+                          
+    def add_rivers_to_file(self, filename, area_def, resolution='c', level=1, 
+                           outline='white', width=1, outline_opacity=255):
+        """Add rivers to an image file
+        
+        :Parameters:
+        image : object
+            Image file
+        proj4_string : str
+            Projection of area as Proj.4 string
+        area_extent : list
+            Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        resolution : str, optional {'c', 'l', 'i', 'h', 'f'}
+            Dataset resolution to use
+        level : int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+            Detail level of dataset
+        outline : str or (R, G, B), optional
+            River color
+        width : float, optional
+            Width of coastline
+        outline_opacity : int, optional {0; 255}
+            Opacity of coastline color
+        """
+        
+        image = Image.open(filename)
+        self.add_rivers(image, area_def, resolution=resolution, level=level, 
+                        outline=outline, width=width, 
+                        outline_opacity=outline_opacity)
+        image.save(filename)
 
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
