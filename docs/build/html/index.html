@@ -116,14 +116,16 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <h2>High quality contours using AGG<a class="headerlink" href="#high-quality-contours-using-agg" title="Permalink to this headline">¶</a></h2>
 <p>The default plotting mode of pycoast uses PIL for rendering of contours. PIL does not support antialiasing and opacity. The AGG engine can be used for making high quality images using the <a class="reference external" href="http://effbot.org/zone/aggdraw-index.htm">aggdraw</a> module.</p>
 <p>First install the <a class="reference external" href="http://effbot.org/zone/aggdraw-index.htm">aggdraw</a> module.</p>
-<p>Tip: if the building of aggdraw files with:</p>
-<div class="highlight-python"><pre>agg_array.h:523: error: cast from ‘agg::int8u*’ to ‘unsigned int’ loses precision</pre>
+<p>Tip: if the building of aggdraw fails with:</p>
+<div class="highlight-bash"><div class="highlight"><pre>agg_array.h:523: error: cast from ‘agg::int8u*’ to ‘unsigned int’ loses precision
+</pre></div>
 </div>
 <p>Try:</p>
-<div class="highlight-python"><pre>export CFLAGS="-fpermissive"</pre>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">export </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">&quot;-fpermissive&quot;</span>
+</pre></div>
 </div>
 <p>before building.</p>
-<p>Using pycaost with AGG for making antialiased drawing:</p>
+<p>Using pycoast with AGG for making antialiased drawing:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>

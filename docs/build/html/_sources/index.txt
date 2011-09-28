@@ -96,17 +96,21 @@ The default plotting mode of pycoast uses PIL for rendering of contours. PIL doe
 
 First install the aggdraw_ module.
 
-Tip: if the building of aggdraw files with::
+Tip: if the building of aggdraw fails with:
+
+.. code-block:: bash
 
     agg_array.h:523: error: cast from ‘agg::int8u*’ to ‘unsigned int’ loses precision
     
-Try::
+Try:
+
+.. code-block:: bash
 
     export CFLAGS="-fpermissive"
     
 before building.
 
-Using pycaost with AGG for making antialiased drawing:
+Using pycoast with AGG for making antialiased drawing:
 
     >>> from PIL import Image
     >>> from pycoast import ContourWriterAGG
