@@ -141,6 +141,24 @@ and making the not-so-nice image from the first example nice:
 .. image:: images/euro_coast_agg.png
 
 See docstrings of :attr:`ContourWriterAGG` methods for argument descriptions.
+
+Testing
+-------
+In order to run the unittests the environment variable GSHHS_DATA_ROOT has to be defined pointing to your *GSHHS_DATA_ROOT*. E.g.:
+
+.. code-block:: bash
+    
+    $ export GSHHS_DATA_ROOT=/home/esn/data/gshhs
+
+or whatever matches your system and data location.
+
+Subsequently the tests can be run using nosetest:
+
+.. code-block:: bash
+
+    $ cd <pycoast_dir>
+    $ nosetests tests/  
+
     
 .. _pyshp: http://code.google.com/p/pyshp/
 .. _PIL: http://www.pythonware.com/products/pil/
