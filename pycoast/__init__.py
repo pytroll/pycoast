@@ -630,8 +630,8 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
 
     index_arrays = []
     for x, y in segments:
-        n_x = ((-x_ll + x) / l_x).astype(np.int)
-        n_y = ((y_ur - y) / l_y).astype(np.int)
+        n_x = ((-x_ll + x) / l_x)
+        n_y = ((y_ur - y) / l_y)
 
         index_array = np.vstack((n_x, n_y)).T
         index_arrays.append(index_array)
