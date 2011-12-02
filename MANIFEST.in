@@ -1,0 +1,6 @@
+include docs/Makefile
+recursive-include docs/source *
+include test/*.png
+include LICENSE.txt
+include MANIFEST.in
+

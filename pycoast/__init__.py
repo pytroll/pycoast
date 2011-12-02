@@ -1,3 +1,20 @@
+#pycoast, Writing of coastlines, borders and rivers to images in Python
+# 
+#Copyright (C) 2011  Esben S. Nielsen
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 
 import numpy as np
@@ -24,7 +41,7 @@ class ContourWriterBase(object):
 
     def _add_feature(self, image, area_def, feature_type, 
                      db_name, tag=None, zero_pad=False, resolution='c', 
-                     level=1, **kwargs):
+                     level=1, x_offset=0, y_offset=0, **kwargs):
         """Add a contour feature to image
         """
 
@@ -61,8 +78,11 @@ class ContourWriterBase(object):
                 
                 # Get pixel index coordinates of shape
                 
-                index_arrays, is_reduced = _get_pixel_index(shape, area_extent, x_size, 
-                                               y_size, prj)       
+                index_arrays, is_reduced = _get_pixel_index(shape, area_extent, 
+                                                            x_size, y_size, 
+                                                            prj, 
+                                                            x_offset=x_offset,
+                                                            y_offset=y_offset)       
                 
                 # Skip empty datasets               
                 if len(index_arrays) == 0:
@@ -150,8 +170,8 @@ class ContourWriter(ContourWriterBase):
         
         draw.line(coordinates, fill=kwargs['outline'])
            
-    def add_coastlines(self, image, area_def, resolution='c', 
-                            level=1, fill=None, outline='white'):
+    def add_coastlines(self, image, area_def, resolution='c', level=1, 
+                       fill=None, outline='white', x_offset=0, y_offset=0):
         """Add coastlines to a PIL image object
         
         :Parameters:
@@ -169,15 +189,20 @@ class ContourWriter(ContourWriterBase):
             Land color
         outline : str or (R, G, B), optional
             Coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         self._add_feature(image, area_def, 'polygon', 'GSHHS', 
                           resolution=resolution, level=level, 
-                          fill=fill, outline=outline)
+                          fill=fill, outline=outline, x_offset=x_offset,
+                                                y_offset=y_offset)
                               
-    def add_coastlines_to_file(self, filename, area_def, 
-                               resolution='c', level=1, fill=None, 
-                               outline='white'):
+    def add_coastlines_to_file(self, filename, area_def, resolution='c', 
+                               level=1, fill=None, outline='white', 
+                               x_offset=0, y_offset=0):
         """Add coastlines to an image file
         
         :Parameters:
@@ -194,17 +219,22 @@ class ContourWriter(ContourWriterBase):
         fill : str or (R, G, B)
             Land color
         outline : str or (R, G, B), optional
-            Coastline color        
+            Coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction        
         """
         
         image = Image.open(filename)
         self.add_coastlines(image, proj4_string, area_extent, 
                             resolution=resolution, level=level, 
-                            fill=fill, outline=outline)
+                            fill=fill, outline=outline, x_offset=x_offset,
+                            y_offset=y_offset)
         image.save(filename)
 
-    def add_borders(self, image, area_def, resolution='c', 
-                            level=1, outline='white'):
+    def add_borders(self, image, area_def, resolution='c', level=1, 
+                    outline='white', x_offset=0, y_offset=0):
                             
         """Add borders to a PIL image object
         
@@ -221,14 +251,19 @@ class ContourWriter(ContourWriterBase):
             Detail level of dataset
         outline : str or (R, G, B), optional
             Border color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         self._add_feature(image, area_def, 'line', 'WDBII', 
                           tag='border', resolution=resolution, level=level, 
-                          outline=outline)
+                          outline=outline, x_offset=x_offset,
+                                                y_offset=y_offset)
 
-    def add_borders_to_file(self, filename, area_def, 
-                            resolution='c', level=1, outline='white'):
+    def add_borders_to_file(self, filename, area_def, resolution='c', level=1, 
+                            outline='white', x_offset=0, y_offset=0):
         """Add borders to an image file
         
         :Parameters:
@@ -244,14 +279,19 @@ class ContourWriter(ContourWriterBase):
             Detail level of dataset
         outline : str or (R, G, B), optional
             Border color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         image = Image.open(filename)
         self.add_borders(image, area_def, resolution=resolution, 
-                         level=level, outline=outline)
+                         level=level, outline=outline, x_offset=x_offset,
+                         y_offset=y_offset)
         image.save(filename)
         
-    def add_rivers(self, image, area_def, resolution='c', 
-                            level=1, outline='white'):
+    def add_rivers(self, image, area_def, resolution='c', level=1, 
+                   outline='white', x_offset=0, y_offset=0):
         """Add rivers to a PIL image object
         
         :Parameters:
@@ -267,14 +307,19 @@ class ContourWriter(ContourWriterBase):
             Detail level of dataset
         outline : str or (R, G, B), optional
             River color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         self._add_feature(image, area_def, 'line', 'WDBII', 
                           tag='river', zero_pad=True, resolution=resolution, 
-                          level=level, outline=outline)
+                          level=level, outline=outline, x_offset=x_offset,
+                          y_offset=y_offset)
                           
-    def add_rivers_to_file(self, filename, area_def, 
-                           resolution='c', level=1, outline='white'):
+    def add_rivers_to_file(self, filename, area_def, resolution='c', level=1, 
+                           outline='white', x_offset=0, y_offset=0):
         """Add rivers to an image file
         
         :Parameters:
@@ -290,11 +335,15 @@ class ContourWriter(ContourWriterBase):
             Detail level of dataset
         outline : str or (R, G, B), optional
             River color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         image = Image.open(filename)
-        self.add_rivers(image, area_def, 
-                        resolution=resolution, level=level, outline=outline)
+        self.add_rivers(image, area_def, resolution=resolution, level=level, 
+                        outline=outline, x_offset=x_offset, y_offset=y_offset)
         image.save(filename)
 
 
@@ -344,7 +393,7 @@ class ContourWriterAGG(ContourWriterBase):
            
     def add_coastlines(self, image, area_def, resolution='c', level=1, 
                        fill=None, fill_opacity=255, outline='white', width=1, 
-                       outline_opacity=255):
+                       outline_opacity=255, x_offset=0, y_offset=0):
         """Add coastlines to a PIL image object
         
         :Parameters:
@@ -368,17 +417,23 @@ class ContourWriterAGG(ContourWriterBase):
             Width of coastline
         outline_opacity : int, optional {0; 255}
             Opacity of coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         self._add_feature(image, area_def, 'polygon', 'GSHHS', 
                           resolution=resolution, level=level, 
                           fill=fill, fill_opacity=fill_opacity, 
                           outline=outline, width=width,
-                          outline_opacity=outline_opacity)
+                          outline_opacity=outline_opacity, x_offset=x_offset,
+                          y_offset=y_offset)
                               
     def add_coastlines_to_file(self, filename, area_def, resolution='c', 
                                level=1, fill=None, fill_opacity=255, 
-                               outline='white', width=1, outline_opacity=255):
+                               outline='white', width=1, outline_opacity=255, 
+                               x_offset=0, y_offset=0):
         """Add coastlines to an image file
         
         :Parameters:
@@ -401,18 +456,24 @@ class ContourWriterAGG(ContourWriterBase):
         width : float, optional
             Width of coastline
         outline_opacity : int, optional {0; 255}
-            Opacity of coastline color      
+            Opacity of coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction      
         """
         
         image = Image.open(filename)
         self.add_coastlines(image, area_def, resolution=resolution, 
                             level=level, fill=fill, 
                             fill_opacity=fill_opacity, outline=outline, 
-                            width=width, outline_opacity=outline_opacity)
+                            width=width, outline_opacity=outline_opacity, 
+                            x_offset=x_offset, y_offset=y_offset)
         image.save(filename)
 
     def add_borders(self, image, area_def, resolution='c', level=1, 
-                    outline='white', width=1, outline_opacity=255):
+                    outline='white', width=1, outline_opacity=255, 
+                    x_offset=0, y_offset=0):
                             
         """Add borders to a PIL image object
         
@@ -433,15 +494,20 @@ class ContourWriterAGG(ContourWriterBase):
             Width of coastline
         outline_opacity : int, optional {0; 255}
             Opacity of coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         self._add_feature(image, area_def, 'line', 'WDBII', tag='border', 
                           resolution=resolution, level=level, outline=outline, 
-                          width=width, outline_opacity=outline_opacity)
+                          width=width, outline_opacity=outline_opacity, 
+                          x_offset=x_offset, y_offset=y_offset)
 
     def add_borders_to_file(self, filename, area_def, resolution='c', 
                             level=1, outline='white', width=1, 
-                            outline_opacity=255):
+                            outline_opacity=255, x_offset=0, y_offset=0):
         """Add borders to an image file
         
         :Parameters:
@@ -461,15 +527,21 @@ class ContourWriterAGG(ContourWriterBase):
             Width of coastline
         outline_opacity : int, optional {0; 255}
             Opacity of coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         image = Image.open(filename)
         self.add_borders(image, area_def, resolution=resolution, level=level, 
                          outline=outline, width=width, 
-                         outline_opacity=outline_opacity)
+                         outline_opacity=outline_opacity, x_offset=x_offset,
+                         y_offset=y_offset)
         image.save(filename)
         
     def add_rivers(self, image, area_def, resolution='c', level=1, 
-                   outline='white', width=1, outline_opacity=255):
+                   outline='white', width=1, outline_opacity=255, 
+                   x_offset=0, y_offset=0):
         """Add rivers to a PIL image object
         
         :Parameters:
@@ -489,15 +561,21 @@ class ContourWriterAGG(ContourWriterBase):
             Width of coastline
         outline_opacity : int, optional {0; 255}
             Opacity of coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         self._add_feature(image, area_def, 'line', 'WDBII', tag='river', 
                           zero_pad=True, resolution=resolution, level=level, 
                           outline=outline, width=width, 
-                          outline_opacity=outline_opacity)
+                          outline_opacity=outline_opacity, x_offset=x_offset,
+                          y_offset=y_offset)
                           
     def add_rivers_to_file(self, filename, area_def, resolution='c', level=1, 
-                           outline='white', width=1, outline_opacity=255):
+                           outline='white', width=1, outline_opacity=255, 
+                           x_offset=0, y_offset=0):
         """Add rivers to an image file
         
         :Parameters:
@@ -517,12 +595,17 @@ class ContourWriterAGG(ContourWriterBase):
             Width of coastline
         outline_opacity : int, optional {0; 255}
             Opacity of coastline color
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
         """
         
         image = Image.open(filename)
         self.add_rivers(image, area_def, resolution=resolution, level=level, 
                         outline=outline, width=width, 
-                        outline_opacity=outline_opacity)
+                        outline_opacity=outline_opacity, x_offset=x_offset,
+                        y_offset=y_offset)
         image.save(filename)
 
 
@@ -585,7 +668,8 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         
     return lon_min, lon_max, lat_min, lat_max
     
-def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
+def _get_pixel_index(shape, area_extent, x_size, y_size, prj, 
+                     x_offset=0, y_offset=0):
     """Map coordinates of shape to image coordinates
     """
     
@@ -630,8 +714,8 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj):
 
     index_arrays = []
     for x, y in segments:
-        n_x = ((-x_ll + x) / l_x).astype(np.int)
-        n_y = ((y_ur - y) / l_y).astype(np.int)
+        n_x = ((-x_ll + x) / l_x) + 0.5 + x_offset
+        n_y = ((y_ur - y) / l_y) + 0.5 + y_offset
 
         index_array = np.vstack((n_x, n_y)).T
         index_arrays.append(index_array)
