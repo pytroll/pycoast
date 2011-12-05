@@ -227,7 +227,7 @@ class ContourWriter(ContourWriterBase):
         """
         
         image = Image.open(filename)
-        self.add_coastlines(image, proj4_string, area_extent, 
+        self.add_coastlines(image, area_def, 
                             resolution=resolution, level=level, 
                             fill=fill, outline=outline, x_offset=x_offset,
                             y_offset=y_offset)
