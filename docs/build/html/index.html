@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pycoast &mdash; pycoast v0.3.1 documentation</title>
+    <title>Pycoast &mdash; pycoast v0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
-        VERSION:     '0.3.1',
-        COLLAPSE_MODINDEX: false,
+        URL_ROOT:    '',
+        VERSION:     '0.4.0',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast v0.3.1 documentation" href="#" /> 
+    <link rel="top" title="pycoast v0.4.0 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -28,7 +31,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="#">pycoast v0.3.1 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast v0.4.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -66,7 +69,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>Pycoast can be used to add coastlines, borders and rivers to a raster image if the geographic projection of the image and the image extent in projection coordinates are known</p>
-<img alt="_images/BMNG_clouds_201109181715_areaT2.png" src="_images/BMNG_clouds_201109181715_areaT2.png" />
+<img alt="_images/BMNG_clouds_201109181715_areaT25.png" src="_images/BMNG_clouds_201109181715_areaT25.png" />
 <p>Pycoast can add contours to either a PIL image object:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
@@ -92,11 +95,11 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_borders_to_file</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Where the <tt class="xref docutils literal"><span class="pre">area_extent</span></tt> is the extent of the image in projection coordinates as (x_ll, y_ll, x_ur, x_ur) measured at pixel edges.</p>
-<p>The argument to <tt class="xref docutils literal"><span class="pre">ContourWriter</span></tt> must be replaced with your <em>GSHHS_DATA_ROOT</em>.</p>
-<img alt="_images/euro_coast.png" src="_images/euro_coast.png" />
-<p>The resulting (not so pretty) image shows the effect of the various arguments. The <tt class="xref docutils literal"><span class="pre">resolution</span></tt> keyword argument controls the resolution of the dataset used. It defaults to &#8216;c&#8217; for coarse. Increasing the resolution also increases the processing time. The <tt class="xref docutils literal"><span class="pre">level</span></tt> keyword argument controls the detail level of the dataset used. It defaults to <em>1</em> for the lowest detail level.</p>
-<p>Instead of a tuple for <tt class="xref docutils literal"><span class="pre">area_def</span></tt> a <a class="reference external" href="http://code.google.com/p/pyresample/">pyresample</a> <tt class="xref docutils literal"><span class="pre">AreaDefinition</span></tt> object can be used.</p>
+<p>Where the <tt class="xref py py-attr docutils literal"><span class="pre">area_extent</span></tt> is the extent of the image in projection coordinates as (x_ll, y_ll, x_ur, x_ur) measured at pixel edges.</p>
+<p>The argument to <tt class="xref py py-attr docutils literal"><span class="pre">ContourWriter</span></tt> must be replaced with your <em>GSHHS_DATA_ROOT</em>.</p>
+<img alt="_images/euro_coast5.png" src="_images/euro_coast5.png" />
+<p>The resulting (not so pretty) image shows the effect of the various arguments. The <tt class="xref py py-attr docutils literal"><span class="pre">resolution</span></tt> keyword argument controls the resolution of the dataset used. It defaults to &#8216;c&#8217; for coarse. Increasing the resolution also increases the processing time. The <tt class="xref py py-attr docutils literal"><span class="pre">level</span></tt> keyword argument controls the detail level of the dataset used. It defaults to <em>1</em> for the lowest detail level.</p>
+<p>Instead of a tuple for <tt class="xref py py-attr docutils literal"><span class="pre">area_def</span></tt> a <a class="reference external" href="http://code.google.com/p/pyresample/">pyresample</a> <tt class="xref py py-attr docutils literal"><span class="pre">AreaDefinition</span></tt> object can be used.</p>
 <p>See method docstrings for information about possible argument values see method docstrings.</p>
 <p>Creating an image with coastlines only:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
@@ -110,7 +113,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/geos_coast.png" src="_images/geos_coast.png" />
+<img alt="_images/geos_coast5.png" src="_images/geos_coast5.png" />
 </div>
 <div class="section" id="high-quality-contours-using-agg">
 <h2>High quality contours using AGG<a class="headerlink" href="#high-quality-contours-using-agg" title="Permalink to this headline">¶</a></h2>
@@ -137,7 +140,7 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/geos_coast_agg.png" src="_images/geos_coast_agg.png" />
+<img alt="_images/geos_coast_agg5.png" src="_images/geos_coast_agg5.png" />
 <p>and making the not-so-nice image from the first example nice:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
@@ -152,8 +155,57 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/euro_coast_agg.png" src="_images/euro_coast_agg.png" />
-<p>See docstrings of <tt class="xref docutils literal"><span class="pre">ContourWriterAGG</span></tt> methods for argument descriptions.</p>
+<img alt="_images/euro_coast_agg5.png" src="_images/euro_coast_agg5.png" />
+<p>See docstrings of <tt class="xref py py-attr docutils literal"><span class="pre">ContourWriterAGG</span></tt> methods for argument descriptions.</p>
+</div>
+<div class="section" id="adding-graticule-to-images">
+<h2>Adding graticule to images<a class="headerlink" href="#adding-graticule-to-images" title="Permalink to this headline">¶</a></h2>
+<p>Pycoast can be used to add graticule to images. For PIL:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageFont</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">aggdraw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriter</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">font</span> <span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="s">&quot;/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf&quot;</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">),(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">),</span> <span class="n">font</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">minor_outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/euro_grid5.png" src="_images/euro_grid5.png" />
+<p>The font argument is optional for PIL if it is not given a default font will be used.</p>
+<p>and for AGG:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageFont</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">aggdraw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">font</span> <span class="o">=</span> <span class="n">aggdraw</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="s">&quot;blue&quot;</span><span class="p">,</span> <span class="s">&quot;/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">),(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">),</span><span class="n">font</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span><span class="n">outline_opacity</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">minor_outline</span><span class="o">=</span><span class="s">&#39;lightblue&#39;</span><span class="p">,</span><span class="n">minor_outline_opacity</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">minor_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">minor_is_tick</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/euro_grid_agg5.png" src="_images/euro_grid_agg5.png" />
+<p>Note the difference in the optional font argument for PIL and AGG. With AGG the font argument is mandatory unless the keyword argument <tt class="xref py py-attr docutils literal"><span class="pre">write_text=False</span></tt> is used.</p>
+<p>Tip: If the adding graticule with AGG fails with something like:</p>
+<div class="highlight-bash"><div class="highlight"><pre>Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+    File <span class="s2">&quot;grid_demo_AGG.py&quot;</span>, line 13, in &lt;module&gt;
+        <span class="nv">font</span><span class="o">=</span>aggdraw.Font<span class="o">(</span><span class="s2">&quot;blue&quot;</span>, <span class="s2">&quot;/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf&quot;</span>, <span class="nv">size</span><span class="o">=</span>16<span class="o">)</span>
+IOError: cannot load font <span class="o">(</span>no text renderer<span class="o">)</span>
+</pre></div>
+</div>
+<p>make sure the FREETYPE_ROOT in setup.py of aggdraw points to the correct location e.g. set <em>FREETYPE_ROOT = &#8220;/usr&#8221;</em></p>
 </div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
@@ -176,35 +228,36 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="#">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Pycoast</a><ul>
-<li><a class="reference external" href="#installation">Installation</a></li>
-<li><a class="reference external" href="#usage">Usage</a></li>
-<li><a class="reference external" href="#high-quality-contours-using-agg">High quality contours using AGG</a></li>
-<li><a class="reference external" href="#testing">Testing</a></li>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pycoast</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#high-quality-contours-using-agg">High quality contours using AGG</a></li>
+<li><a class="reference internal" href="#adding-graticule-to-images">Adding graticule to images</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
 </ul>
 
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/index.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -215,12 +268,12 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="#">pycoast v0.3.1 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast v0.4.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2011, Esben S. Nielsen.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+        &copy; Copyright 2012, Esben S. Nielsen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

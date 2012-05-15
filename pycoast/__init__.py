@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #pycoast, Writing of coastlines, borders and rivers to images in Python
 # 
-#Copyright (C) 2011  Esben S. Nielsen
+#Copyright (C) 2011, 2012  Esben S. Nielsen
+#                    2012  Hróbjartur Þorsteinsson
 #
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -18,15 +21,23 @@
 import os
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFont
 import ImageDraw
 import shapefile
 import pyproj
 
 
+# float list generator
+def _frange(x, y, jump):
+    while x < y:
+        yield x
+        x += jump
+        
+def frange(x, y, jump):
+    return [p for p in _frange(x, y, jump)]
+
 class ShapeFileError(Exception):
     pass
-
 
 class ContourWriterBase(object):
     """Base class for contourwriters. Do not instantiate.
@@ -35,9 +46,282 @@ class ContourWriterBase(object):
     db_root_path : str
         Path to root dir of GSHHS and WDBII shapefiles
     """
+    
+    _draw_module = None 
+    # This is a flag to make _add_grid aware of which draw.text subroutine,
+    # from PIL or from aggdraw is being used (unfortunately they are not fully
+    # compatible). This may well be a clumbsy implementation.
 
     def __init__(self, db_root_path):
         self.db_root_path = db_root_path
+
+
+    def _add_grid(self, image, area_def,
+                  Dlon, Dlat,
+                  dlon, dlat,
+                  font=None, write_text=True, **kwargs):
+        """Add a lat lon grid to image
+        """
+
+        try:
+            proj4_string = area_def.proj4_string
+            area_extent = area_def.area_extent
+        except AttributeError:
+            proj4_string = area_def[0]
+            area_extent = area_def[1]
+
+        draw = self._get_canvas(image)
+
+        is_agg = self._draw_module == "AGG"
+
+        # use kwargs for major lines ... but reform for minor lines:
+        minor_line_kwargs = kwargs.copy()
+        minor_line_kwargs['outline'] = kwargs['minor_outline']
+        if is_agg:
+            minor_line_kwargs['outline_opacity'] = \
+                                                 kwargs['minor_outline_opacity']
+            minor_line_kwargs['width'] = kwargs['minor_width']
+
+        # set text fonts
+        if font == None:
+            font = ImageFont.load_default()
+        # text margins (at sides of image frame)
+        y_text_margin = 4
+        x_text_margin = 4
+
+        # Area and projection info
+        x_size, y_size = image.size        
+        prj = pyproj.Proj(proj4_string)
+        
+        x_offset = 0
+        y_offset = 0
+        
+        # Calculate min and max lons and lats of interest        
+        lon_min, lon_max, lat_min, lat_max = \
+                _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj) 
+        
+
+        ## Draw lonlat grid lines ...
+        # major lon lines
+        round_lon_min = (lon_min-(lon_min%Dlon))
+        maj_lons = frange(round_lon_min, lon_max, Dlon) 
+        # minor lon lines (ticks)
+        min_lons = frange(round_lon_min, lon_max, dlon) 
+        for lon in maj_lons: 
+            if lon in min_lons:
+                min_lons.remove(lon)
+        # lats along major lon lines
+        lin_lats = frange(lat_min, lat_max, (lat_max - lat_min) / y_size) 
+        # lin_lats in rather high definition so that it can be used to
+        # posituion text labels near edges of image...
+
+        ##### perhaps better to find the actual length of line in pixels...
+
+        round_lat_min = (lat_min - (lat_min % Dlat))
+        # major lat lines
+        maj_lats = frange(round_lat_min, lat_max, Dlat)
+        # minor lon lines (ticks)
+        min_lats = frange(round_lat_min, lat_max, dlat) 
+        for lon in maj_lats: 
+            if lon in min_lats:
+                min_lats.remove(lon)
+                
+        # lons along major lat lines
+        lin_lons = frange(lon_min, lon_max, Dlon / 10.0) 
+        
+        # create dummpy shape object
+        tmpshape = shapefile.Writer("")
+
+   
+        ##### MINOR LINES ######
+        if not kwargs['minor_is_tick']:
+            # minor lat lines
+            for lat in min_lats:
+                lonlats = [(x, lat) for x in lin_lons]
+                tmpshape.points = lonlats
+                index_arrays, is_reduced = _get_pixel_index(tmpshape,
+                                                            area_extent, 
+                                                            x_size, y_size, 
+                                                            prj, 
+                                                            x_offset=x_offset,
+                                                            y_offset=y_offset)
+                del is_reduced
+                # Skip empty datasets               
+                if len(index_arrays) == 0:
+                    continue
+                # make PIL draw the tick line...
+                for index_array in index_arrays:
+                    self._draw_line(draw,
+                                    index_array.flatten().tolist(),
+                                    **minor_line_kwargs)
+            # minor lon lines
+            for lon in min_lons:
+                lonlats = [(lon, x) for x in lin_lats]
+                tmpshape.points = lonlats
+                index_arrays, is_reduced = _get_pixel_index(tmpshape,
+                                                            area_extent, 
+                                                            x_size, y_size, 
+                                                            prj, 
+                                                            x_offset=x_offset,
+                                                            y_offset=y_offset)
+                # Skip empty datasets               
+                if len(index_arrays) == 0:
+                    continue
+                # make PIL draw the tick line...
+                for index_array in index_arrays:
+                    self._draw_line(draw,
+                                    index_array.flatten().tolist(),
+                                    **minor_line_kwargs)
+                
+        ##### MAJOR LINES AND MINOR TICKS ######
+        # major lon lines and tick marks:
+        for lon in maj_lons:
+            # Draw 'minor' tick lines dlat separation along the lon
+            if kwargs['minor_is_tick']:
+                tick_lons = frange(lon - Dlon / 20.0,
+                                   lon + Dlon / 20.0,
+                                   Dlon / 50.0)
+                for lat in min_lats:
+                    lonlats = [(x, lat) for x in tick_lons]
+                    tmpshape.points = lonlats
+                    index_arrays, is_reduced = \
+                                  _get_pixel_index(tmpshape,
+                                                   area_extent, 
+                                                   x_size, y_size, 
+                                                   prj, 
+                                                   x_offset=x_offset,
+                                                   y_offset=y_offset)
+                    # Skip empty datasets               
+                    if len(index_arrays) == 0:
+                        continue
+                    # make PIL draw the tick line...
+                    for index_array in index_arrays:
+                        self._draw_line(draw,
+                                        index_array.flatten().tolist(),
+                                        **minor_line_kwargs)
+
+            # Draw 'major' lines
+            lonlats = [ (lon, x) for x in lin_lats ]
+            tmpshape.points = lonlats
+            index_arrays, is_reduced = _get_pixel_index(tmpshape, area_extent, 
+                                                            x_size, y_size, 
+                                                            prj, 
+                                                            x_offset=x_offset,
+                                                            y_offset=y_offset) 
+            # Skip empty datasets               
+            if len(index_arrays) == 0:
+                continue
+            
+            # make PIL draw the lines...
+            for index_array in index_arrays:
+                self._draw_line(draw,
+                                index_array.flatten().tolist(),
+                                **kwargs)
+
+            # add lon text markings at each end of longitude line
+            if write_text:
+                if lon > 0.0:
+                    txt = "%.2dE" % (lon)
+                else:
+                    txt = "%.2dW" % (-lon)
+                #width,height = font.getsize(txt)
+                width, height = draw.textsize(txt, font)
+                bot_xy = index_array[0]
+                if bot_xy[0] > 0 and bot_xy[0] < x_size:
+                    i = 0
+                    while bot_xy[1] > y_size:
+                        i += 1
+                        bot_xy = index_array[i]    
+                    bot_xy[1] = (y_size - 1) - ( height + y_text_margin)
+                    if is_agg:
+                        draw.text(bot_xy, txt, font)     
+                    else:
+                        draw.text(bot_xy, txt, font=font, fill=kwargs['fill'])     
+                top_xy = index_array[-1]
+                if top_xy[0] > 0 and top_xy[0] < x_size:
+                    i = -1
+                    while top_xy[1] < 0:
+                        i -= 1
+                        top_xy = index_array[i]    
+                    top_xy[1] = (y_text_margin)
+                    if is_agg:
+                        draw.text(top_xy, txt, font)
+                    else:
+                        draw.text(bot_xy, txt, font=font, fill=kwargs['fill']) 
+
+        # major lat lines and tick marks:
+        for lat in maj_lats:
+            # Draw 'minor' tick dlon separation along the lat
+            if kwargs['minor_is_tick']: 
+                tick_lats = frange(lat - Dlat / 20.0,
+                                   lat + Dlat / 20.0,
+                                   Dlat/50.0)
+                for lon in min_lons:
+                    lonlats = [(lon, x) for x in tick_lats]
+                    tmpshape.points = lonlats
+                    index_arrays, is_reduced = \
+                                  _get_pixel_index(tmpshape, area_extent, 
+                                                   x_size, y_size, 
+                                                   prj, 
+                                                   x_offset=x_offset,
+                                                   y_offset=y_offset)
+                    # Skip empty datasets               
+                    if len(index_arrays) == 0:
+                        continue
+                    # make PIL draw the tick line...
+                    for index_array in index_arrays:
+                        self._draw_line(draw,
+                                        index_array.flatten().tolist(),
+                                        **minor_line_kwargs)
+
+            # Draw 'major' lines
+            lonlats = [ (x, lat) for x in lin_lons ]
+            tmpshape.points = lonlats
+            index_arrays, is_reduced = _get_pixel_index(tmpshape, area_extent, 
+                                                            x_size, y_size, 
+                                                            prj, 
+                                                            x_offset=x_offset,
+                                                            y_offset=y_offset) 
+            # Skip empty datasets               
+            if len(index_arrays) == 0:
+                continue
+            
+            # make PIL draw the lines...
+            for index_array in index_arrays:
+                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
+
+            # add lat text markings at each end of parallels ...
+            if write_text:
+                if lat >= 0.0:
+                    txt = "%.2dN" % (lat)
+                else: txt = "%.2dS" % (-lat)
+                #width,height=font.getsize(txt)
+                width, height = draw.textsize(txt, font)
+                bot_xy = index_array[0]
+                if bot_xy[1] > 0 and bot_xy[1] < y_size:
+                    i = 0
+                    while bot_xy[0] < 0:
+                        i += 1
+                        bot_xy = index_array[i]    
+                    bot_xy[0] = (x_text_margin)
+                    if is_agg:
+                        draw.text(bot_xy, txt, font)
+                    else:
+                        draw.text(bot_xy, txt, font=font, fill=kwargs['fill'])     
+                top_xy = index_array[-1]
+                if top_xy[1] > 0 and top_xy[1] < y_size:
+                    i = -1
+                    while top_xy[0] > x_size:
+                        i -= 1
+                        top_xy = index_array[i]    
+                    top_xy[0] = (x_size - 1) - (width + x_text_margin)
+                    if is_agg:
+                        draw.text(top_xy, txt, font)
+                    else:
+                        draw.text(bot_xy, txt, font=font, fill=kwargs['fill'])
+
+
+        self._finalize(draw)
 
     def _add_feature(self, image, area_def, feature_type, 
                      db_name, tag=None, zero_pad=False, resolution='c', 
@@ -92,12 +376,16 @@ class ContourWriterBase(object):
                 for index_array in index_arrays:
                     if feature_type.lower() == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
-                        #draw.polygon(index_array.flatten().tolist(), fill=fill, 
+                        #draw.polygon(index_array.flatten().tolist(), fill=fill,
                         #             outline=outline)
-                        self._draw_polygon(draw, index_array.flatten().tolist(), **kwargs)
+                        self._draw_polygon(draw,
+                                           index_array.flatten().tolist(),
+                                           **kwargs)
                     elif feature_type.lower() == 'line' or is_reduced:
                         # Draw line
-                        self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
+                        self._draw_line(draw,
+                                        index_array.flatten().tolist(),
+                                        **kwargs)
                         #draw.line(index_array.flatten().tolist(), fill=outline)
                     else:
                         raise ValueError('Unknown contour type: %s' % feature_type)
@@ -152,6 +440,11 @@ class ContourWriter(ContourWriterBase):
         Path to root dir of GSHHS and WDBII shapefiles
     """
     
+    _draw_module = "PIL"
+    # This is a flag to make _add_grid aware of which text draw routine
+    # from PIL or from aggdraw should be used (unfortunately they are not fully compatible)
+
+
     def _get_canvas(self, image):
         """Returns PIL image object
         """
@@ -169,7 +462,74 @@ class ContourWriter(ContourWriterBase):
         """
         
         draw.line(coordinates, fill=kwargs['outline'])
-           
+        
+    def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat), font=None, 
+                 write_text=True, fill=None, outline='white', minor_outline='white', 
+                 minor_is_tick=True):
+        """Add a lon-lat grid to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        (Dlon,Dlat): (float,float)
+            Major grid line separation
+        (dlon,dlat): (float,float)
+            Minor grid line separation
+        font: PIL ImageFont object, optional
+            Font for major line markings
+        write_text : boolean, optional
+            Deterine if line markings are enabled
+        fill : str or (R, G, B), optional
+            Text color
+        outline : str or (R, G, B), optional
+            Major line color
+        minor_outline : str or (R, G, B), optional
+            Minor line/tick color
+        minor_is_tick : boolean, optional
+            Use tick minor line style (True) or full minor line style (False)
+        """
+        self._add_grid(image, area_def, Dlon, Dlat, dlon, dlat,font=font, 
+                       write_text=write_text, fill=fill,outline=outline, 
+                       minor_outline=minor_outline,minor_is_tick=minor_is_tick)
+
+    def add_grid_to_file(self, filename, area_def, (Dlon, Dlat), (dlon, dlat), 
+                         font=None, write_text=True, fill=None, outline='white', 
+                         minor_outline='white', minor_is_tick=True):
+        """Add a lon-lat grid to an image file
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        (Dlon,Dlat): (float,float)
+            Major grid line separation
+        (dlon,dlat): (float,float)
+            Minor grid line separation
+        font: PIL ImageFont object, optional
+            Font for major line markings
+        write_text : boolean, optional
+            Deterine if line markings are enabled
+        fill : str or (R, G, B), optional
+            Text color
+        outline : str or (R, G, B), optional
+            Major line color
+        minor_outline : str or (R, G, B), optional
+            Minor line/tick color
+        minor_is_tick : boolean, optional
+            Use tick minor line style (True) or full minor line style (False)
+        """
+        
+        image = Image.open(filename)
+        self.add_grid(image, area_def, (Dlon, Dlat), (dlon, dlat), font=font, 
+                      write_text=write_text, fill=fill, outline=outline, 
+                      minor_outline=minor_outline, 
+                      minor_is_tick=minor_is_tick)
+        image.save(filename)
+
+   
     def add_coastlines(self, image, area_def, resolution='c', level=1, 
                        fill=None, outline='white', x_offset=0, y_offset=0):
         """Add coastlines to a PIL image object
@@ -356,7 +716,11 @@ class ContourWriterAGG(ContourWriterBase):
     db_root_path : str
         Path to root dir of GSHHS and WDBII shapefiles
     """
-    
+    _draw_module = "AGG" 
+    # This is a flag to make _add_grid aware of which text draw routine
+    # from PIL or from aggdraw should be used (unfortunately they are not fully compatible)
+
+
     def _get_canvas(self, image):
         """Returns AGG image object
         """
@@ -391,6 +755,96 @@ class ContourWriterAGG(ContourWriterBase):
         
         draw.flush()
            
+    def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat),
+                 font=None, write_text=True, fill=None, fill_opacity=255, 
+                 outline='white', width=1, outline_opacity=255,
+                 minor_outline='white', minor_width=0.5,
+                 minor_outline_opacity=255, minor_is_tick=True):
+        """Add a lon-lat grid to a PIL image object
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        (Dlon,Dlat): (float,float)
+            Major grid line separation
+        (dlon,dlat): (float,float)
+            Minor grid line separation
+        font: Aggdraw Font object, optional
+            Font for major line markings
+        write_text : boolean, optional
+            Deterine if line markings are enabled
+        fill_opacity : int, optional {0; 255}
+            Opacity of text
+        outline : str or (R, G, B), optional
+            Major line color
+        width : float, optional
+            Major line width
+        outline_opacity : int, optional {0; 255}
+            Opacity of major lines
+        minor_outline : str or (R, G, B), optional
+            Minor line/tick color
+        minor_width : float, optional
+            Minor line width
+        minor_outline_opacity : int, optional {0; 255}
+            Opacity of minor lines/ticks
+        minor_is_tick : boolean, optional
+            Use tick minor line style (True) or full minor line style (False)
+        """
+        self._add_grid(image, area_def, Dlon, Dlat, dlon, dlat, font=font, write_text=write_text,
+                       fill=fill, fill_opacity=fill_opacity, outline=outline, width=width,
+                       outline_opacity=outline_opacity,
+                       minor_outline=minor_outline, minor_width=minor_width,
+                       minor_outline_opacity=minor_outline_opacity,
+                       minor_is_tick=minor_is_tick)
+                       
+    def add_grid_to_file(self, filename, area_def, (Dlon, Dlat), (dlon, dlat),
+                         font=None, write_text=True, fill=None, fill_opacity=255, 
+                         outline='white', width=1, outline_opacity=255,
+                         minor_outline='white', minor_width=0.5,
+                         minor_outline_opacity=255, minor_is_tick=True):
+        """Add a lon-lat grid to an image
+        
+        :Parameters:
+        image : object
+            PIL image object
+        proj4_string : str
+            Projection of area as Proj.4 string
+        (Dlon,Dlat): (float,float)
+            Major grid line separation
+        (dlon,dlat): (float,float)
+            Minor grid line separation
+        font: Aggdraw Font object, optional
+            Font for major line markings
+        write_text : boolean, optional
+            Deterine if line markings are enabled
+        fill_opacity : int, optional {0; 255}
+            Opacity of text
+        outline : str or (R, G, B), optional
+            Major line color
+        width : float, optional
+            Major line width
+        outline_opacity : int, optional {0; 255}
+            Opacity of major lines
+        minor_outline : str or (R, G, B), optional
+            Minor line/tick color
+        minor_width : float, optional
+            Minor line width
+        minor_outline_opacity : int, optional {0; 255}
+            Opacity of minor lines/ticks
+        minor_is_tick : boolean, optional
+            Use tick minor line style (True) or full minor line style (False)
+        """
+        
+        image = Image.open(filename)
+        self.add_grid(image, area_def, (Dlon, Dlat), (dlon, dlat),
+                 font=font, write_text=write_text, fill=fill, fill_opacity=fill_opacity, 
+                 outline=outline, width=width, outline_opacity=outline_opacity,
+                 minor_outline=minor_outline, minor_width=minor_width,
+                 minor_outline_opacity=minor_outline_opacity, minor_is_tick=minor_is_tick)
+        image.save(filename)
+        
     def add_coastlines(self, image, area_def, resolution='c', level=1, 
                        fill=None, fill_opacity=255, outline='white', width=1, 
                        outline_opacity=255, x_offset=0, y_offset=0):
@@ -634,14 +1088,16 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
  
     if round(angle_sum) == -360:
         # Covers NP
-        lat_min = min(lats_s1.min(), lats_s2.min(), lats_s3.min(), lats_s4.min())
+        lat_min = min(lats_s1.min(), lats_s2.min(),
+                      lats_s3.min(), lats_s4.min())
         lat_max = 90
         lon_min = -180
         lon_max = 180
     elif round(angle_sum) == 360:
         # Covers SP
         lat_min = -90
-        lat_max = max(lats_s1.max(), lats_s2.max(), lats_s3.max(), lats_s4.max())
+        lat_max = max(lats_s1.max(), lats_s2.max(),
+                      lats_s3.max(), lats_s4.max())
         lon_min = -180
         lon_max = 180        
     elif round(angle_sum) == 0:
