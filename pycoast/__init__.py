@@ -50,7 +50,7 @@ class ContourWriterBase(object):
     _draw_module = None 
     # This is a flag to make _add_grid aware of which draw.text subroutine,
     # from PIL or from aggdraw is being used (unfortunately they are not fully
-    # compatible). This may well be a clumbsy implementation.
+    # compatible). 
 
     def __init__(self, db_root_path):
         self.db_root_path = db_root_path
