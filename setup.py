@@ -28,6 +28,14 @@ setup(name='pycoast',
       author_email='esn@dmi.dk',
       packages = ['pycoast'],      
       install_requires=['PIL', 'pyshp'], 
-      zip_safe = False
+      zip_safe = False,
+      classifiers=[
+      'Development Status :: 5 - Production/Stable',
+      'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+      'Programming Language :: Python',
+      'Operating System :: OS Independent',
+      'Intended Audience :: Science/Research',
+      'Topic :: Scientific/Engineering'
+      ]
       )
 

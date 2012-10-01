@@ -18,22 +18,29 @@
 import os
 import unittest
 
-from PIL import Image
+from PIL import Image, ImageFont
 import numpy as np
 
 from pycoast import ContourWriter
 
+def tmp(f):
+    f.tmp = True
+    return f
+
 gshhs_root_dir = os.environ['GSHHS_DATA_ROOT']
 test_file = 'test_image.png'
+grid_file = 'test_grid.png'
 
 class TestPycoast(unittest.TestCase):
 
     def setUp(self):
         img = Image.new('RGB', (640, 480))
         img.save(test_file)
+        img.save(grid_file)
         
     def tearDown(self):    
         os.remove(test_file)
+        os.remove(grid_file)
         
 class TestPIL(TestPycoast):
 
@@ -83,6 +90,31 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l')
         res = np.array(img)
         self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
+        
+    def test_grid(self):
+        # Only test if functions execute
+        img = Image.new('RGB', (640, 480))
+        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriter(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue',
+                    outline='blue', minor_outline='blue')
+                    
+    def test_grid_file(self):
+        # Only test if functions execute
+        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriter(gshhs_root_dir)
+
+        cw.add_coastlines_to_file(grid_file, area_def, resolution='l', level=4)
+        cw.add_grid_to_file(grid_file, area_def, (10.0,10.0),(2.0,2.0), fill='blue',
+                    outline='blue', minor_outline='blue')
 
 class TestPILAGG(TestPycoast):        
 
@@ -138,3 +170,37 @@ class TestPILAGG(TestPycoast):
         cw.add_coastlines(img, (proj4_string, area_extent), resolution='l', width=0.5)
         res = np.array(img)
         self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed for AGG')
+    
+    @tmp    
+    def test_grid_agg(self):
+        # Only test if functions execute
+        from pycoast import ContourWriterAGG
+        img = Image.new('RGB', (640, 480))
+        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+        
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), write_text=False,
+                    outline='blue',outline_opacity=255,width=1.0,
+                    minor_outline='lightblue',minor_outline_opacity=255,minor_width=0.5,
+                    minor_is_tick=False)
+    
+    @tmp                
+    def test_grid_agg_file(self):
+        # Only test if functions execute
+        from pycoast import ContourWriterAGG
+        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines_to_file(grid_file, area_def, resolution='l', level=4)
+        cw.add_grid_to_file(grid_file, area_def, (10.0,10.0),(2.0,2.0), write_text=False,
+                    outline='blue',outline_opacity=255,width=1.0,
+                    minor_outline='lightblue',minor_outline_opacity=255,minor_width=0.5,
+                    minor_is_tick=False)
+    
