@@ -98,8 +98,11 @@ class ContourWriterBase(object):
         
         # Calculate min and max lons and lats of interest        
         lon_min, lon_max, lat_min, lat_max = \
-                _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj) 
-        
+                _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
+                
+        # Handle dateline crossing
+        if lon_max < lon_min:
+            lon_max = 360 + lon_max
 
         ## Draw lonlat grid lines ...
         # major lon lines
@@ -355,7 +358,14 @@ class ContourWriterBase(object):
             for i, shape in enumerate(shapes):
                 # Check if polygon is possibly relevant
                 s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
-                if (lon_max < s_lon_ll or lon_min > s_lon_ur or 
+                if lon_min > lon_max:
+                    # Dateline crossing
+                    if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
+                        lat_max < s_lat_ll or lat_min > s_lat_ur):
+                        # Polygon is irrelevant
+                        continue
+                    pass     
+                elif (lon_max < s_lon_ll or lon_min > s_lon_ur or 
                     lat_max < s_lat_ll or lat_min > s_lat_ur):
                     # Polygon is irrelevant
                     continue          
@@ -1102,8 +1112,18 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lon_max = 180        
     elif round(angle_sum) == 0:
         # Covers no poles
-        lon_min = lons_s1.min()
-        lon_max = lons_s3.max()
+        if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1:
+            # End points of left side on different side of dateline
+            lon_min = lons_s1[lons_s1 > 0].min()
+        else:
+            lon_min = lons_s1.min()
+        
+        if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1:
+            # End points of right side on different side of dateline
+            lon_max = lons_s3[lons_s3 < 0].max()
+        else:    
+            lon_max = lons_s3.max()
+            
         lat_min = lats_s4.min()
         lat_max = lats_s2.max()
     else:
