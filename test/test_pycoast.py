@@ -27,7 +27,7 @@ def tmp(f):
     f.tmp = True
     return f
 
-gshhs_root_dir = os.environ['GSHHS_DATA_ROOT']
+gshhs_root_dir = os.path.join(os.path.dirname(__file__), 'test_data', 'gshhs')
 test_file = 'test_image.png'
 grid_file = 'test_grid.png'
 
@@ -57,6 +57,7 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_rivers(img, area_def, level=5, outline='blue')
         cw.add_borders(img, area_def, outline=(255, 0, 0))
+        
         res = np.array(img)
         self.failUnless(np.array_equal(euro_data, res), 'Writing of contours failed')
         
@@ -88,10 +89,11 @@ class TestPIL(TestPycoast):
         area_def = (proj4_string, area_extent)
         cw = ContourWriter(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l')
+        
         res = np.array(img)
         self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
     
-   
+    
     def test_grid(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
                               'grid_europe.png'))
@@ -104,11 +106,27 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'DejaVuSerif.ttf'), 16)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
                     outline='blue', minor_outline='blue')
+                    
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
+    
+    @tmp    
+    def test_grid_geos(self):
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), 'grid_geos.png'))
+        geos_data = np.array(geos_img)  
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+        area_extent = (-5570248.4773392612, -5567248.074173444, 5567248.074173444, 5570248.4773392612)
+        area_def = (proj4_string, area_extent)
+        cw = ContourWriter(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, resolution='l')
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue', outline='blue', minor_outline='blue', write_text=False)
+        
+        res = np.array(img)
+        self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
                            
     def test_grid_file(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -121,7 +139,7 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines_to_file(grid_file, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'DejaVuSerif.ttf'), 16)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid_to_file(grid_file, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
                     outline='blue', minor_outline='blue')
                     
@@ -142,9 +160,10 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'DejaVuSerif.ttf'), 16)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
                     outline='blue', minor_outline='blue')
+        
         res = np.array(img)
         self.failUnless(np.array_equal(dl_data, res), 'Writing of dateline crossing data failed')
         
@@ -161,9 +180,10 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'DejaVuSerif.ttf'), 16)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
                     outline='blue', minor_outline='blue')
+        
         res = np.array(img)
         self.failUnless(np.array_equal(dl_data, res), 'Writing of dateline boundary crossing data failed')
 
@@ -243,6 +263,23 @@ class TestPILAGG(TestPycoast):
                     minor_is_tick=False)
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')
+    
+    @tmp
+    def test_grid_geos_agg(self):
+        from pycoast import ContourWriterAGG
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                              'grid_geos_agg.png'))
+        geos_data = np.array(geos_img)  
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+        area_extent = (-5570248.4773392612, -5567248.074173444, 5567248.074173444, 5570248.4773392612)
+        area_def = (proj4_string, area_extent)
+        cw = ContourWriterAGG(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, resolution='l')
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue', outline='blue', minor_outline='blue', write_text=False)
+        
+        res = np.array(img)
+        self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
                            
     def test_grid_agg_file(self):
         from pycoast import ContourWriterAGG

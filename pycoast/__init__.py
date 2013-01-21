@@ -27,15 +27,6 @@ import shapefile
 import pyproj
 
 
-# float list generator
-def _frange(x, y, jump):
-    while x < y:
-        yield x
-        x += jump
-        
-def frange(x, y, jump):
-    return [p for p in _frange(x, y, jump)]
-
 class ShapeFileError(Exception):
     pass
 
@@ -107,30 +98,34 @@ class ContourWriterBase(object):
         ## Draw lonlat grid lines ...
         # major lon lines
         round_lon_min = (lon_min-(lon_min%Dlon))
-        maj_lons = frange(round_lon_min, lon_max, Dlon) 
+        maj_lons = np.arange(round_lon_min, lon_max, Dlon) 
+        
         # minor lon lines (ticks)
-        min_lons = frange(round_lon_min, lon_max, dlon) 
-        for lon in maj_lons: 
-            if lon in min_lons:
-                min_lons.remove(lon)
+        min_lons = np.arange(round_lon_min, lon_max, dlon)  
+        
+        # Get min_lons not in maj_lons
+        min_lons = np.lib.arraysetops.setdiff1d(min_lons, maj_lons)
+        
         # lats along major lon lines
-        lin_lats = frange(lat_min, lat_max, (lat_max - lat_min) / y_size) 
+        lin_lats = np.arange(lat_min, lat_max, float(lat_max - lat_min) / y_size)  
         # lin_lats in rather high definition so that it can be used to
         # posituion text labels near edges of image...
 
         ##### perhaps better to find the actual length of line in pixels...
 
         round_lat_min = (lat_min - (lat_min % Dlat))
+        
         # major lat lines
-        maj_lats = frange(round_lat_min, lat_max, Dlat)
+        maj_lats = np.arange(round_lat_min, lat_max, Dlat) 
+        
         # minor lon lines (ticks)
-        min_lats = frange(round_lat_min, lat_max, dlat) 
-        for lon in maj_lats: 
-            if lon in min_lats:
-                min_lats.remove(lon)
+        min_lats = np.arange(round_lat_min, lat_max, dlat)
+        
+        # Get min_lats not in maj_lats        
+        min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
                 
         # lons along major lat lines
-        lin_lons = frange(lon_min, lon_max, Dlon / 10.0) 
+        lin_lons = np.arange(lon_min, lon_max, Dlon / 10.0)  
         
         # create dummpy shape object
         tmpshape = shapefile.Writer("")
@@ -181,9 +176,10 @@ class ContourWriterBase(object):
         for lon in maj_lons:
             # Draw 'minor' tick lines dlat separation along the lon
             if kwargs['minor_is_tick']:
-                tick_lons = frange(lon - Dlon / 20.0,
-                                   lon + Dlon / 20.0,
-                                   Dlon / 50.0)
+                tick_lons = np.arange(lon - Dlon / 20.0,
+                                      lon + Dlon / 20.0,
+                                      Dlon / 50.0)
+                
                 for lat in min_lats:
                     lonlats = [(x, lat) for x in tick_lons]
                     tmpshape.points = lonlats
@@ -256,9 +252,9 @@ class ContourWriterBase(object):
         for lat in maj_lats:
             # Draw 'minor' tick dlon separation along the lat
             if kwargs['minor_is_tick']: 
-                tick_lats = frange(lat - Dlat / 20.0,
-                                   lat + Dlat / 20.0,
-                                   Dlat/50.0)
+                tick_lats = np.arange(lat - Dlat / 20.0,
+                                      lat + Dlat / 20.0,
+                                      Dlat / 50.0)
                 for lon in min_lons:
                     lonlats = [(lon, x) for x in tick_lats]
                     tmpshape.points = lonlats
@@ -1158,7 +1154,7 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
 
     x, y = prj(lons, lats)
  
-    #Handle out of bounds
+    # Handle out of bounds
     i = 0
     segments = []
     if 1e30 in x or 1e30 in y:
