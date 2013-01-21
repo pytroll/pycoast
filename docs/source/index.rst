@@ -185,6 +185,25 @@ and for AGG:
 
 Note the difference in the optional font argument for PIL and AGG. With AGG the font argument is mandatory unless the keyword argument :attr:`write_text=False` is used.
 
+From v0.5.0 the graticule is also usable for glob projections:
+
+    >>> from PIL import Image
+    >>> from pycoast import ContourWriterAGG
+    >>> geos_img = Image.open(os.path.join(os.path.dirname(__file__), 
+    >>>                       'grid_geos_agg.png'))
+    >>> geos_data = np.array(geos_img)  
+    >>> img = Image.new('RGB', (425, 425))
+    >>> proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+    >>> area_extent = (-5570248.4773392612, -5567248.074173444, 5567248.074173444, 5570248.4773392612)
+    >>> area_def = (proj4_string, area_extent)
+    >>> cw = ContourWriterAGG(gshhs_root_dir)
+    >>> cw.add_coastlines(img, area_def, resolution='l')
+    >>> cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue', 
+    ... outline='blue', minor_outline='blue', write_text=False)
+    >>> img.show()
+
+.. image:: images/grid_geos_agg.png
+
 Tip: If the adding graticule with AGG fails with something like:
 
 .. code-block:: bash
@@ -198,15 +217,8 @@ make sure the FREETYPE_ROOT in setup.py of aggdraw points to the correct locatio
 
 Testing
 -------
-In order to run the unittests the environment variable GSHHS_DATA_ROOT has to be defined pointing to your *GSHHS_DATA_ROOT*. E.g.:
 
-.. code-block:: bash
-    
-    $ export GSHHS_DATA_ROOT=/home/esn/data/gshhs
-
-or whatever matches your system and data location.
-
-Subsequently the tests can be run using nosetest:
+The tests can be run using nosetest:
 
 .. code-block:: bash
 

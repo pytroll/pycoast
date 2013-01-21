@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pycoast &mdash; pycoast 0.4.0 documentation</title>
+    <title>Pycoast &mdash; pycoast 0.5.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.4.0',
+        VERSION:     '0.5.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast 0.4.0 documentation" href="#" /> 
+    <link rel="top" title="pycoast 0.5.0 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +34,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="#">pycoast 0.4.0 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast 0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -201,6 +201,24 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 </div>
 <img alt="_images/euro_grid_agg.png" src="_images/euro_grid_agg.png" />
 <p>Note the difference in the optional font argument for PIL and AGG. With AGG the font argument is mandatory unless the keyword argument <tt class="xref py py-attr docutils literal"><span class="pre">write_text=False</span></tt> is used.</p>
+<p>From v0.5.0 the graticule is also usable for glob projections:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">geos_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                      <span class="s">&#39;grid_geos_agg.png&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">geos_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geos_img</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5570248.4773392612</span><span class="p">,</span> <span class="o">-</span><span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5570248.4773392612</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="n">gshhs_root_dir</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">),(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">),</span> <span class="n">fill</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">minor_outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">write_text</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/grid_geos_agg.png" src="_images/grid_geos_agg.png" />
 <p>Tip: If the adding graticule with AGG fails with something like:</p>
 <div class="highlight-bash"><div class="highlight"><pre>Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
     File <span class="s2">&quot;grid_demo_AGG.py&quot;</span>, line 13, in &lt;module&gt;
@@ -212,12 +230,7 @@ IOError: cannot load font <span class="o">(</span>no text renderer<span class="o
 </div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
-<p>In order to run the unittests the environment variable GSHHS_DATA_ROOT has to be defined pointing to your <em>GSHHS_DATA_ROOT</em>. E.g.:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">GSHHS_DATA_ROOT</span><span class="o">=</span>/home/esn/data/gshhs
-</pre></div>
-</div>
-<p>or whatever matches your system and data location.</p>
-<p>Subsequently the tests can be run using nosetest:</p>
+<p>The tests can be run using nosetest:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> &lt;pycoast_dir&gt;
 <span class="nv">$ </span>nosetests tests/
 </pre></div>
@@ -271,7 +284,7 @@ IOError: cannot load font <span class="o">(</span>no text renderer<span class="o
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="#">pycoast 0.4.0 documentation</a> &raquo;</li> 
+        <li><a href="#">pycoast 0.5.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
