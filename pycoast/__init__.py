@@ -99,9 +99,11 @@ class ContourWriterBase(object):
         # major lon lines
         round_lon_min = (lon_min-(lon_min%Dlon))
         maj_lons = np.arange(round_lon_min, lon_max, Dlon) 
+        maj_lons[maj_lons > 180] = maj_lons[maj_lons > 180] - 360
         
         # minor lon lines (ticks)
         min_lons = np.arange(round_lon_min, lon_max, dlon)  
+        min_lons[min_lons > 180] = min_lons[min_lons > 180] - 360
         
         # Get min_lons not in maj_lons
         min_lons = np.lib.arraysetops.setdiff1d(min_lons, maj_lons)

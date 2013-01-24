@@ -112,8 +112,7 @@ class TestPIL(TestPycoast):
                     
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
-    
-    @tmp    
+        
     def test_grid_geos(self):
         geos_img = Image.open(os.path.join(os.path.dirname(__file__), 'grid_geos.png'))
         geos_data = np.array(geos_img)  
@@ -147,6 +146,7 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
    
+    @tmp
     def test_dateline_cross(self):
         dl_img = Image.open(os.path.join(os.path.dirname(__file__), 
                             'dateline_cross.png'))
@@ -264,7 +264,6 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')
     
-    @tmp
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
         geos_img = Image.open(os.path.join(os.path.dirname(__file__), 
