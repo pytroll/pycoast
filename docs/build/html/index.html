@@ -55,11 +55,11 @@ Unzip the files to a data directory (hereafter called <em>GSHHS_DATA_ROOT</em>).
 The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <div class="highlight-python"><pre>.
 ├── GSHHS_shp
-│   ├── c
-│   ├── f
-│   ├── h
-│   ├── i
-│   └── l
+│   ├── c
+│   ├── f
+│   ├── h
+│   ├── i
+│   └── l
 └── WDBII_shp
     ├── c
     ├── f
@@ -166,7 +166,6 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <p>Pycoast can be used to add graticule to images. For PIL:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageFont</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">aggdraw</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
@@ -189,24 +188,22 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">3363403.31</span><span class="p">,</span><span class="o">-</span><span class="mf">2291879.85</span><span class="p">,</span><span class="mf">2630596.69</span><span class="p">,</span><span class="mf">2203620.1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">font</span> <span class="o">=</span> <span class="n">aggdraw</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="s">&quot;blue&quot;</span><span class="p">,</span> <span class="s">&quot;/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">font</span> <span class="o">=</span> <span class="n">aggdraw</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="s">&#39;/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                    <span class="n">opacity</span><span class="o">=</span><span class="mi">127</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;BMNG_clouds_201109181715_areaT2.png&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">),(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">),</span><span class="n">font</span><span class="p">,</span>
-<span class="gp">... </span>            <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span><span class="n">outline_opacity</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-<span class="gp">... </span>            <span class="n">minor_outline</span><span class="o">=</span><span class="s">&#39;lightblue&#39;</span><span class="p">,</span><span class="n">minor_outline_opacity</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">minor_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span><span class="n">outline_opacity</span><span class="o">=</span><span class="mi">175</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">minor_outline</span><span class="o">=</span><span class="s">&#39;lightblue&#39;</span><span class="p">,</span><span class="n">minor_outline_opacity</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span><span class="n">minor_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
 <span class="gp">... </span>            <span class="n">minor_is_tick</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <img alt="_images/euro_grid_agg.png" src="_images/euro_grid_agg.png" />
 <p>Note the difference in the optional font argument for PIL and AGG. With AGG the font argument is mandatory unless the keyword argument <tt class="xref py py-attr docutils literal"><span class="pre">write_text=False</span></tt> is used.</p>
-<p>From v0.5.0 the graticule is also usable for glob projections:</p>
+<p>From v0.5.0 the graticule is also usable for globe projections:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">geos_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
-<span class="gp">&gt;&gt;&gt; </span>                      <span class="s">&#39;grid_geos_agg.png&#39;</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">geos_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geos_img</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5570248.4773392612</span><span class="p">,</span> <span class="o">-</span><span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5567248.074173444</span><span class="p">,</span> <span class="mf">5570248.4773392612</span><span class="p">)</span>
@@ -219,6 +216,28 @@ The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
 </pre></div>
 </div>
 <img alt="_images/grid_geos_agg.png" src="_images/grid_geos_agg.png" />
+<p>The lon and lat labeling is shown where the lines intersect the image border.
+By default the lon intersections with top and bottom and the lat intersections with left and right border are displayed .
+The placement behaviour can be controlled with the <tt class="xref py py-attr docutils literal"><span class="pre">lon_placement</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">lat_placement</span></tt> keyword variables.
+The placement specifier is a string containing the desired placement where &#8216;t&#8217; is top, &#8216;b&#8217; bottom, &#8216;l&#8217; left and &#8216;r&#8217; right.
+E.g. <tt class="xref py py-attr docutils literal"><span class="pre">lon_placement='tl'</span></tt> will make the lon labels display at the top and left border.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriterAGG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">aggdraw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">425</span><span class="p">,</span> <span class="mi">425</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5326849.0625</span><span class="p">,</span> <span class="o">-</span><span class="mf">5326849.0625</span><span class="p">,</span> <span class="mf">5326849.0625</span><span class="p">,</span> <span class="mf">5326849.0625</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="s">&#39;/home/esn/data/gshhs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">font</span> <span class="o">=</span> <span class="n">aggdraw</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="s">&#39;/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_grid</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">),(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">),</span> <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">minor_outline</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">lon_placement</span><span class="o">=</span><span class="s">&#39;tblr&#39;</span><span class="p">,</span> <span class="n">lat_placement</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/nh_grid_coarse_agg.png" src="_images/nh_grid_coarse_agg.png" />
 <p>Tip: If the adding graticule with AGG fails with something like:</p>
 <div class="highlight-bash"><div class="highlight"><pre>Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
     File <span class="s2">&quot;grid_demo_AGG.py&quot;</span>, line 13, in &lt;module&gt;

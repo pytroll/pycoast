@@ -93,7 +93,6 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
     
-    
     def test_grid(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
                               'grid_europe.png'))
@@ -109,7 +108,7 @@ class TestPIL(TestPycoast):
         font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
                     outline='blue', minor_outline='blue')
-                    
+                  
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
         
@@ -146,7 +145,6 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
    
-    @tmp
     def test_dateline_cross(self):
         dl_img = Image.open(os.path.join(os.path.dirname(__file__), 
                             'dateline_cross.png'))
@@ -162,7 +160,8 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
-                    outline='blue', minor_outline='blue')
+                    outline='blue', minor_outline='blue',
+                    lon_placement='b', lat_placement='lr')
         
         res = np.array(img)
         self.failUnless(np.array_equal(dl_data, res), 'Writing of dateline crossing data failed')
@@ -182,11 +181,31 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
-                    outline='blue', minor_outline='blue')
+                    outline='blue', minor_outline='blue',
+                    lon_placement='b', lat_placement='lr')
         
         res = np.array(img)
         self.failUnless(np.array_equal(dl_data, res), 'Writing of dateline boundary crossing data failed')
 
+    def test_grid_nh(self):
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                              'grid_nh.png'))
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriter(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 10)
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
+                    outline='blue', minor_outline='blue',
+                    lon_placement='tblr', lat_placement='')
+        
+        res = np.array(img)
+        self.failUnless(np.array_equal(grid_data, res), 'Writing of nh grid failed')
 
 class TestPILAGG(TestPycoast):        
 
@@ -264,6 +283,30 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')
     
+    def test_grid_agg_txt(self):
+        from pycoast import ContourWriterAGG
+        import aggdraw
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                              'grid_europe_agg_txt.png'))
+        grid_data = np.array(grid_img)
+        
+        img = Image.new('RGB', (640, 480))
+        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+        
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=16, opacity=200)
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font,
+                    outline='blue',outline_opacity=255,width=1.0, 
+                    minor_outline='lightblue',minor_outline_opacity=255,minor_width=0.5,
+                    minor_is_tick=False)
+        
+        res = np.array(img)
+        self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')    
+    
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
         geos_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -300,3 +343,25 @@ class TestPILAGG(TestPycoast):
         img = Image.open(grid_file)
         res = np.array(img)
         self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')
+        
+    def test_grid_nh(self):
+        from pycoast import ContourWriterAGG
+        import aggdraw
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                              'grid_nh_agg.png'))
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=10)
+        cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
+                    outline='blue', minor_outline='blue',
+                    lon_placement='tblr', lat_placement='')
+        
+        res = np.array(img)
+        self.failUnless(np.array_equal(grid_data, res), 'Writing of nh grid failed for AGG')
