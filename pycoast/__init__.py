@@ -46,10 +46,9 @@ class ContourWriterBase(object):
     def __init__(self, db_root_path):
         self.db_root_path = db_root_path
 
-    def _draw_text(self, draw, position, placement_type, txt, font, align='cc', **kwargs):
+    def _draw_text(self, draw, position, txt, font, align='cc', **kwargs):
         """Draw text with agg module
         """
-
         txt_width, txt_height = draw.textsize(txt, font)
         x_pos, y_pos = position
         ax, ay = align.lower()
@@ -63,10 +62,7 @@ class ContourWriterBase(object):
         elif ay == 'c':
             y_pos = y_pos - txt_width / 2
         
-        placement_def = kwargs[placement_type].lower()
-        if ax in placement_def or ay in placement_def: 
-            self._engine_text_draw(draw, (x_pos, y_pos), txt, font, **kwargs)
-        #draw.text((x_pos, y_pos), txt, font=font, fill=kwargs['fill'])
+        self._engine_text_draw(draw, (x_pos, y_pos), txt, font, **kwargs)
 
     def _engine_text_draw(self, draw, (x_pos, y_pos), txt, font, **kwargs):
         raise NotImplementedError('Text drawing undefined for render engine')
@@ -74,10 +70,13 @@ class ContourWriterBase(object):
     def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
         """Draw text with default PIL module
         """
+        placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
-            # xy[1] is required alignment 'R,L,T,B'...
-            self._draw_text(draw, xy[0], linetype, txt, font, align=xy[1], **kwargs)
+            # xy[1] is required alignment e.g. 'tl','lr','lc','cc'...
+            ax, ay = xy[1].lower()
+            if ax in placement_def or ay in placement_def: 
+                self._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
 
     def _find_line_intercepts(self, xys, size, margins):
         """Finds intercepts of poly-line xys with image boundaries

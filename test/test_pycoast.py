@@ -27,6 +27,41 @@ def tmp(f):
     f.tmp = True
     return f
 
+def fft_proj_rms(a1, a2):
+    """Compute the RMS of differences between FFT vectors of a1
+    and projection of FFT vectors of a2.
+    This metric is sensitive to large scale changes and image noise but
+    insensitive to small rendering differences.
+    """
+    
+    ms = 0 
+    
+    for i in range(3):
+        fr1 = np.fft.fft2(a1[:, :, i])
+        fr2 = np.fft.fft2(a2[:, :, i])
+        
+        ps1 = np.log10(fr1 * fr1.conj()).real
+        ps2 = np.log10(fr2 * fr2.conj()).real
+        
+        p1 = np.arctan2(fr1.imag, fr1.real)
+        p2 = np.arctan2(fr2.imag, fr2.real)
+        
+        theta = p2 - p1
+        l = ps2 * np.cos(theta)
+        ms += ((l - ps1)**2).sum() / float(ps1.size)
+        
+    rms = np.sqrt(ms)        
+    
+    return rms
+    
+def fft_metric(data1, data2, max_value=0.1):
+    """Execute FFT metric
+    """
+    
+    rms = fft_proj_rms(data1, data2)
+    return rms <= max_value
+    
+
 gshhs_root_dir = os.path.join(os.path.dirname(__file__), 'test_data', 'gshhs')
 test_file = 'test_image.png'
 grid_file = 'test_grid.png'
@@ -59,7 +94,7 @@ class TestPIL(TestPycoast):
         cw.add_borders(img, area_def, outline=(255, 0, 0))
         
         res = np.array(img)
-        self.failUnless(np.array_equal(euro_data, res), 'Writing of contours failed')
+        self.failUnless(fft_metric(euro_data, res), 'Writing of contours failed')
         
     def test_europe_file(self):
         euro_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -76,7 +111,7 @@ class TestPIL(TestPycoast):
         
         img = Image.open(test_file)
         res = np.array(img)
-        self.failUnless(np.array_equal(euro_data, res), 'Writing of contours failed')
+        self.failUnless(fft_metric(euro_data, res), 'Writing of contours failed')
 
     def test_geos(self):
         geos_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -91,7 +126,7 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l')
         
         res = np.array(img)
-        self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
+        self.failUnless(fft_metric(geos_data, res), 'Writing of geos contours failed')
     
     def test_grid(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -110,7 +145,7 @@ class TestPIL(TestPycoast):
                     outline='blue', minor_outline='blue')
                   
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
+        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed')
         
     def test_grid_geos(self):
         geos_img = Image.open(os.path.join(os.path.dirname(__file__), 'grid_geos.png'))
@@ -124,7 +159,7 @@ class TestPIL(TestPycoast):
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue', outline='blue', minor_outline='blue', write_text=False)
         
         res = np.array(img)
-        self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
+        self.failUnless(fft_metric(geos_data, res), 'Writing of geos contours failed')
                            
     def test_grid_file(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -143,7 +178,7 @@ class TestPIL(TestPycoast):
                     
         img = Image.open(grid_file)
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed')
+        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed')
    
     def test_dateline_cross(self):
         dl_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -164,7 +199,7 @@ class TestPIL(TestPycoast):
                     lon_placement='b', lat_placement='lr')
         
         res = np.array(img)
-        self.failUnless(np.array_equal(dl_data, res), 'Writing of dateline crossing data failed')
+        self.failUnless(fft_metric(dl_data, res), 'Writing of dateline crossing data failed')
         
     def test_dateline_boundary_cross(self):
         dl_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -185,7 +220,7 @@ class TestPIL(TestPycoast):
                     lon_placement='b', lat_placement='lr')
         
         res = np.array(img)
-        self.failUnless(np.array_equal(dl_data, res), 'Writing of dateline boundary crossing data failed')
+        self.failUnless(fft_metric(dl_data, res), 'Writing of dateline boundary crossing data failed')
 
     def test_grid_nh(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -205,7 +240,7 @@ class TestPIL(TestPycoast):
                     lon_placement='tblr', lat_placement='')
         
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of nh grid failed')
+        self.failUnless(fft_metric(grid_data, res), 'Writing of nh grid failed')
 
 class TestPILAGG(TestPycoast):        
 
@@ -224,7 +259,7 @@ class TestPILAGG(TestPycoast):
         cw.add_rivers(img, area_def, level=5, outline='blue', width=0.5, outline_opacity=127)
         cw.add_borders(img, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
         res = np.array(img)
-        self.failUnless(np.array_equal(euro_data, res), 'Writing of contours failed for AGG')
+        self.failUnless(fft_metric(euro_data, res), 'Writing of contours failed for AGG')
         
     def test_europe_agg_file(self):
         from pycoast import ContourWriterAGG
@@ -244,7 +279,7 @@ class TestPILAGG(TestPycoast):
                                
         img = Image.open(test_file)
         res = np.array(img)
-        self.failUnless(np.array_equal(euro_data, res), 'Writing of contours failed for AGG')
+        self.failUnless(fft_metric(euro_data, res), 'Writing of contours failed for AGG')
 
 
     def test_geos_agg(self):
@@ -260,7 +295,7 @@ class TestPILAGG(TestPycoast):
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, (proj4_string, area_extent), resolution='l', width=0.5)
         res = np.array(img)
-        self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed for AGG')
+        self.failUnless(fft_metric(geos_data, res), 'Writing of geos contours failed for AGG')
       
     def test_grid_agg(self):
         from pycoast import ContourWriterAGG
@@ -281,7 +316,7 @@ class TestPILAGG(TestPycoast):
                     minor_outline='lightblue',minor_outline_opacity=255,minor_width=0.5,
                     minor_is_tick=False)
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')
+        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed for AGG')
     
     def test_grid_agg_txt(self):
         from pycoast import ContourWriterAGG
@@ -305,7 +340,7 @@ class TestPILAGG(TestPycoast):
                     minor_is_tick=False)
         
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')    
+        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed for AGG')    
     
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
@@ -321,7 +356,7 @@ class TestPILAGG(TestPycoast):
         cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue', outline='blue', minor_outline='blue', write_text=False)
         
         res = np.array(img)
-        self.failUnless(np.array_equal(geos_data, res), 'Writing of geos contours failed')
+        self.failUnless(fft_metric(geos_data, res), 'Writing of geos contours failed')
                            
     def test_grid_agg_file(self):
         from pycoast import ContourWriterAGG
@@ -342,7 +377,7 @@ class TestPILAGG(TestPycoast):
                     minor_is_tick=False)
         img = Image.open(grid_file)
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of grid failed for AGG')
+        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed for AGG')
         
     def test_grid_nh(self):
         from pycoast import ContourWriterAGG
@@ -364,4 +399,4 @@ class TestPILAGG(TestPycoast):
                     lon_placement='tblr', lat_placement='')
         
         res = np.array(img)
-        self.failUnless(np.array_equal(grid_data, res), 'Writing of nh grid failed for AGG')
+        self.failUnless(fft_metric(grid_data, res), 'Writing of nh grid failed for AGG')
