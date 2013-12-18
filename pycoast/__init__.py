@@ -467,6 +467,7 @@ class ContourWriterBase(object):
         # create dummpy shapelike object
         shape = type("", (), {})()
         shape.points = lonlats
+        shape.parts = [0]
         shape.bbox   = self._find_bounding_box( lonlats )
         self._add_shapes(image, area_def, "line", [shape], **kwargs)
 
@@ -476,6 +477,7 @@ class ContourWriterBase(object):
         # create dummpy shapelike object
         shape = type("", (), {})()
         shape.points = lonlats
+        shape.parts = [0]
         print lonlats
         shape.bbox   = self._find_bounding_box( lonlats )
         self._add_shapes(image, area_def, "polygon", [shape], **kwargs)
