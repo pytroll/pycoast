@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-#Copyright (C) 2011, 2012  Esben S. Nielsen
+#Copyright (C) 2011, 2012, 2013  Esben S. Nielsen
 #                    2012  Hróbjartur Þorsteinsson
 #
 #This program is free software: you can redistribute it and/or modify
@@ -439,15 +439,20 @@ class ContourWriterBase(object):
         lats = [ y for (x,y) in xys ]
         return [ min(lons), min(lats), max(lons), max(lats) ]
 
-    def _add_shapefile_shapes(self,image,area_def,filename,feature_type=None,**kwargs):
-        """ for drawing all shapes (polygon/poly-lines) from a custom shape file onto a PIL image
+    def _add_shapefile_shapes(self, image, area_def, filename, 
+                              feature_type=None, **kwargs):
+        """ for drawing all shapes (polygon/poly-lines) from a custom shape
+        file onto a PIL image
         """
         sf = shapefile.Reader(filename)
         for i in range(len(sf.shapes())):
-            self._add_shapefile_shape(image,area_def,filename,i,feature_type,**kwargs)
+            self._add_shapefile_shape(image, area_def, filename, i, 
+                                      feature_type, **kwargs)
 
-    def _add_shapefile_shape(self,image,area_def,filename,shape_id,feature_type=None,**kwargs):
-        """ for drawing a single shape (polygon/poly-line) definiton with id, shape_id from a custom shape file onto a PIL image
+    def _add_shapefile_shape(self, image, area_def, filename, shape_id,
+                             feature_type=None, **kwargs):
+        """ for drawing a single shape (polygon/poly-line) definiton with id,
+        shape_id from a custom shape file onto a PIL image
         """
         sf = shapefile.Reader(filename)
         shape=sf.shapes()[shape_id]
@@ -459,10 +464,11 @@ class ContourWriterBase(object):
             else:
                 raise ShapeFileError("Unsupported shape type: " + str(shape.shapeType))
 
-        self._add_shapes(image, area_def,feature_type,[shape], **kwargs)
+        self._add_shapes(image, area_def, feature_type, [shape], **kwargs)
 
-    def _add_line(self,image,area_def,lonlats,**kwargs):
-        """ For drawing a custom polyline. Lon and lat coordinates given by the list lonlat.
+    def _add_line(self, image, area_def, lonlats, **kwargs):
+        """ For drawing a custom polyline. Lon and lat coordinates given by the
+        list lonlat.
         """
         # create dummpy shapelike object
         shape = type("", (), {})()
@@ -471,8 +477,9 @@ class ContourWriterBase(object):
         shape.bbox   = self._find_bounding_box( lonlats )
         self._add_shapes(image, area_def, "line", [shape], **kwargs)
 
-    def _add_polygon(self,image,area_def,lonlats,**kwargs):
-        """ For drawing a custom polygon. Lon and lat coordinates given by the list lonlat.
+    def _add_polygon(self, image, area_def, lonlats, **kwargs):
+        """ For drawing a custom polygon. Lon and lat coordinates given by the
+        list lonlat.
         """
         # create dummpy shapelike object
         shape = type("", (), {})()
@@ -484,8 +491,9 @@ class ContourWriterBase(object):
 
     def _add_shapes(self, image, area_def, feature_type, shapes,
                     x_offset=0, y_offset=0, **kwargs):
-        """ For drawing shape objects to PIL image - better code reuse of drawing shapes 
-        - should be used in _add_feature and other methods of adding shapes including manually.
+        """ For drawing shape objects to PIL image - better code reuse of
+        drawing shapes - should be used in _add_feature and other methods of
+        adding shapes including manually.
         """
         try:
             proj4_string = area_def.proj4_string
@@ -1049,12 +1057,15 @@ class ContourWriterAGG(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_shapefile_shapes(image=image, area_def=area_def, filename=filename, feature_type=feature_type,
-                                  x_offset=x_offset, y_offset=y_offset, 
-                                  fill=fill, fill_opacity=fill_opacity, outline=outline, width=width,
-                                  outline_opacity=outline_opacity)
+        self._add_shapefile_shapes(image=image, area_def=area_def, 
+                                   filename=filename, feature_type=feature_type,
+                                   x_offset=x_offset, y_offset=y_offset, 
+                                   fill=fill, fill_opacity=fill_opacity, 
+                                   outline=outline, width=width,
+                                   outline_opacity=outline_opacity)
 
-    def add_shapefile_shape(self, image, area_def, filename, shape_id, feature_type=None,
+    def add_shapefile_shape(self, image, area_def, filename, shape_id, 
+                            feature_type=None,
                             fill=None, fill_opacity=255, outline='white', width=1,
                             outline_opacity=255, x_offset=0, y_offset=0):
         """Add a single shape file shape from an ESRI shapefile.
@@ -1090,10 +1101,13 @@ class ContourWriterAGG(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_shapefile_shape(image=image, area_def=area_def, filename=filename, shape_id=shape_id, 
+        self._add_shapefile_shape(image=image, 
+                                  area_def=area_def, filename=filename, 
+                                  shape_id=shape_id, 
                                   feature_type=feature_type,
                                   x_offset=x_offset, y_offset=y_offset, 
-                                  fill=fill, fill_opacity=fill_opacity, outline=outline, width=width,
+                                  fill=fill, fill_opacity=fill_opacity, 
+                                  outline=outline, width=width,
                                   outline_opacity=outline_opacity)
 
     def add_line(self, image, area_def, lonlats, 

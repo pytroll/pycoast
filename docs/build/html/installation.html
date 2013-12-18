@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Pycoast &mdash; pycoast v0.5.2 documentation</title>
+    <title>Installation &mdash; pycoast v0.5.2 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -22,8 +22,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast v0.5.2 documentation" href="#" />
-    <link rel="next" title="Installation" href="installation.html" /> 
+    <link rel="top" title="pycoast v0.5.2 documentation" href="index.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="Pycoast" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,9 +37,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="usage.html" title="Usage"
              accesskey="N">next</a> |</li>
-        <li><a href="#">pycoast v0.5.2 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="index.html" title="Pycoast"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pycoast v0.5.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -47,23 +51,28 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="pycoast">
-<h1>Pycoast<a class="headerlink" href="#pycoast" title="Permalink to this headline">¶</a></h1>
-<p>Pycoast is a Python package to add coastlines, borders and rivers to raster
-images using data from the GSHHS and WDBII datasets</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="high_quality_contours.html">High quality contours using AGG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graticule.html">Adding graticule to images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="test.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">The <tt class="docutils literal"><span class="pre">pycoast</span></tt> API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-pycoast">Pycoast</a></li>
-</ul>
-</li>
-</ul>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Pycoast depends on <a class="reference external" href="http://code.google.com/p/pyshp/">pyshp</a> and <a class="reference external" href="http://www.pythonware.com/products/pil/">PIL</a>.</p>
+<p>Install pycoast and dependencies.</p>
+<p>Download the zipped GSHHS and WDBII Shapefiles from <a class="reference external" href="http://www.soest.hawaii.edu/pwessel/gshhs/index.html">SOEST</a>.
+Unzip the files to a data directory (hereafter called <em>GSHHS_DATA_ROOT</em>).
+The structure of <em>GSHHS_DATA_ROOT</em> should now be:</p>
+<div class="highlight-python"><pre>.
+├── GSHHS_shp
+│   ├── c
+│   ├── f
+│   ├── h
+│   ├── i
+│   └── l
+└── WDBII_shp
+    ├── c
+    ├── f
+    ├── h
+    ├── i
+    └── l</pre>
 </div>
+<p>Where each dir on the lowest level contains Shapefiles like <em>GSHHS_shp/c/GSHHS_c_L1.shp</em></p>
 </div>
 
 
@@ -72,12 +81,15 @@ images using data from the GSHHS and WDBII datasets</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Pycoast</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="next chapter">Installation</a></p>
+  <p class="topless"><a href="usage.html"
+                        title="next chapter">Usage</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/index.txt"
+    <li><a href="_sources/installation.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -107,9 +119,12 @@ images using data from the GSHHS and WDBII datasets</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="usage.html" title="Usage"
              >next</a> |</li>
-        <li><a href="#">pycoast v0.5.2 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="index.html" title="Pycoast"
+             >previous</a> |</li>
+        <li><a href="index.html">pycoast v0.5.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
