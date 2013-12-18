@@ -9,6 +9,8 @@ Pycoast
 Pycoast is a Python package to add coastlines, borders and rivers to raster
 images using data from the GSHHS and WDBII datasets
 
+.. image:: images/euro_coast_agg.png
+
 .. toctree::
    :maxdepth: 2
 
