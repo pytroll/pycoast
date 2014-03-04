@@ -20,7 +20,7 @@
 import os
 import numpy as np
 from PIL import Image, ImageFont
-import ImageDraw
+from PIL import ImageDraw
 import shapefile
 import pyproj
 
