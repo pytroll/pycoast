@@ -1,6 +1,6 @@
 #pycoast, Writing of coastlines, borders and rivers to images in Python
 # 
-#Copyright (C) 2011  Esben S. Nielsen
+#Copyright (C) 2011, 2014  Esben S. Nielsen
 #
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -21,13 +21,20 @@ import imp
 
 version = imp.load_source('pycoast.version', 'pycoast/version.py')
 
+requires = ["pyshp"]
+
+try:
+    from PIL import Image
+except ImportError:
+    requires.append("pillow")
+
 setup(name='pycoast',
       version=version.__version__,
       description='Writing of coastlines, borders and rivers to images in Python',
       author='Esben S. Nielsen',
       author_email='esn@dmi.dk',
       packages = ['pycoast'],      
-      install_requires=['PIL', 'pyshp'], 
+      install_requires=requires,
       zip_safe = False,
       classifiers=[
       'Development Status :: 5 - Production/Stable',
