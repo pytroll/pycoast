@@ -485,7 +485,6 @@ class ContourWriterBase(object):
         shape = type("", (), {})()
         shape.points = lonlats
         shape.parts = [0]
-        print lonlats
         shape.bbox   = self._find_bounding_box( lonlats )
         self._add_shapes(image, area_def, "polygon", [shape], **kwargs)
 
