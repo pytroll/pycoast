@@ -719,6 +719,140 @@ class ContourWriter(ContourWriterBase):
 
         draw.line(coordinates, fill=kwargs['outline'])
 
+    def add_shapefile_shapes(self, image, area_def, filename, feature_type=None,
+                            fill=None, outline='white', width=1,
+                            x_offset=0, y_offset=0):
+        """Add shape file shapes from an ESRI shapefile.
+        Note: Currently only supports lon-lat formatted coordinates.
+
+        :Parameters:
+        image : object
+            PIL image object
+        area_def : list [proj4_string, area_extent]
+          | proj4_string : str
+          |     Projection of area as Proj.4 string
+          | area_extent : list
+          |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        filename : str
+            Path to ESRI shape file
+        feature_type : 'polygon' or 'line', 
+            only to override the shape type defined in shapefile, optional
+        fill : str or (R, G, B), optional
+            Polygon fill color
+        fill_opacity : int, optional {0; 255}
+            Opacity of polygon fill
+        outline : str or (R, G, B), optional
+            line color
+        width : float, optional
+            line width
+        outline_opacity : int, optional {0; 255}
+            Opacity of lines
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
+        """
+        self._add_shapefile_shapes(image=image, area_def=area_def, 
+                                   filename=filename, feature_type=feature_type,
+                                   x_offset=x_offset, y_offset=y_offset, 
+                                   fill=fill, 
+                                   outline=outline, width=width)
+
+    def add_shapefile_shape(self, image, area_def, filename, shape_id, 
+                            feature_type=None,
+                            fill=None, outline='white', width=1,
+                            x_offset=0, y_offset=0):
+        """Add a single shape file shape from an ESRI shapefile.
+        Note: To add all shapes in file use the 'add_shape_file_shapes' routine.
+        Note: Currently only supports lon-lat formatted coordinates.
+
+        :Parameters:
+        image : object
+            PIL image object
+        area_def : list [proj4_string, area_extent]
+          | proj4_string : str
+          |     Projection of area as Proj.4 string
+          | area_extent : list
+          |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        filename : str
+            Path to ESRI shape file
+        shape_id : int
+            integer id of shape in shape file {0; ... }
+        feature_type : 'polygon' or 'line', 
+            only to override the shape type defined in shapefile, optional
+        fill : str or (R, G, B), optional
+            Polygon fill color
+        outline : str or (R, G, B), optional
+            line color
+        width : float, optional
+            line width
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
+        """
+        self._add_shapefile_shape(image=image, 
+                                  area_def=area_def, filename=filename, 
+                                  shape_id=shape_id, 
+                                  feature_type=feature_type,
+                                  x_offset=x_offset, y_offset=y_offset, 
+                                  fill=fill, 
+                                  outline=outline, width=width)
+
+    def add_line(self, image, area_def, lonlats, 
+                 fill=None, outline='white', width=1, x_offset=0, y_offset=0):
+        """Add a user defined poly-line from a list of (lon,lat) coordinates.
+
+        :Parameters:
+        image : object
+            PIL image object
+        area_def : list [proj4_string, area_extent]
+          | proj4_string : str
+          |     Projection of area as Proj.4 string
+          | area_extent : list
+          |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        lonlats : list of lon lat pairs
+            e.g. [(10,20),(20,30),...,(20,20)]
+        outline : str or (R, G, B), optional
+            line color
+        width : float, optional
+            line width
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
+        """
+        self._add_line(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset, 
+                       fill=fill, outline=outline, width=width)
+
+    def add_polygon(self, image, area_def, lonlats, 
+                 fill=None, outline='white', width=1, x_offset=0, y_offset=0):
+        """Add a user defined polygon from a list of (lon,lat) coordinates.
+
+        :Parameters:
+        image : object
+            PIL image object
+        area_def : list [proj4_string, area_extent]
+          | proj4_string : str
+          |     Projection of area as Proj.4 string
+          | area_extent : list
+          |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+        lonlats : list of lon lat pairs
+            e.g. [(10,20),(20,30),...,(20,20)]
+        fill : str or (R, G, B), optional
+            Polygon fill color
+        outline : str or (R, G, B), optional
+            line color
+        width : float, optional
+            line width
+        x_offset : float, optional
+            Pixel offset in x direction
+        y_offset : float, optional
+            Pixel offset in y direction
+        """
+        self._add_polygon(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset, 
+                       fill=fill, outline=outline, width=width)
+
     def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat),
                  font=None, write_text=True, fill=None, outline='white',
                  minor_outline='white', minor_is_tick=True, 
