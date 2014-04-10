@@ -3,13 +3,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The pycoast API &mdash; pycoast v0.5.2 documentation</title>
+    <title>The pycoast API &mdash; pycoast 0.5.2 documentation</title>
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
@@ -22,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast v0.5.2 documentation" href="index.html" />
+    <link rel="top" title="pycoast 0.5.2 documentation" href="index.html" />
     <link rel="prev" title="Testing" href="test.html" /> 
   </head>
   <body>
@@ -33,12 +36,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="test.html" title="Testing"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pycoast v0.5.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pycoast 0.5.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,652 +48,9 @@
           <div class="body">
             
   <div class="section" id="the-pycoast-api">
-<h1>The <a class="reference internal" href="#module-pycoast" title="pycoast"><tt class="xref py py-mod docutils literal"><span class="pre">pycoast</span></tt></a> API<a class="headerlink" href="#the-pycoast-api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-pycoast">
-<span id="pycoast"></span><h2>Pycoast<a class="headerlink" href="#module-pycoast" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pycoast.ContourWriter">
-<em class="property">class </em><tt class="descclassname">pycoast.</tt><tt class="descname">ContourWriter</tt><big>(</big><em>db_root_path</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds countours from GSHHS and WDBII to images</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>db_root_path <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Path to root dir of GSHHS and WDBII shapefiles</dd>
-</dl>
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_borders">
-<tt class="descname">add_borders</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_borders" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add borders to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Border color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_borders_to_file">
-<tt class="descname">add_borders_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_borders_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add borders to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>Image file</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Border color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_coastlines">
-<tt class="descname">add_coastlines</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>fill=None</em>, <em>outline='white'</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_coastlines" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add coastlines to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>fill <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Land color</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_coastlines_to_file">
-<tt class="descname">add_coastlines_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>fill=None</em>, <em>outline='white'</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_coastlines_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add coastlines to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Image file</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>fill <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B)</span></dt>
-<dd>Land color</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_grid">
-<tt class="descname">add_grid</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>(Dlon</em>, <em>Dlat)</em>, <em>(dlon</em>, <em>dlat)</em>, <em>font=None</em>, <em>write_text=True</em>, <em>fill=None</em>, <em>outline='white'</em>, <em>minor_outline='white'</em>, <em>minor_is_tick=True</em>, <em>lon_placement='tb'</em>, <em>lat_placement='lr'</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a lon-lat grid to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>(Dlon,Dlat): (float,float)</dt>
-<dd>Major grid line separation</dd>
-<dt>(dlon,dlat): (float,float)</dt>
-<dd>Minor grid line separation</dd>
-<dt>font: PIL ImageFont object, optional</dt>
-<dd>Font for major line markings</dd>
-<dt>write_text <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Deterine if line markings are enabled</dd>
-<dt>fill <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Text color</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Major line color</dd>
-<dt>minor_outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Minor line/tick color</dd>
-<dt>minor_is_tick <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Use tick minor line style (True) or full minor line style (False)</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_grid_to_file">
-<tt class="descname">add_grid_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>(Dlon</em>, <em>Dlat)</em>, <em>(dlon</em>, <em>dlat)</em>, <em>font=None</em>, <em>write_text=True</em>, <em>fill=None</em>, <em>outline='white'</em>, <em>minor_outline='white'</em>, <em>minor_is_tick=True</em>, <em>lon_placement='tb'</em>, <em>lat_placement='lr'</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_grid_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a lon-lat grid to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>(Dlon,Dlat): (float,float)</dt>
-<dd>Major grid line separation</dd>
-<dt>(dlon,dlat): (float,float)</dt>
-<dd>Minor grid line separation</dd>
-<dt>font: PIL ImageFont object, optional</dt>
-<dd>Font for major line markings</dd>
-<dt>write_text <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Deterine if line markings are enabled</dd>
-<dt>fill <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Text color</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Major line color</dd>
-<dt>minor_outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Minor line/tick color</dd>
-<dt>minor_is_tick <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Use tick minor line style (True) or full minor line style (False)</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_rivers">
-<tt class="descname">add_rivers</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_rivers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add rivers to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>River color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriter.add_rivers_to_file">
-<tt class="descname">add_rivers_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriter.add_rivers_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add rivers to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>Image file</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>River color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pycoast.ContourWriterAGG">
-<em class="property">class </em><tt class="descclassname">pycoast.</tt><tt class="descname">ContourWriterAGG</tt><big>(</big><em>db_root_path</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Adds countours from GSHHS and WDBII to images</dt>
-<dd>using the AGG engine for high quality images.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>db_root_path <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Path to root dir of GSHHS and WDBII shapefiles</dd>
-</dl>
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_borders">
-<tt class="descname">add_borders</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_borders" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add borders to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Border color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Width of coastline</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_borders_to_file">
-<tt class="descname">add_borders_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_borders_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add borders to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>Image file</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Border color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Width of coastline</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_coastlines">
-<tt class="descname">add_coastlines</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>fill=None</em>, <em>fill_opacity=255</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_coastlines" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add coastlines to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>fill <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Land color</dd>
-<dt>fill_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of land color</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Coastline color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Width of coastline</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_coastlines_to_file">
-<tt class="descname">add_coastlines_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>fill=None</em>, <em>fill_opacity=255</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_coastlines_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add coastlines to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Image file</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>fill <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Land color</dd>
-<dt>fill_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of land color</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Coastline color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Width of coastline</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_grid">
-<tt class="descname">add_grid</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>(Dlon</em>, <em>Dlat)</em>, <em>(dlon</em>, <em>dlat)</em>, <em>font=None</em>, <em>write_text=True</em>, <em>fill=None</em>, <em>fill_opacity=255</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>minor_outline='white'</em>, <em>minor_width=0.5</em>, <em>minor_outline_opacity=255</em>, <em>minor_is_tick=True</em>, <em>lon_placement='tb'</em>, <em>lat_placement='lr'</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a lon-lat grid to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>(Dlon,Dlat): (float,float)</dt>
-<dd>Major grid line separation</dd>
-<dt>(dlon,dlat): (float,float)</dt>
-<dd>Minor grid line separation</dd>
-<dt>font: Aggdraw Font object, optional</dt>
-<dd>Font for major line markings</dd>
-<dt>write_text <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Deterine if line markings are enabled</dd>
-<dt>fill_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of text</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Major line color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Major line width</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of major lines</dd>
-<dt>minor_outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Minor line/tick color</dd>
-<dt>minor_width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Minor line width</dd>
-<dt>minor_outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of minor lines/ticks</dd>
-<dt>minor_is_tick <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Use tick minor line style (True) or full minor line style (False)</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_grid_to_file">
-<tt class="descname">add_grid_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>(Dlon</em>, <em>Dlat)</em>, <em>(dlon</em>, <em>dlat)</em>, <em>font=None</em>, <em>write_text=True</em>, <em>fill=None</em>, <em>fill_opacity=255</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>minor_outline='white'</em>, <em>minor_width=0.5</em>, <em>minor_outline_opacity=255</em>, <em>minor_is_tick=True</em>, <em>lon_placement='tb'</em>, <em>lat_placement='lr'</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_grid_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a lon-lat grid to an image</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>(Dlon,Dlat): (float,float)</dt>
-<dd>Major grid line separation</dd>
-<dt>(dlon,dlat): (float,float)</dt>
-<dd>Minor grid line separation</dd>
-<dt>font: Aggdraw Font object, optional</dt>
-<dd>Font for major line markings</dd>
-<dt>write_text <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Deterine if line markings are enabled</dd>
-<dt>fill_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of text</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Major line color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Major line width</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of major lines</dd>
-<dt>minor_outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>Minor line/tick color</dd>
-<dt>minor_width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Minor line width</dd>
-<dt>minor_outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of minor lines/ticks</dd>
-<dt>minor_is_tick <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Use tick minor line style (True) or full minor line style (False)</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_rivers">
-<tt class="descname">add_rivers</tt><big>(</big><em>image</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_rivers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add rivers to a PIL image object</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>PIL image object</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>River color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Width of coastline</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pycoast.ContourWriterAGG.add_rivers_to_file">
-<tt class="descname">add_rivers_to_file</tt><big>(</big><em>filename</em>, <em>area_def</em>, <em>resolution='c'</em>, <em>level=1</em>, <em>outline='white'</em>, <em>width=1</em>, <em>outline_opacity=255</em>, <em>x_offset=0</em>, <em>y_offset=0</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterAGG.add_rivers_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add rivers to an image file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
-<dd>Image file</dd>
-<dt>proj4_string <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Projection of area as Proj.4 string</dd>
-<dt>area_extent <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>Area extent as a list (LL_x, LL_y, UR_x, UR_y)</dd>
-<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">str, optional {&#8216;c&#8217;, &#8216;l&#8217;, &#8216;i&#8217;, &#8216;h&#8217;, &#8216;f&#8217;}</span></dt>
-<dd>Dataset resolution to use</dd>
-<dt>level <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}</span></dt>
-<dd>Detail level of dataset</dd>
-<dt>outline <span class="classifier-delimiter">:</span> <span class="classifier">str or (R, G, B), optional</span></dt>
-<dd>River color</dd>
-<dt>width <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Width of coastline</dd>
-<dt>outline_opacity <span class="classifier-delimiter">:</span> <span class="classifier">int, optional {0; 255}</span></dt>
-<dd>Opacity of coastline color</dd>
-<dt>x_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in x direction</dd>
-<dt>y_offset <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd>Pixel offset in y direction</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pycoast.ContourWriterBase">
-<em class="property">class </em><tt class="descclassname">pycoast.</tt><tt class="descname">ContourWriterBase</tt><big>(</big><em>db_root_path</em><big>)</big><a class="headerlink" href="#pycoast.ContourWriterBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for contourwriters. Do not instantiate.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>db_root_path <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Path to root dir of GSHHS and WDBII shapefiles</dd>
-</dl>
-</dd></dl>
-
-<dl class="exception">
-<dt id="pycoast.ShapeFileError">
-<em class="property">exception </em><tt class="descclassname">pycoast.</tt><tt class="descname">ShapeFileError</tt><a class="headerlink" href="#pycoast.ShapeFileError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for error objects creation</p>
-</dd></dl>
-
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">pycoast</span></tt> API<a class="headerlink" href="#the-pycoast-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pycoast">
+<h2>Pycoast<a class="headerlink" href="#pycoast" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -706,7 +63,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">The <tt class="docutils literal"><span class="pre">pycoast</span></tt> API</a><ul>
-<li><a class="reference internal" href="#module-pycoast">Pycoast</a></li>
+<li><a class="reference internal" href="#pycoast">Pycoast</a></li>
 </ul>
 </li>
 </ul>
@@ -722,7 +79,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -743,17 +100,14 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="test.html" title="Testing"
              >previous</a> |</li>
-        <li><a href="index.html">pycoast v0.5.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pycoast 0.5.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Esben S. Nielsen.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

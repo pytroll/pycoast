@@ -1,0 +1,144 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Shapes from ESRI shape files &mdash; pycoast 0.5.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pycoast 0.5.2 documentation" href="index.html" />
+    <link rel="next" title="Testing" href="test.html" />
+    <link rel="prev" title="Custom shapes and lines" href="polygons_and_lines.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="test.html" title="Testing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="polygons_and_lines.html" title="Custom shapes and lines"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pycoast 0.5.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="shapes-from-esri-shape-files">
+<h1>Shapes from ESRI shape files<a class="headerlink" href="#shapes-from-esri-shape-files" title="Permalink to this headline">¶</a></h1>
+<p>Pycoast supports plotting of polygons and polylines from ESRI shapefiles,
+currently only in lonlat coordinates format.
+In the following example we use <tt class="xref py py-attr docutils literal"><span class="pre">add_shapefile_shapes</span></tt> method to plot all line shapes
+found in the file Metareas.shp. We then use the <tt class="xref py py-attr docutils literal"><span class="pre">add_shapefile_shape</span></tt> (notice the singular)
+to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pycoast</span> <span class="kn">import</span> <span class="n">ContourWriter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4_string</span> <span class="o">=</span> <span class="s">&#39;+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2000000.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">5000000.0</span><span class="p">,</span> <span class="mf">5000000.0</span><span class="p">,</span> <span class="mf">2000000.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area_def</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj4_string</span><span class="p">,</span> <span class="n">area_extent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span> <span class="o">=</span> <span class="n">ContourWriterAGG</span><span class="p">(</span><span class="n">gshhs_root_dir</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_coastlines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;l&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_shapefile_shapes</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span>
+<span class="go">                            &#39;test/test_data/shapes/Metareas.shp&#39;,</span>
+<span class="go">                            outline=&#39;red&#39;,width=2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_shapefile_shape</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span>
+<span class="go">                            &#39;test/test_data/shapes/divisao_politica/BR_Regioes.shp&#39;,</span>
+<span class="go">                            3, outline=&#39;blue&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cw</span><span class="o">.</span><span class="n">add_shapefile_shape</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">area_def</span><span class="p">,</span>
+<span class="go">                            &#39;test/test_data/shapes/divisao_politica/BR_Regioes.shp&#39;,</span>
+<span class="go">                            4, outline=&#39;blue&#39;, fill=&#39;green&#39;)</span>
+</pre></div>
+</div>
+<img alt="_images/brazil_shapefiles_agg.png" src="_images/brazil_shapefiles_agg.png" />
+<p>If your shapefile is not in lonlat coordinates, then you can re-project your shape file using
+<tt class="xref py py-attr docutils literal"><span class="pre">ogr2ogr</span></tt> (part of <a class="reference external" href="http://www.gdal.org/">GDAL</a> tools), e.g.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>ogr2ogr original.shp  lonlat.shp  -t_srs <span class="s2">&quot;+proj=latlong&quot;</span>
+</pre></div>
+</div>
+<p>This should work if you have all the extra meta-files original.* included with your original.shp.
+Please refer to the <a class="reference external" href="http://www.gdal.org/ogr2ogr.html">OGR</a> documentation for more information.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="polygons_and_lines.html"
+                        title="previous chapter">Custom shapes and lines</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="test.html"
+                        title="next chapter">Testing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/shapefiles.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="test.html" title="Testing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="polygons_and_lines.html" title="Custom shapes and lines"
+             >previous</a> |</li>
+        <li><a href="index.html">pycoast 0.5.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Esben S. Nielsen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

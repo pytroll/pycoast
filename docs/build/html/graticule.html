@@ -3,13 +3,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Adding graticule to images &mdash; pycoast v0.5.2 documentation</title>
+    <title>Adding graticule to images &mdash; pycoast 0.5.2 documentation</title>
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
@@ -22,8 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pycoast v0.5.2 documentation" href="index.html" />
-    <link rel="next" title="Testing" href="test.html" />
+    <link rel="top" title="pycoast 0.5.2 documentation" href="index.html" />
+    <link rel="next" title="Custom shapes and lines" href="polygons_and_lines.html" />
     <link rel="prev" title="High quality contours using AGG" href="high_quality_contours.html" /> 
   </head>
   <body>
@@ -34,15 +37,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="test.html" title="Testing"
+          <a href="polygons_and_lines.html" title="Custom shapes and lines"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="high_quality_contours.html" title="High quality contours using AGG"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pycoast v0.5.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pycoast 0.5.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -68,7 +68,7 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/euro_grid2.png" src="_images/euro_grid2.png" />
+<img alt="_images/euro_grid.png" src="_images/euro_grid.png" />
 <p>The font argument is optional for PIL if it is not given a default font will be used.</p>
 <p>and for AGG:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageFont</span>
@@ -89,7 +89,7 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/euro_grid_agg2.png" src="_images/euro_grid_agg2.png" />
+<img alt="_images/euro_grid_agg.png" src="_images/euro_grid_agg.png" />
 <p>Note the difference in the optional font argument for PIL and AGG. With AGG the
 font argument is mandatory unless the keyword argument <tt class="xref py py-attr docutils literal"><span class="pre">write_text=False</span></tt>
 is used.</p>
@@ -107,7 +107,7 @@ is used.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/grid_geos_agg2.png" src="_images/grid_geos_agg2.png" />
+<img alt="_images/grid_geos_agg.png" src="_images/grid_geos_agg.png" />
 <p>The lon and lat labeling is shown where the lines intersect the image border.
 By default the lon intersections with top and bottom and the lat intersections with left and right border are displayed .
 The placement behaviour can be controlled with the <tt class="xref py py-attr docutils literal"><span class="pre">lon_placement</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">lat_placement</span></tt> keyword variables.
@@ -129,7 +129,7 @@ E.g. <tt class="xref py py-attr docutils literal"><span class="pre">lon_placemen
 <span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/nh_grid_coarse_agg2.png" src="_images/nh_grid_coarse_agg2.png" />
+<img alt="_images/nh_grid_coarse_agg.png" src="_images/nh_grid_coarse_agg.png" />
 <p>Tip: If the adding graticule with AGG fails with something like:</p>
 <div class="highlight-bash"><div class="highlight"><pre>Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
     File <span class="s2">&quot;grid_demo_AGG.py&quot;</span>, line 13, in &lt;module&gt;
@@ -150,8 +150,8 @@ IOError: cannot load font <span class="o">(</span>no text renderer<span class="o
   <p class="topless"><a href="high_quality_contours.html"
                         title="previous chapter">High quality contours using AGG</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="test.html"
-                        title="next chapter">Testing</a></p>
+  <p class="topless"><a href="polygons_and_lines.html"
+                        title="next chapter">Custom shapes and lines</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/graticule.txt"
@@ -160,7 +160,7 @@ IOError: cannot load font <span class="o">(</span>no text renderer<span class="o
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -181,20 +181,17 @@ IOError: cannot load font <span class="o">(</span>no text renderer<span class="o
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="test.html" title="Testing"
+          <a href="polygons_and_lines.html" title="Custom shapes and lines"
              >next</a> |</li>
         <li class="right" >
           <a href="high_quality_contours.html" title="High quality contours using AGG"
              >previous</a> |</li>
-        <li><a href="index.html">pycoast v0.5.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pycoast 0.5.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Esben S. Nielsen.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
