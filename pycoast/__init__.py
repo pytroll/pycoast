@@ -43,8 +43,11 @@ class ContourWriterBase(object):
     # from PIL or from aggdraw is being used (unfortunately they are not fully
     # compatible).
 
-    def __init__(self, db_root_path):
-        self.db_root_path = db_root_path
+    def __init__(self, db_root_path=None):
+        if db_root_path is None:
+	    self.db_root_path = os.environ['GSHHS_DATA_ROOT']
+        else:
+            self.db_root_path = db_root_path
 
     def _draw_text(self, draw, position, txt, font, align='cc', **kwargs):
         """Draw text with agg module
@@ -720,7 +723,7 @@ class ContourWriter(ContourWriterBase):
         draw.line(coordinates, fill=kwargs['outline'])
 
     def add_shapefile_shapes(self, image, area_def, filename, feature_type=None,
-                            fill=None, outline='white', width=1,
+                            fill=None, outline='white',
                             x_offset=0, y_offset=0):
         """Add shape file shapes from an ESRI shapefile.
         Note: Currently only supports lon-lat formatted coordinates.
@@ -743,8 +746,6 @@ class ContourWriter(ContourWriterBase):
             Opacity of polygon fill
         outline : str or (R, G, B), optional
             line color
-        width : float, optional
-            line width
         outline_opacity : int, optional {0; 255}
             Opacity of lines
         x_offset : float, optional
@@ -756,11 +757,11 @@ class ContourWriter(ContourWriterBase):
                                    filename=filename, feature_type=feature_type,
                                    x_offset=x_offset, y_offset=y_offset, 
                                    fill=fill, 
-                                   outline=outline, width=width)
+                                   outline=outline)
 
     def add_shapefile_shape(self, image, area_def, filename, shape_id, 
                             feature_type=None,
-                            fill=None, outline='white', width=1,
+                            fill=None, outline='white',
                             x_offset=0, y_offset=0):
         """Add a single shape file shape from an ESRI shapefile.
         Note: To add all shapes in file use the 'add_shape_file_shapes' routine.
@@ -784,8 +785,6 @@ class ContourWriter(ContourWriterBase):
             Polygon fill color
         outline : str or (R, G, B), optional
             line color
-        width : float, optional
-            line width
         x_offset : float, optional
             Pixel offset in x direction
         y_offset : float, optional
@@ -797,10 +796,10 @@ class ContourWriter(ContourWriterBase):
                                   feature_type=feature_type,
                                   x_offset=x_offset, y_offset=y_offset, 
                                   fill=fill, 
-                                  outline=outline, width=width)
+                                  outline=outline)
 
     def add_line(self, image, area_def, lonlats, 
-                 fill=None, outline='white', width=1, x_offset=0, y_offset=0):
+                 fill=None, outline='white', x_offset=0, y_offset=0):
         """Add a user defined poly-line from a list of (lon,lat) coordinates.
 
         :Parameters:
@@ -823,10 +822,10 @@ class ContourWriter(ContourWriterBase):
             Pixel offset in y direction
         """
         self._add_line(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset, 
-                       fill=fill, outline=outline, width=width)
+                       fill=fill, outline=outline)
 
     def add_polygon(self, image, area_def, lonlats, 
-                 fill=None, outline='white', width=1, x_offset=0, y_offset=0):
+                 fill=None, outline='white', x_offset=0, y_offset=0):
         """Add a user defined polygon from a list of (lon,lat) coordinates.
 
         :Parameters:
@@ -843,15 +842,13 @@ class ContourWriter(ContourWriterBase):
             Polygon fill color
         outline : str or (R, G, B), optional
             line color
-        width : float, optional
-            line width
         x_offset : float, optional
             Pixel offset in x direction
         y_offset : float, optional
             Pixel offset in y direction
         """
         self._add_polygon(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset, 
-                       fill=fill, outline=outline, width=width)
+                       fill=fill, outline=outline)
 
     def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat),
                  font=None, write_text=True, fill=None, outline='white',

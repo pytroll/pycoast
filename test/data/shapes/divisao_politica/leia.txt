@@ -1,9 +1,0 @@
-Data que o arquivo foi baixado: 27/05/2013.
-
-Mapas apresentando a divisão política-administrativa do Brasil, incluindo as capitais, estados e grandes regiões.
-Fonte: IBGE
-Versão: 2000.2
-Tamanho: 244 Kb
-Formato: Shape
-
-fonte: http://gismaps.com.br/divpol/divpol.htm

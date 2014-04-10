@@ -1,0 +1,40 @@
+===================================
+GISMAPS - www.gismaps.com.br
+===================================
+Mapas Temáticos - Geoprocessamento
+===================================
+
+* Grupo: Divisão Política
+
+* Título: Divisão Política do Brasil
+
+* Descrição: Mapas apresentando a divisão política-administrativa do Brasil, incluindo as 
+	    capitais, estados e grandes regiões.
+
+* Ano/Revisão: 2000.3
+
+* Data de atualização: 21/06/2005
+
+* Fonte: IBGE
+
+* Conteúdo:
+
+**************** BR_Capitais.dbf  ****************
+UF	-sigla da Unidade da Federação
+NOME	-nome da capital
+
+**************** BR_Contorno.dbf  ****************
+NOME	-nome do Brasil
+
+**************** BR_Regioes.dbf  ****************
+SIGLA	-sigla da região
+NOME	-nome da região
+
+**************** BRASIL.dbf  ****************
+UF	-sigla da Unidade da Federação
+ESTADO	-nome da Unidade da Federação
+REGIAO	-sigla da região
+
+===================================
+GISMAPS - www.gismaps.com.br
+===================================

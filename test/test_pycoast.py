@@ -242,6 +242,59 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.failUnless(fft_metric(grid_data, res), 'Writing of nh grid failed')
 
+    def test_add_polygon(self):
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                              'nh_polygons.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
+        area_def = (proj4_string, area_extent)
+        
+        cw = ContourWriter(gshhs_root_dir)
+
+        polygons = {
+            'REYKJAVIK_ATC_A':((-20.0,73.0),(0.0,73.0),(0.0,61.0),(-30.0,61.0),(-39.0,63.5),(-20,70)),
+            'REYKJAVIK_ATC_B':((-39,63.5),(-55+4/6.0,63.5),(-57+45/60.0,65),(-76,76),(-75,78),(-60,82),(0,90),(30,82),(0,82),(0,73),(-20,73),(-20,
+70)),
+            'REYKJAVIK_ATC':((0.0,73.0),(0.0,61.0),(-30.0,61.0),(-39,63.5),(-55+4/6.0,63.5),(-57+45/60.0,65),(-76,76),(-75,78),(-60,82),(0,90),(30,82),(0,82)),
+            'ICELAND_BOX':((-25,62.5),(-25,67),(-13,67),(-13,62.5))
+            }
+
+        cw.add_polygon(img, area_def, polygons['REYKJAVIK_ATC'], outline='red')
+        cw.add_polygon(img, area_def, polygons['ICELAND_BOX'], outline='green', fill='gray')
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+
+        res = np.array(img)
+        self.failUnless(fft_metric(grid_data, res), 'Writing of nh polygons failed')
+
+    def test_add_shapefile_shapes(self):
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                                           'brazil_shapefiles.png'))
+        grid_data = np.array(grid_img)
+        
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = (proj4_string, area_extent)
+        
+        cw = ContourWriter(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        cw.add_shapefile_shapes(img, area_def, 
+                                os.path.join(os.path.dirname(__file__), 'test_data/shapes/Metareas.shp'),
+                                outline='red')
+        cw.add_shapefile_shape(img, area_def, 
+                                os.path.join(os.path.dirname(__file__), 'test_data/shapes/divisao_politica/BR_Regioes.shp'), 3,
+                                outline='blue')
+        cw.add_shapefile_shape(img, area_def, 
+                                os.path.join(os.path.dirname(__file__), 'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
+                                outline='blue', fill='green')
+
+        res = np.array(img)
+        self.failUnless(fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
+
 class TestPILAGG(TestPycoast):        
 
     def test_europe_agg(self):
@@ -379,7 +432,7 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed for AGG')
         
-    def test_grid_nh(self):
+    def test_grid_nh_agg(self):
         from pycoast import ContourWriterAGG
         import aggdraw
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
@@ -400,6 +453,60 @@ class TestPILAGG(TestPycoast):
         
         res = np.array(img)
 
-        ## experience inconsistency in ttf fonts between systems.
-        ## therefore have cropped this test [50:-50,50:-50,:] to exclude latlon markings
-        self.failUnless(fft_metric(grid_data[50:-50,50:-50,:], res[50:-50,50:-50,:]), 'Writing of nh grid failed for AGG')
+        ## NOTE: Experience inconsistency in ttf font writing between systems.
+        ## Still trying to figure out why this test sometimes fails to write correct font markings.
+        self.failUnless(fft_metric(grid_data, res), 'Writing of nh grid failed for AGG')
+
+    def test_add_polygon_agg(self):
+        from pycoast import ContourWriterAGG
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                              'nh_polygons_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
+        area_def = (proj4_string, area_extent)
+        
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        polygons = {
+            'REYKJAVIK_ATC_A':((-20.0,73.0),(0.0,73.0),(0.0,61.0),(-30.0,61.0),(-39.0,63.5),(-20,70)),
+            'REYKJAVIK_ATC_B':((-39,63.5),(-55+4/6.0,63.5),(-57+45/60.0,65),(-76,76),(-75,78),(-60,82),(0,90),(30,82),(0,82),(0,73),(-20,73),(-20,
+70)),
+            'REYKJAVIK_ATC':((0.0,73.0),(0.0,61.0),(-30.0,61.0),(-39,63.5),(-55+4/6.0,63.5),(-57+45/60.0,65),(-76,76),(-75,78),(-60,82),(0,90),(30,82),(0,82)),
+            'ICELAND_BOX':((-25,62.5),(-25,67),(-13,67),(-13,62.5))
+            }
+
+        cw.add_polygon(img, area_def, polygons['REYKJAVIK_ATC'], outline='red',width=2)
+        cw.add_polygon(img, area_def, polygons['ICELAND_BOX'], outline='green', fill='gray', width=2)
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+
+        res = np.array(img)
+        self.failUnless(fft_metric(grid_data, res), 'Writing of nh polygons failed')
+
+    def test_add_shapefile_shapes_agg(self):
+        from pycoast import ContourWriterAGG
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), 
+                                           'brazil_shapefiles_agg.png'))
+        grid_data = np.array(grid_img)
+        
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = (proj4_string, area_extent)
+        
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        cw.add_shapefile_shapes(img, area_def, 
+                                os.path.join(os.path.dirname(__file__), 'test_data/shapes/Metareas.shp'),
+                                outline='red',width=2)
+        cw.add_shapefile_shape(img, area_def, 
+                                os.path.join(os.path.dirname(__file__), 'test_data/shapes/divisao_politica/BR_Regioes.shp'), 3,
+                                outline='blue')
+        cw.add_shapefile_shape(img, area_def, 
+                                os.path.join(os.path.dirname(__file__), 'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
+                                outline='blue', fill='green')
+        res = np.array(img)
+        self.failUnless(fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
