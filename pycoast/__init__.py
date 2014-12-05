@@ -4,6 +4,7 @@
 #
 #Copyright (C) 2011, 2012  Esben S. Nielsen
 #                    2012  Hróbjartur Þorsteinsson
+#                    2014  Stefano Cerino - Katja Hungershofer
 #
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -23,6 +24,10 @@ from PIL import Image, ImageFont
 from PIL import ImageDraw
 import shapefile
 import pyproj
+from ConfigParser import ConfigParser, NoSectionError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ShapeFileError(Exception):
@@ -550,6 +555,256 @@ class ContourWriterBase(object):
 
         pass
 
+    def add_overlay_from_config(self, config_file, area_def):
+        """Create and return a transparent image adding all the
+           overlays contained in a configuration file.
+
+        :Parameters:
+        config_file : str
+            Configuration file name
+        area_def : object
+            Area Definition of the creating image
+        """
+
+
+        config = ConfigParser()
+        try:
+            with open(config_file, 'r'):
+                logger.info("Overlays config file "+str(config_file)+" found")
+            config.read(config_file)
+        except IOError:
+            logger.error("Overlays config file "+str(config_file)+ " does not exist!")
+            raise
+        except NoSectionError:
+            logger.error("Error in " + str(config_file))
+            raise
+
+    #Cache management
+        cache_file = None
+        if config.has_section('cache'):
+            config_file_name, config_file_extention = os.path.splitext(config_file)
+            cache_file = config.get('cache','file') + '_' + area_def.area_id + '.png'
+
+            try:
+                configTime = os.path.getmtime(config_file)
+                cacheTime = os.path.getmtime(cache_file)
+        #Cache file will be used only if it's newer than config file
+                if configTime < cacheTime:
+                    foreground = Image.open(cache_file)
+                    logger.info('Using image in cache ' + cache_file)
+                    return foreground
+                else:
+                    logger.info("Cache file is not used because config file is changed")
+            except OSError:
+                logger.info("New overlay image will save in cache")
+
+        x_size = area_def.x_size
+        y_size = area_def.y_size
+        foreground = Image.new('RGBA',(x_size,y_size), (0,0,0,0))
+
+    ######### Lines (coasts, rivers, borders) management
+        x_resolution = ((area_def.area_extent[2] -
+                         area_def.area_extent[0]) /
+                        x_size)
+        y_resolution = ((area_def.area_extent[3] -
+                         area_def.area_extent[1]) /
+                        y_size)
+        res = min(x_resolution, y_resolution)
+
+        if res > 25000:
+            default_resolution = "c"
+        elif res > 5000:
+            default_resolution = "l"
+        elif res > 1000:
+            default_resolution = "i"
+        elif res > 200:
+            default_resolution = "h"
+        else:
+            default_resolution = "f"
+
+        DEFAULT = {'level'           : 1,
+                   'outline'         : 'white',
+                   'width'           : 1,
+                   'fill'            : None,
+                   'fill_opacity'    : 255,
+                   'outline_opacity' : 255,
+                   'x_offset'        : 0,
+                   'y_offset'        : 0,
+                   'resolution'      : default_resolution}
+
+        SECTIONS = ['coasts','rivers','borders','cities']
+        overlays = {}
+
+        for section in config.sections():
+            if section in SECTIONS:
+                overlays[section] = {}
+                for option in config.options(section):
+                    overlays[section][option] = config.get(section, option)
+
+        is_agg = self._draw_module == "AGG"
+
+        ###Coasts
+
+        if overlays.has_key('coasts'):
+            resolution=overlays['coasts'].get('resolution', DEFAULT['resolution'])
+            outline=overlays['coasts'].get('outline', DEFAULT['outline'])
+            level=int(overlays['coasts'].get('level', DEFAULT['level']))
+            fill=overlays['coasts'].get('fill', DEFAULT['fill'])
+            x_offset=float(overlays['coasts'].get('x_offset', DEFAULT['x_offset']))
+            y_offset=float(overlays['coasts'].get('y_offset', DEFAULT['y_offset']))
+
+            if is_agg:
+                width=float(overlays['coasts'].get('width', DEFAULT['width']))
+                outline_opacity=int(overlays['coasts'].get('outline_opacity', DEFAULT['outline_opacity']))
+                fill_opacity=int(overlays['coasts'].get('fill_opacity', DEFAULT['fill_opacity']))
+                self.add_coastlines(foreground, area_def, resolution=resolution, width=width,
+                                    outline=outline,level=level,fill=fill,fill_opacity=fill_opacity,outline_opacity=outline_opacity,
+                                    x_offset=x_offset,y_offset=y_offset)
+            else:
+                self.add_coastlines(foreground, area_def, resolution=resolution,
+                                outline=outline,level=level,fill=fill,
+                                x_offset=x_offset,y_offset=y_offset)
+
+            logger.info('Coasts added')
+
+
+        if overlays.has_key('rivers'):
+            resolution=overlays['rivers'].get('resolution', DEFAULT['resolution'])
+            outline=overlays['rivers'].get('outline', DEFAULT['outline'])
+            level=int(overlays['rivers'].get('level', DEFAULT['level']))
+            x_offset=float(overlays['rivers'].get('x_offset', DEFAULT['x_offset']))
+            y_offset=float(overlays['rivers'].get('y_offset', DEFAULT['y_offset']))
+
+            if is_agg:
+                width=float(overlays['rivers'].get('width', DEFAULT['width']))
+                outline_opacity=int(overlays['rivers'].get('outline_opacity', DEFAULT['outline_opacity']))
+                self.add_rivers(foreground, area_def, resolution=resolution, width=width,
+                                outline=outline,level=level,outline_opacity=outline_opacity,
+                                x_offset=x_offset,y_offset=y_offset)
+            else:
+                self.add_rivers(foreground, area_def, resolution=resolution,
+                                outline=outline,level=level,
+                                x_offset=x_offset,y_offset=y_offset)
+
+
+            logger.info('Rivers added')
+
+
+        if overlays.has_key('borders'):
+            resolution=overlays['borders'].get('resolution', DEFAULT['resolution'])
+            outline=overlays['borders'].get('outline', DEFAULT['outline'])
+            level=int(overlays['borders'].get('level', DEFAULT['level']))
+            x_offset=float(overlays['borders'].get('x_offset', DEFAULT['x_offset']))
+            y_offset=float(overlays['borders'].get('y_offset', DEFAULT['y_offset']))
+
+            if is_agg:
+                width=float(overlays['borders'].get('width', DEFAULT['width']))
+                outline_opacity=int(overlays['borders'].get('outline_opacity', DEFAULT['outline_opacity']))
+                self.add_borders(foreground, area_def, resolution=resolution, width=width,
+                                outline=outline,level=level,outline_opacity=outline_opacity,
+                                x_offset=x_offset,y_offset=y_offset)
+            else:
+                self.add_borders(foreground, area_def, resolution=resolution,
+                                outline=outline,level=level,
+                                x_offset=x_offset,y_offset=y_offset)
+
+            logger.info('Borders added')
+        ######### Cities management
+        if overlays.has_key('cities'):
+            DEFAULT_FONT_SIZE = 12
+            DEFAULT_OUTLINE = "yellow"
+
+            citylist = [s.lstrip() for s in overlays['cities']['list'].split(',')]
+            font_file = overlays['cities']['font']
+            font_size = int(overlays['cities'].get('font_size', DEFAULT_FONT_SIZE))
+            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
+            pt_size = int(overlays['cities'].get('pt_size', None))
+            box_outline =  overlays['cities'].get('box_outline', None)
+            box_opacity = int(overlays['cities'].get('box_opacity', 255))
+
+
+            self.add_cities(foreground, area_def, citylist, font_file, font_size,
+                            pt_size, outline, box_outline, box_opacity)
+
+
+        if cache_file is not None:
+            foreground.save(cache_file)
+
+        return foreground
+
+    def add_cities(self, image, area_def, citylist, font_file, font_size,
+                   ptsize, outline, box_outline, box_opacity):
+        """Add cities (point and name) to a PIL image object
+
+        """
+
+        try:
+            proj4_string = area_def.proj4_string
+            area_extent = area_def.area_extent
+        except AttributeError:
+            proj4_string = area_def[0]
+            area_extent = area_def[1]
+
+        draw = self._get_canvas(image)
+
+        # Area and projection info
+        x_size, y_size = image.size
+        prj = pyproj.Proj(proj4_string)
+
+        # read shape file with points
+        #Sc-Kh shapefilename = os.path.join(self.db_root_path, "cities_15000_alternativ.shp")
+        shapefilename = os.path.join(self.db_root_path, os.path.join("CITIES", "cities_15000_alternativ.shp"))
+        try:
+            s = shapefile.Reader(shapefilename)
+            shapes = s.shapes()
+        except AttributeError:
+            raise ShapeFileError('Could not find shapefile %s'
+                                     % shapefilename)
+
+        is_agg = self._draw_module == "AGG"
+        if is_agg:
+            import aggdraw
+            font = aggdraw.Font(outline, font_file, size = font_size)
+        else:
+            font=ImageFont.truetype(font_file,font_size)
+
+        # Iterate through shapes
+        for i, shape in enumerate(shapes):
+            # Select cities with name
+            record = s.record(i)
+            if record[3] in citylist:
+
+                city_name = record[3]
+
+                # use only parts of _get_pixel_index
+                # Get shape data as array and reproject
+                shape_data = np.array(shape.points)
+                lons = shape_data[:, 0][0]
+                lats = shape_data[:, 1][0]
+
+                try:
+                    (x,y) = area_def.get_xy_from_lonlat(lons,lats)
+                except ValueError, exc:
+                    logger.warning("Point not added ( " + exc.message +")")
+                else:
+
+                #add_dot
+                    if ptsize is not None:
+                        dot_box = [x-ptsize,y-ptsize,
+                                   x+ptsize,y+ptsize]
+                        self._draw_ellipse(draw,dot_box, fill=outline, outline=outline)
+                        text_position = [x+9,y-5] #FIX ME
+                    else:
+                        text_position = [x,y]
+
+                #add text_box
+                    self._draw_text_box(draw, text_position, city_name, font, outline, box_outline, box_opacity)
+                    logger.info(str(city_name) + " added")
+
+        self._finalize(draw)
+
+
+
 
 class ContourWriter(ContourWriterBase):
     """Adds countours from GSHHS and WDBII to images
@@ -581,6 +836,29 @@ class ContourWriter(ContourWriterBase):
 
         draw.polygon(coordinates, fill=kwargs['fill'],
                      outline=kwargs['outline'])
+
+    def _draw_ellipse(self, draw, coordinates, **kwargs):
+        """Draw ellipse 
+        """
+        draw.ellipse(coordinates, fill=kwargs['fill'],
+                     outline=kwargs['outline'])
+
+    def _draw_rectangle(self, draw, coordinates, **kwargs):
+        """Draw rectangle 
+        """
+        draw.rectangle(coordinates, fill=kwargs['fill'],
+                     outline=kwargs['outline'])
+
+
+    def _draw_text_box(self,draw, text_position, text, font, outline, box_outline, box_opacity):
+        """Add text box in xy
+        """
+
+        if box_outline is not None:
+            logger.warning("Box background will not added; please install aggdraw lib")
+
+        self._draw_text(draw, text_position, text, font, align="no", fill=outline)
+
 
     def _draw_line(self, draw, coordinates, **kwargs):
         """Draw line
@@ -875,6 +1153,45 @@ class ContourWriterAGG(ContourWriterBase):
             fill_opacity = kwargs['fill_opacity']
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
         draw.polygon(coordinates, pen, brush)
+
+    def _draw_rectangle(self, draw, coordinates, **kwargs):
+        """Draw rectangle
+        """
+
+        import aggdraw
+        pen = aggdraw.Pen(kwargs['outline'])
+
+        fill_opacity = kwargs.get('fill_opacity',255)
+        brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+        draw.rectangle(coordinates, pen, brush)
+
+    def _draw_ellipse(self, draw, coordinates, **kwargs):
+        """Draw ellipse
+        """
+
+        import aggdraw
+        pen = aggdraw.Pen(kwargs['outline'])
+
+        fill_opacity = kwargs.get('fill_opacity',255)
+        brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+        draw.ellipse(coordinates, brush, pen)
+
+    def _draw_text_box(self,draw, text_position, text, font, outline, box_outline, box_opacity):
+        """Add text box in xy
+        """
+
+        if box_outline is not None:
+             text_size = draw.textsize(text,font)
+             margin = 2
+             xUL = text_position[0]-margin
+             yUL = text_position[1]
+             xLR = xUL + text_size[0] + (2*margin)
+             yLR = yUL + text_size[1]
+             box_size = (xUL, yUL, xLR, yLR)
+
+             self._draw_rectangle(draw,box_size,fill=box_outline,fill_opacity=box_opacity,outline=box_outline)
+
+        self._draw_text(draw, text_position, text, font, align="no")
 
     def _draw_line(self, draw, coordinates, **kwargs):
         """Draw line
