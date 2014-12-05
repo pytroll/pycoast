@@ -463,7 +463,7 @@ class ContourWriterBase(object):
         shape_id from a custom shape file onto a PIL image
         """
         sf = shapefile.Reader(filename)
-        shape=sf.shapes()[shape_id]
+        shape = sf.shape(shape_id)
         if feature_type is None:
             if shape.shapeType == 3:
                 feature_type = "line"
