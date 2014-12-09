@@ -790,10 +790,10 @@ class ContourWriterBase(object):
                                  self.add_rivers,
                                  self.add_borders]):
 
-            if overlays.has_key('coasts'):
+            if overlays.has_key(section):
 
                 params = DEFAULT.copy()
-                params.update(overlays['coasts'])
+                params.update(overlays[section])
 
                 params['level'] = int(params['level'])
                 params['x_offset'] = float(params['x_offset'])
