@@ -785,7 +785,7 @@ class ContourWriterBase(object):
         is_agg = self._draw_module == "AGG"
 
         # Coasts
-        for section, fun in zip(['coast', 'rivers', 'borders'],
+        for section, fun in zip(['coasts', 'rivers', 'borders'],
                                 [self.add_coastlines,
                                  self.add_rivers,
                                  self.add_borders]):
