@@ -27,7 +27,7 @@ setup(name='pycoast',
       author='Esben S. Nielsen',
       author_email='esn@dmi.dk',
       packages = ['pycoast'],      
-      install_requires=['PIL', 'pyshp'], 
+      install_requires=['pillow', 'pyshp'], 
       zip_safe = False,
       classifiers=[
       'Development Status :: 5 - Production/Stable',
