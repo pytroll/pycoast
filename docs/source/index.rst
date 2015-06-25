@@ -18,6 +18,7 @@ images using data from the GSHHS and WDBII datasets
    usage
    high_quality_contours
    graticule
+   config
    polygons_and_lines
    shapefiles
    test
