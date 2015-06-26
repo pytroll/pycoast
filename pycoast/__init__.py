@@ -29,7 +29,7 @@ import pyproj
 from ConfigParser import ConfigParser, NoSectionError
 import logging
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class ShapeFileError(Exception):
@@ -63,15 +63,15 @@ class ContourWriterBase(object):
         """
         txt_width, txt_height = draw.textsize(txt, font)
         x_pos, y_pos = position
-        ax, ay = align.lower()
-        if ax == 'r':
+        ax_, ay_ = align.lower()
+        if ax_ == 'r':
             x_pos = x_pos - txt_width
-        elif ax == 'c':
+        elif ax_ == 'c':
             x_pos = x_pos - txt_width / 2
 
-        if ay == 'b':
+        if ay_ == 'b':
             y_pos = y_pos - txt_height
-        elif ay == 'c':
+        elif ay_ == 'c':
             y_pos = y_pos - txt_width / 2
 
         self._engine_text_draw(draw, (x_pos, y_pos), txt, font, **kwargs)
@@ -83,26 +83,26 @@ class ContourWriterBase(object):
         """Draw text with default PIL module
         """
         placement_def = kwargs[linetype].lower()
-        for xy in xys:
+        for xy_ in xys:
             # note xy[0] is xy coordinate pair,
             # xy[1] is required alignment e.g. 'tl','lr','lc','cc'...
-            ax, ay = xy[1].lower()
-            if ax in placement_def or ay in placement_def:
-                self._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
+            ax_, ay_ = xy_[1].lower()
+            if ax_ in placement_def or ay_ in placement_def:
+                self._draw_text(draw, xy_[0], txt, font, align=xy_[1], **kwargs)
 
     def _find_line_intercepts(self, xys, size, margins):
         """Finds intercepts of poly-line xys with image boundaries
         offset by margins and returns an array of coordintes"""
         x_size, y_size = size
 
-        def is_in_box((x, y), (xmin, xmax, ymin, ymax)):
-            if x > xmin and x < xmax and y > ymin and y < ymax:
+        def is_in_box((x_loc, y_loc), (xmin, xmax, ymin, ymax)):
+            if x_loc > xmin and x_loc < xmax and y_loc > ymin and y_loc < ymax:
                 return True
             else:
                 return False
 
-        def crossing(x1, x2, lim):
-            if (x1 < lim) != (x2 < lim):
+        def crossing(x_1, x_2, lim):
+            if (x_1 < lim) != (x_2 < lim):
                 return True
             else:
                 return False
@@ -125,35 +125,35 @@ class ContourWriterBase(object):
         align_bottom = 'CB'
         prev_xy = xys[0]
         for i in range(1, len(xys) - 1):
-            xy = xys[i]
-            if is_in_box(xy, search_box):
+            xy_ = xys[i]
+            if is_in_box(xy_, search_box):
                 # crossing LHS
-                if crossing(prev_xy[0], xy[0], xlim1):
-                    x = xlim1
-                    y = xy[1]
-                    intercepts.append(((x, y), align_left))
+                if crossing(prev_xy[0], xy_[0], xlim1):
+                    x_loc = xlim1
+                    y_loc = xy_[1]
+                    intercepts.append(((x_loc, y_loc), align_left))
                 # crossing RHS
-                elif crossing(prev_xy[0], xy[0], xlim2):
-                    x = xlim2
-                    y = xy[1]
-                    intercepts.append(((x, y), align_right))
+                elif crossing(prev_xy[0], xy_[0], xlim2):
+                    x_loc = xlim2
+                    y_loc = xy_[1]
+                    intercepts.append(((x_loc, y_loc), align_right))
                 # crossing Top
-                elif crossing(prev_xy[1], xy[1], ylim1):
-                    x = xy[0]
-                    y = ylim1
-                    intercepts.append(((x, y), align_top))
+                elif crossing(prev_xy[1], xy_[1], ylim1):
+                    x_loc = xy_[0]
+                    y_loc = ylim1
+                    intercepts.append(((x_loc, y_loc), align_top))
                 # crossing Bottom
-                elif crossing(prev_xy[1], xy[1], ylim2):
-                    x = xy[0]  # - txt_width/2
-                    y = ylim2  # - txt_height
-                    intercepts.append(((x, y), align_bottom))
-            prev_xy = xy
+                elif crossing(prev_xy[1], xy_[1], ylim2):
+                    x_loc = xy_[0]  # - txt_width/2
+                    y_loc = ylim2  # - txt_height
+                    intercepts.append(((x_loc, y_loc), align_bottom))
+            prev_xy = xy_
 
         return intercepts
 
     def _add_grid(self, image, area_def,
-                  Dlon, Dlat,
-                  dlon, dlat,
+                  lon_major, lat_major,
+                  lon_minor, lat_minor,
                   font=None, write_text=True, **kwargs):
         """Add a lat lon grid to image
         """
@@ -202,22 +202,22 @@ class ContourWriterBase(object):
         # Draw lonlat grid lines ...
         # create adjustment of line lengths to avoid cluttered pole lines
         if lat_max == 90.0:
-            shorten_max_lat = Dlat
+            shorten_max_lat = lat_major
         else:
             shorten_max_lat = 0.0
 
         if lat_min == -90.0:
-            increase_min_lat = Dlat
+            increase_min_lat = lat_major
         else:
             increase_min_lat = 0.0
 
         # major lon lines
-        round_lon_min = (lon_min - (lon_min % Dlon))
-        maj_lons = np.arange(round_lon_min, lon_max, Dlon)
+        round_lon_min = (lon_min - (lon_min % lon_major))
+        maj_lons = np.arange(round_lon_min, lon_max, lon_major)
         maj_lons[maj_lons > 180] = maj_lons[maj_lons > 180] - 360
 
         # minor lon lines (ticks)
-        min_lons = np.arange(round_lon_min, lon_max, dlon)
+        min_lons = np.arange(round_lon_min, lon_max, lon_minor)
         min_lons[min_lons > 180] = min_lons[min_lons > 180] - 360
 
         # Get min_lons not in maj_lons
@@ -232,22 +232,24 @@ class ContourWriterBase(object):
 
         # perhaps better to find the actual length of line in pixels...
 
-        round_lat_min = (lat_min - (lat_min % Dlat))
+        round_lat_min = (lat_min - (lat_min % lat_major))
 
         # major lat lines
-        maj_lats = np.arange(round_lat_min + increase_min_lat, lat_max, Dlat)
+        maj_lats = np.arange(round_lat_min + increase_min_lat,
+                             lat_max, lat_major)
 
         # minor lon lines (ticks)
         min_lats = np.arange(round_lat_min + increase_min_lat,
                              lat_max - shorten_max_lat,
-                             dlat)
+                             lat_minor)
 
         # Get min_lats not in maj_lats
         min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
 
         # lons along major lat lines (extended slightly to avoid missing the
         # end)
-        lin_lons = np.arange(lon_min, lon_max + Dlon / 5.0, Dlon / 10.0)
+        lin_lons = np.arange(lon_min, lon_max + lon_major / 5.0,
+                             lon_major / 10.0)
 
         # create dummpy shape object
         tmpshape = shapefile.Writer("")
@@ -295,11 +297,11 @@ class ContourWriterBase(object):
         ##### MAJOR LINES AND MINOR TICKS ######
         # major lon lines and tick marks:
         for lon in maj_lons:
-            # Draw 'minor' tick lines dlat separation along the lon
+            # Draw 'minor' tick lines lat_minor separation along the lon
             if kwargs['minor_is_tick']:
-                tick_lons = np.arange(lon - Dlon / 20.0,
-                                      lon + Dlon / 20.0,
-                                      Dlon / 50.0)
+                tick_lons = np.arange(lon - lon_major / 20.0,
+                                      lon + lon_major / 20.0,
+                                      lon_major / 50.0)
 
                 for lat in min_lats:
                     lonlats = [(x, lat) for x in tick_lons]
@@ -352,11 +354,11 @@ class ContourWriterBase(object):
 
         # major lat lines and tick marks:
         for lat in maj_lats:
-            # Draw 'minor' tick dlon separation along the lat
+            # Draw 'minor' tick lon_minor separation along the lat
             if kwargs['minor_is_tick']:
-                tick_lats = np.arange(lat - Dlat / 20.0,
-                                      lat + Dlat / 20.0,
-                                      Dlat / 50.0)
+                tick_lats = np.arange(lat - lat_major / 20.0,
+                                      lat + lat_major / 20.0,
+                                      lat_major / 50.0)
                 for lon in min_lons:
                     lonlats = [(lon, x) for x in tick_lats]
                     tmpshape.points = lonlats
@@ -404,7 +406,7 @@ class ContourWriterBase(object):
 
         # Draw cross on poles ...
         if lat_max == 90.0:
-            crosslats = np.arange(90.0 - Dlat / 2.0, 90.0,
+            crosslats = np.arange(90.0 - lat_major / 2.0, 90.0,
                                   float(lat_max - lat_min) / y_size)
             for lon in (0.0, 90.0, 180.0, -90.0):
                 lonlats = [(lon, x) for x in crosslats]
@@ -425,7 +427,7 @@ class ContourWriterBase(object):
                                     index_array.flatten().tolist(),
                                     **kwargs)
         if lat_min == -90.0:
-            crosslats = np.arange(-90.0, -90.0 + Dlat / 2.0,
+            crosslats = np.arange(-90.0, -90.0 + lat_major / 2.0,
                                   float(lat_max - lat_min) / y_size)
             for lon in (0.0, 90.0, 180.0, -90.0):
                 lonlats = [(lon, x) for x in crosslats]
@@ -457,8 +459,8 @@ class ContourWriterBase(object):
         """ for drawing all shapes (polygon/poly-lines) from a custom shape
         file onto a PIL image
         """
-        sf = shapefile.Reader(filename)
-        for i in range(len(sf.shapes())):
+        sf_ = shapefile.Reader(filename)
+        for i in range(len(sf_.shapes())):
             self._add_shapefile_shape(image, area_def, filename, i,
                                       feature_type, **kwargs)
 
@@ -467,16 +469,16 @@ class ContourWriterBase(object):
         """ for drawing a single shape (polygon/poly-line) definiton with id,
         shape_id from a custom shape file onto a PIL image
         """
-        sf = shapefile.Reader(filename)
-        shape = sf.shape(shape_id)
+        sf_ = shapefile.Reader(filename)
+        shape = sf_.shape(shape_id)
         if feature_type is None:
             if shape.shapeType == 3:
                 feature_type = "line"
             elif shape.shapeType == 5:
                 feature_type = "polygon"
             else:
-                raise ShapeFileError("Unsupported shape type: "
-                                     + str(shape.shapeType))
+                raise ShapeFileError("Unsupported shape type: %s" % \
+                                     str(shape.shapeType))
 
         self._add_shapes(image, area_def, feature_type, [shape], **kwargs)
 
@@ -484,7 +486,7 @@ class ContourWriterBase(object):
         """ For drawing a custom polyline. Lon and lat coordinates given by the
         list lonlat.
         """
-        # create dummpy shapelike object
+        # create dummy shapelike object
         shape = type("", (), {})()
         shape.points = lonlats
         shape.parts = [0]
@@ -679,11 +681,11 @@ class ContourWriterBase(object):
                                  resolution, format_string %
                                  (db_name, tag, resolution, (i + 1)))
             try:
-                s = shapefile.Reader(shapefilename)
-                shapes = s.shapes()
+                sf_ = shapefile.Reader(shapefilename)
+                shapes = sf_.shapes()
             except AttributeError:
-                raise ShapeFileError('Could not find shapefile %s'
-                                     % shapefilename)
+                raise ShapeFileError('Could not find shapefile %s' % \
+                                     shapefilename)
             yield shapes
 
     def _finalize(self, draw):
@@ -706,44 +708,49 @@ class ContourWriterBase(object):
         config = ConfigParser()
         try:
             with open(config_file, 'r'):
-                logger.info(
-                    "Overlays config file " + str(config_file) + " found")
+                LOGGER.info("Overlays config file %s found",
+                            str(config_file))
             config.read(config_file)
         except IOError:
-            logger.error(
-                "Overlays config file " + str(config_file) + " does not exist!")
+            LOGGER.error("Overlays config file %s does not exist!",
+                         str(config_file))
             raise
         except NoSectionError:
-            logger.error("Error in " + str(config_file))
+            LOGGER.error("Error in %s", str(config_file))
             raise
 
-    # Cache management
+        def parse_color_tuple(string):
+            '''Parse color tuple from string.'''
+            if '(' in string:
+                string = string.replace('(', '').replace(')')
+                string = tuple([int(i) for i in string.split(',')])
+            return string
+
+        # Cache management
         cache_file = None
         if config.has_section('cache'):
-            config_file_name, config_file_extention = \
-                os.path.splitext(config_file)
             cache_file = (config.get('cache', 'file') + '_'
                           + area_def.area_id + '.png')
 
             try:
-                configTime = os.path.getmtime(config_file)
-                cacheTime = os.path.getmtime(cache_file)
-        # Cache file will be used only if it's newer than config file
-                if configTime < cacheTime:
+                config_time = os.path.getmtime(config_file)
+                cache_time = os.path.getmtime(cache_file)
+                # Cache file will be used only if it's newer than config file
+                if config_time < cache_time:
                     foreground = Image.open(cache_file)
-                    logger.info('Using image in cache ' + cache_file)
+                    LOGGER.info('Using image in cache %s', cache_file)
                     return foreground
                 else:
-                    logger.info("Cache file is not used "
+                    LOGGER.info("Cache file is not used "
                                 "because config file has changed")
             except OSError:
-                logger.info("New overlay image will be saved in cache")
+                LOGGER.info("New overlay image will be saved in cache")
 
         x_size = area_def.x_size
         y_size = area_def.y_size
         foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
-    # Lines (coasts, rivers, borders) management
+        # Lines (coasts, rivers, borders) management
         x_resolution = ((area_def.area_extent[2] -
                          area_def.area_extent[0]) /
                         x_size)
@@ -763,24 +770,29 @@ class ContourWriterBase(object):
         else:
             default_resolution = "f"
 
-        DEFAULT = {'level': 1,
-                   'outline': 'white',
-                   'width': 1,
-                   'fill': None,
-                   'fill_opacity': 255,
-                   'outline_opacity': 255,
-                   'x_offset': 0,
-                   'y_offset': 0,
-                   'resolution': default_resolution}
+        defeults = {'level': 1,
+                    'outline': 'white',
+                    'width': 1,
+                    'fill': None,
+                    'fill_opacity': 255,
+                    'outline_opacity': 255,
+                    'x_offset': 0,
+                    'y_offset': 0,
+                    'resolution': default_resolution}
 
-        SECTIONS = ['coasts', 'rivers', 'borders', 'cities']
+        sections = ['coasts', 'rivers', 'borders', 'cities', 'grid']
         overlays = {}
 
         for section in config.sections():
-            if section in SECTIONS:
+            if section in sections:
                 overlays[section] = {}
                 for option in config.options(section):
-                    overlays[section][option] = config.get(section, option)
+                    # check for color tuple()s
+                    if option in ['outline', 'fill', 'minor_outline']:
+                        overlays[section][option] = \
+                            parse_color_tuple(config.get(section, option))
+                    else:
+                        overlays[section][option] = config.get(section, option)
 
         is_agg = self._draw_module == "AGG"
 
@@ -792,7 +804,7 @@ class ContourWriterBase(object):
 
             if overlays.has_key(section):
 
-                params = DEFAULT.copy()
+                params = defaults.copy()
                 params.update(overlays[section])
 
                 params['level'] = int(params['level'])
@@ -811,19 +823,18 @@ class ContourWriterBase(object):
                         params.pop(key, None)
 
                 fun(foreground, area_def, **params)
-                logger.info(section.capitalize() + " added")
+                LOGGER.info("%s added", section.capitalize())
 
         # Cities management
         if overlays.has_key('cities'):
-            DEFAULT_FONT_SIZE = 12
-            DEFAULT_OUTLINE = "yellow"
 
             citylist = [s.lstrip()
                         for s in overlays['cities']['list'].split(',')]
             font_file = overlays['cities']['font']
             font_size = int(overlays['cities'].get('font_size',
-                                                   DEFAULT_FONT_SIZE))
-            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
+                                                   12))
+            outline = parse_color_tuple(overlays['cities'].get('outline',
+                                                               'yellow'))
             pt_size = int(overlays['cities'].get('pt_size', None))
             box_outline = overlays['cities'].get('box_outline', None)
             box_opacity = int(overlays['cities'].get('box_opacity', 255))
@@ -832,11 +843,40 @@ class ContourWriterBase(object):
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
 
+        if 'grid' in overlays:
+            lon_major = float(overlays['grid'].get('lon_major', 10.0))
+            lat_major = float(overlays['grid'].get('lat_major', 10.0))
+            lon_minor = float(overlays['grid'].get('lon_minor', 2.0))
+            lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
+            font = overlays['grid'].get('font', None)
+            write_text = overlays['grid'].get('write_text',
+                                              'true').lower() in \
+                ['true', 'yes', '1']
+            fill = overlays['grid'].get('fill', None)
+            outline = parse_color_tuple(overlays['grid'].get('outline',
+                                                             'white'))
+            minor_outline = \
+                parse_color_tuple(overlays['grid'].get('minor_outline',
+                                                       'white'))
+            minor_is_tick = overlays['grid'].get('minor_is_tick',
+                                                 'true').lower() in \
+                ['true', 'yes', '1']
+            lon_placement = overlays['grid'].get('lon_placement', 'tb')
+            lat_placement = overlays['grid'].get('lat_placement', 'lr')
+
+            self.add_grid(foreground, area_def, (lon_major, lat_major),
+                          (lon_minor, lat_minor),
+                          font=font, write_text=write_text, fill=fill,
+                          outline=outline, minor_outline=minor_outline,
+                          minor_is_tick=minor_is_tick,
+                          lon_placement=lon_placement,
+                          lat_placement=lat_placement)
+
         if cache_file is not None:
             try:
                 foreground.save(cache_file)
-            except IOError as e:
-                logger.error("Can't save cache: %s", str(e))
+            except IOError as err:
+                LOGGER.error("Can't save cache: %s", str(err))
 
         return foreground
 
@@ -856,20 +896,21 @@ class ContourWriterBase(object):
         draw = self._get_canvas(image)
 
         # Area and projection info
-        x_size, y_size = image.size
-        prj = pyproj.Proj(proj4_string)
+        x_size, _ = image.size
+        # prj = pyproj.Proj(proj4_string)
 
         # read shape file with points
         # Sc-Kh shapefilename = os.path.join(self.db_root_path,
         # "cities_15000_alternativ.shp")
         shapefilename = os.path.join(
-            self.db_root_path, os.path.join("CITIES", "cities_15000_alternativ.shp"))
+            self.db_root_path, os.path.join("CITIES",
+                                            "cities_15000_alternativ.shp"))
         try:
-            s = shapefile.Reader(shapefilename)
-            shapes = s.shapes()
+            sf_ = shapefile.Reader(shapefilename)
+            shapes = sf_.shapes()
         except AttributeError:
-            raise ShapeFileError('Could not find shapefile %s'
-                                 % shapefilename)
+            raise ShapeFileError('Could not find shapefile %s' % \
+                                 shapefilename)
 
         is_agg = self._draw_module == "AGG"
         if is_agg:
@@ -881,7 +922,7 @@ class ContourWriterBase(object):
         # Iterate through shapes
         for i, shape in enumerate(shapes):
             # Select cities with name
-            record = s.record(i)
+            record = sf_.record(i)
             if record[3] in citylist:
 
                 city_name = record[3]
@@ -893,25 +934,26 @@ class ContourWriterBase(object):
                 lats = shape_data[:, 1][0]
 
                 try:
-                    (x, y) = area_def.get_xy_from_lonlat(lons, lats)
+                    (x_loc, y_loc) = area_def.get_xy_from_lonlat(lons, lats)
                 except ValueError, exc:
-                    logger.debug("Point not added (" + str(exc) + ")")
+                    LOGGER.debug("Point not added (%s)", str(exc))
                 else:
 
                     # add_dot
                     if ptsize is not None:
-                        dot_box = [x - ptsize, y - ptsize,
-                                   x + ptsize, y + ptsize]
-                        self._draw_ellipse(
-                            draw, dot_box, fill=outline, outline=outline)
-                        text_position = [x + 9, y - 5]  # FIX ME
+                        dot_box = [x_loc - ptsize, y_loc - ptsize,
+                                   x_loc + ptsize, y_loc + ptsize]
+                        self._draw_ellipse(draw, dot_box, fill=outline,
+                                           outline=outline)
+                        text_position = [x_loc + 9, y_loc - 5]  # FIX ME
                     else:
-                        text_position = [x, y]
+                        text_position = [x_loc, y_loc]
 
-                # add text_box
-                    self._draw_text_box(
-                        draw, text_position, city_name, font, outline, box_outline, box_opacity)
-                    logger.info(str(city_name) + " added")
+                    # add text_box
+                    self._draw_text_box(draw, text_position, city_name,
+                                        font, outline, box_outline,
+                                        box_opacity)
+                    LOGGER.info("%s added", str(city_name))
 
         self._finalize(draw)
 
@@ -959,16 +1001,17 @@ class ContourWriter(ContourWriterBase):
         draw.rectangle(coordinates, fill=kwargs['fill'],
                        outline=kwargs['outline'])
 
-    def _draw_text_box(self, draw, text_position, text, font, outline, box_outline, box_opacity):
+    def _draw_text_box(self, draw, text_position, text, font, outline,
+                       box_outline, box_opacity):
         """Add text box in xy
         """
 
         if box_outline is not None:
-            logger.warning(
-                "Box background will not added; please install aggdraw lib")
+            LOGGER.warning("Box background will not added; "
+                           "please install aggdraw lib")
 
-        self._draw_text(
-            draw, text_position, text, font, align="no", fill=outline)
+        self._draw_text(draw, text_position, text, font, align="no",
+                        fill=outline)
 
     def _draw_line(self, draw, coordinates, **kwargs):
         """Draw line
@@ -992,7 +1035,7 @@ class ContourWriter(ContourWriterBase):
           |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
         filename : str
             Path to ESRI shape file
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -1033,7 +1076,7 @@ class ContourWriter(ContourWriterBase):
             Path to ESRI shape file
         shape_id : int
             integer id of shape in shape file {0; ... }
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -1075,7 +1118,8 @@ class ContourWriter(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_line(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset,
+        self._add_line(image, area_def, lonlats,
+                       x_offset=x_offset, y_offset=y_offset,
                        fill=fill, outline=outline)
 
     def add_polygon(self, image, area_def, lonlats,
@@ -1101,10 +1145,12 @@ class ContourWriter(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_polygon(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset,
+        self._add_polygon(image, area_def, lonlats,
+                          x_offset=x_offset, y_offset=y_offset,
                           fill=fill, outline=outline)
 
-    def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat),
+    def add_grid(self, image, area_def, (lon_major, lat_major),
+                 (lon_minor, lat_minor),
                  font=None, write_text=True, fill=None, outline='white',
                  minor_outline='white', minor_is_tick=True,
                  lon_placement='tb', lat_placement='lr'):
@@ -1115,9 +1161,9 @@ class ContourWriter(ContourWriterBase):
             PIL image object
         proj4_string : str
             Projection of area as Proj.4 string
-        (Dlon,Dlat): (float,float)
+        (lon_major,lat_major): (float,float)
             Major grid line separation
-        (dlon,dlat): (float,float)
+        (lon_minor,lat_minor): (float,float)
             Minor grid line separation
         font: PIL ImageFont object, optional
             Font for major line markings
@@ -1132,12 +1178,14 @@ class ContourWriter(ContourWriterBase):
         minor_is_tick : boolean, optional
             Use tick minor line style (True) or full minor line style (False)
         """
-        self._add_grid(image, area_def, Dlon, Dlat, dlon, dlat, font=font,
+        self._add_grid(image, area_def, lon_major, lat_major,
+                       lon_minor, lat_minor, font=font,
                        write_text=write_text, fill=fill, outline=outline,
                        minor_outline=minor_outline, minor_is_tick=minor_is_tick,
                        lon_placement=lon_placement, lat_placement=lat_placement)
 
-    def add_grid_to_file(self, filename, area_def, (Dlon, Dlat), (dlon, dlat),
+    def add_grid_to_file(self, filename, area_def, (lon_major, lat_major),
+                         (lon_minor, lat_minor),
                          font=None, write_text=True, fill=None, outline='white',
                          minor_outline='white', minor_is_tick=True,
                          lon_placement='tb', lat_placement='lr'):
@@ -1148,9 +1196,9 @@ class ContourWriter(ContourWriterBase):
             PIL image object
         proj4_string : str
             Projection of area as Proj.4 string
-        (Dlon,Dlat): (float,float)
+        (lon_major,lat_major): (float,float)
             Major grid line separation
-        (dlon,dlat): (float,float)
+        (lon_minor,lat_minor): (float,float)
             Minor grid line separation
         font: PIL ImageFont object, optional
             Font for major line markings
@@ -1167,7 +1215,8 @@ class ContourWriter(ContourWriterBase):
         """
 
         image = Image.open(filename)
-        self.add_grid(image, area_def, (Dlon, Dlat), (dlon, dlat), font=font,
+        self.add_grid(image, area_def, (lon_major, lat_major),
+                      (lon_minor, lat_minor), font=font,
                       write_text=write_text, fill=fill, outline=outline,
                       minor_outline=minor_outline,
                       minor_is_tick=minor_is_tick,
@@ -1411,7 +1460,8 @@ class ContourWriterAGG(ContourWriterBase):
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
         draw.ellipse(coordinates, brush, pen)
 
-    def _draw_text_box(self, draw, text_position, text, font, outline, box_outline, box_opacity):
+    def _draw_text_box(self, draw, text_position, text, font,
+                       outline, box_outline, box_opacity):
         """Add text box in xy
         """
 
@@ -1424,8 +1474,9 @@ class ContourWriterAGG(ContourWriterBase):
             yLR = yUL + text_size[1]
             box_size = (xUL, yUL, xLR, yLR)
 
-            self._draw_rectangle(
-                draw, box_size, fill=box_outline, fill_opacity=box_opacity, outline=box_outline)
+            self._draw_rectangle(draw, box_size, fill=box_outline,
+                                 fill_opacity=box_opacity,
+                                 outline=box_outline)
 
         self._draw_text(draw, text_position, text, font, align="no")
 
@@ -1445,8 +1496,9 @@ class ContourWriterAGG(ContourWriterBase):
 
         draw.flush()
 
-    def add_shapefile_shapes(self, image, area_def, filename, feature_type=None,
-                             fill=None, fill_opacity=255, outline='white', width=1,
+    def add_shapefile_shapes(self, image, area_def, filename,
+                             feature_type=None, fill=None, fill_opacity=255,
+                             outline='white', width=1,
                              outline_opacity=255, x_offset=0, y_offset=0):
         """Add shape file shapes from an ESRI shapefile.
         Note: Currently only supports lon-lat formatted coordinates.
@@ -1461,7 +1513,7 @@ class ContourWriterAGG(ContourWriterBase):
           |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
         filename : str
             Path to ESRI shape file
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -1486,8 +1538,8 @@ class ContourWriterAGG(ContourWriterBase):
                                    outline_opacity=outline_opacity)
 
     def add_shapefile_shape(self, image, area_def, filename, shape_id,
-                            feature_type=None,
-                            fill=None, fill_opacity=255, outline='white', width=1,
+                            feature_type=None, fill=None,
+                            fill_opacity=255, outline='white', width=1,
                             outline_opacity=255, x_offset=0, y_offset=0):
         """Add a single shape file shape from an ESRI shapefile.
         Note: To add all shapes in file use the 'add_shape_file_shapes' routine.
@@ -1505,7 +1557,7 @@ class ContourWriterAGG(ContourWriterBase):
             Path to ESRI shape file
         shape_id : int
             integer id of shape in shape file {0; ... }
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -1557,8 +1609,10 @@ class ContourWriterAGG(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_line(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset,
-                       fill=fill, fill_opacity=fill_opacity, outline=outline, width=width,
+        self._add_line(image, area_def, lonlats,
+                       x_offset=x_offset, y_offset=y_offset,
+                       fill=fill, fill_opacity=fill_opacity,
+                       outline=outline, width=width,
                        outline_opacity=outline_opacity)
 
     def add_polygon(self, image, area_def, lonlats,
@@ -1591,11 +1645,14 @@ class ContourWriterAGG(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_polygon(image, area_def, lonlats, x_offset=x_offset, y_offset=y_offset,
-                          fill=fill, fill_opacity=fill_opacity, outline=outline, width=width,
+        self._add_polygon(image, area_def, lonlats,
+                          x_offset=x_offset, y_offset=y_offset,
+                          fill=fill, fill_opacity=fill_opacity,
+                          outline=outline, width=width,
                           outline_opacity=outline_opacity)
 
-    def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat),
+    def add_grid(self, image, area_def, (lon_major, lat_major),
+                 (lon_minor, lat_minor),
                  font=None, write_text=True, fill=None, fill_opacity=255,
                  outline='white', width=1, outline_opacity=255,
                  minor_outline='white', minor_width=0.5,
@@ -1608,9 +1665,9 @@ class ContourWriterAGG(ContourWriterBase):
             PIL image object
         proj4_string : str
             Projection of area as Proj.4 string
-        (Dlon,Dlat): (float,float)
+        (lon_major,lat_major): (float,float)
             Major grid line separation
-        (dlon,dlat): (float,float)
+        (lon_minor,lat_minor): (float,float)
             Minor grid line separation
         font: Aggdraw Font object, optional
             Font for major line markings
@@ -1633,7 +1690,8 @@ class ContourWriterAGG(ContourWriterBase):
         minor_is_tick : boolean, optional
             Use tick minor line style (True) or full minor line style (False)
         """
-        self._add_grid(image, area_def, Dlon, Dlat, dlon, dlat,
+        self._add_grid(image, area_def, lon_major, lat_major,
+                       lon_minor, lat_minor,
                        font=font, write_text=write_text,
                        fill=fill, fill_opacity=fill_opacity, outline=outline,
                        width=width, outline_opacity=outline_opacity,
@@ -1642,7 +1700,8 @@ class ContourWriterAGG(ContourWriterBase):
                        minor_is_tick=minor_is_tick,
                        lon_placement=lon_placement, lat_placement=lat_placement)
 
-    def add_grid_to_file(self, filename, area_def, (Dlon, Dlat), (dlon, dlat),
+    def add_grid_to_file(self, filename, area_def, (lon_major, lat_major),
+                         (lon_minor, lat_minor),
                          font=None, write_text=True,
                          fill=None, fill_opacity=255,
                          outline='white', width=1, outline_opacity=255,
@@ -1656,9 +1715,9 @@ class ContourWriterAGG(ContourWriterBase):
             PIL image object
         proj4_string : str
             Projection of area as Proj.4 string
-        (Dlon,Dlat): (float,float)
+        (lon_major,lat_major): (float,float)
             Major grid line separation
-        (dlon,dlat): (float,float)
+        (lon_minor,lat_minor): (float,float)
             Minor grid line separation
         font: Aggdraw Font object, optional
             Font for major line markings
@@ -1683,7 +1742,8 @@ class ContourWriterAGG(ContourWriterBase):
         """
 
         image = Image.open(filename)
-        self.add_grid(image, area_def, (Dlon, Dlat), (dlon, dlat),
+        self.add_grid(image, area_def, (lon_major, lat_major),
+                      (lon_minor, lat_minor),
                       font=font, write_text=write_text,
                       fill=fill, fill_opacity=fill_opacity,
                       outline=outline, width=width,
@@ -1927,7 +1987,8 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
 
     angle_sum = 0
     prev = None
-    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
+    for lon in np.concatenate((lons_s1, lons_s2,
+                               lons_s3[::-1], lons_s4[::-1])):
         if prev is not None:
             delta = lon - prev
             if abs(delta) > 180:
@@ -1996,42 +2057,42 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
 
     x_ll, y_ll, x_ur, y_ur = area_extent
 
-    x, y = prj(lons, lats)
+    x_loc, y_loc = prj(lons, lats)
 
     # Handle out of bounds
     i = 0
     segments = []
-    if 1e30 in x or 1e30 in y:
+    if 1e30 in x_loc or 1e30 in y_loc:
         # Split polygon in line segments within projection
         is_reduced = True
-        if x[0] == 1e30 or y[0] == 1e30:
+        if x_loc[0] == 1e30 or y_loc[0] == 1e30:
             in_segment = False
         else:
             in_segment = True
 
         for j in range(x.size):
-            if (x[j] == 1e30 or y[j] == 1e30):
+            if (x_loc[j] == 1e30 or y_loc[j] == 1e30):
                 if in_segment:
-                    segments.append((x[i:j], y[i:j]))
+                    segments.append((x_loc[i:j], y_loc[i:j]))
                     in_segment = False
             elif not in_segment:
                 in_segment = True
                 i = j
         if in_segment:
-            segments.append((x[i:], y[i:]))
+            segments.append((x_loc[i:], y_loc[i:]))
 
     else:
         is_reduced = False
-        segments = [(x, y)]
+        segments = [(x_loc, y_loc)]
 
     # Convert to pixel index coordinates
     l_x = (x_ur - x_ll) / x_size
     l_y = (y_ur - y_ll) / y_size
 
     index_arrays = []
-    for x, y in segments:
-        n_x = ((-x_ll + x) / l_x) + 0.5 + x_offset
-        n_y = ((y_ur - y) / l_y) + 0.5 + y_offset
+    for x_loc, y_loc in segments:
+        n_x = ((-x_ll + x_loc) / l_x) + 0.5 + x_offset
+        n_y = ((y_ur - y_loc) / l_y) + 0.5 + y_offset
 
         index_array = np.vstack((n_x, n_y)).T
         index_arrays.append(index_array)
