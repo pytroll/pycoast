@@ -770,7 +770,7 @@ class ContourWriterBase(object):
         else:
             default_resolution = "f"
 
-        defeults = {'level': 1,
+        defaults = {'level': 1,
                     'outline': 'white',
                     'width': 1,
                     'fill': None,
