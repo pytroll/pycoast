@@ -526,3 +526,11 @@ class TestPILAGG(TestPycoast):
                                outline='blue', fill='green')
         res = np.array(img)
         self.failUnless(fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
+
+def suite():
+    loader = unittest.TestLoader()
+    mysuite = unittest.TestSuite()
+    mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
+    mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
+
+    return mysuite

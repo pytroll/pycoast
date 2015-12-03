@@ -35,6 +35,7 @@ setup(name='pycoast',
       author_email='esn@dmi.dk',
       packages = ['pycoast'],      
       install_requires=requires,
+      test_suite='test.test_pycoast.suite',
       zip_safe = False,
       classifiers=[
       'Development Status :: 5 - Production/Stable',
