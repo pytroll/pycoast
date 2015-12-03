@@ -26,7 +26,6 @@ import os
 import shapefile
 import numpy as np
 from PIL import Image, ImageFont
-from PIL import ImageDraw
 import pyproj
 import logging
 from .errors import *
