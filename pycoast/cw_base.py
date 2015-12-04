@@ -524,11 +524,12 @@ class ContourWriterBase(object):
             # Check if polygon is possibly relevant
             s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
             if lon_min > lon_max:
-                # Dateline crossing
-                if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
-                        lat_max < s_lat_ll or lat_min > s_lat_ur):
-                    # Polygon is irrelevant
-                    continue
+                pass
+            #     # Dateline crossing
+            #     if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
+            #             lat_max < s_lat_ll or lat_min > s_lat_ur):
+            #         # Polygon is irrelevant
+            #         continue
             elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
                   lat_max < s_lat_ll or lat_min > s_lat_ur):
                 # Polygon is irrelevant
@@ -605,11 +606,12 @@ class ContourWriterBase(object):
                 # Check if polygon is possibly relevant
                 s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
                 if lon_min > lon_max:
-                    # Dateline crossing
-                    if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
-                            lat_max < s_lat_ll or lat_min > s_lat_ur):
-                        # Polygon is irrelevant
-                        continue
+                    pass
+                #    # Dateline crossing
+                #    if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
+                #            lat_max < s_lat_ll or lat_min > s_lat_ur):
+                #        # Polygon is irrelevant
+                #        continue
                 elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
                       lat_max < s_lat_ll or lat_min > s_lat_ur):
                     # Polygon is irrelevant
