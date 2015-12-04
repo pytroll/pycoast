@@ -8,3 +8,7 @@ try:
     from .cw_agg import ContourWriterAGG
 except ImportError:
     ContourWriterAGG = ContourWriter
+try:
+    from .cw_cairo import ContourWriterCairo
+except ImportError:
+    ContourWriterCairo = ContourWriterAGG
