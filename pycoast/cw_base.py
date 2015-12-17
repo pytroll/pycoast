@@ -28,6 +28,7 @@ import numpy as np
 from PIL import Image, ImageFont
 import pyproj
 import logging
+from ConfigParser import ConfigParser
 from .errors import *
 
 logger = logging.getLogger(__name__)
