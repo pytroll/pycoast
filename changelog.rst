@@ -1,6 +1,26 @@
 Changelog
 =========
 
+v0.5.4 (2016-02-21)
+-------------------
+
+- Update changelog. [Martin Raspaud]
+
+- Bump version: 0.5.3 → 0.5.4. [Martin Raspaud]
+
+- Merge branch 'pre-master' [Martin Raspaud]
+
+- Merge branch 'pre-master' of github.com:pytroll/pycoast into pre-
+  master. [Martin Raspaud]
+
+- Add missing import of ConfigParser. [Panu Lahtinen]
+
+- Remove skipping shapefiles crossing dateline, fixes global overlays.
+  [Panu Lahtinen]
+
+- Update test reference images with ones made in Ubuntu so automatic
+  testing might work in Travis. [Panu Lahtinen]
+
 v0.5.3 (2016-02-21)
 -------------------
 
