@@ -29,16 +29,21 @@ import numpy as np
 from PIL import Image
 import logging
 
+logger = logging.getLogger(__name__)
+
 # Prefer cairocffi, but use API compatible pycairo if not available.
 # Why do we prefer cairocffi? FIXME
-try:
-    import cairocffi as cairo
-except ImportError:
-    import cairo
+# try:
+#     import cairocffi as cairo
+# except ImportError:
+#     logger.error('cairocffi is needed')
+#     raise
+
+#import cairo
+import cairocffi as cairo
+
 
 from .cw_base import ContourWriterBase
-
-logger = logging.getLogger(__name__)
 
 
 class CairoDrawObject(object):

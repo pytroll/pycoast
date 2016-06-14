@@ -28,7 +28,7 @@ import imp
 
 version = imp.load_source('pycoast.version', 'pycoast/version.py')
 
-requires = ['pyshp', 'numpy', 'pyproj']  # , 'pycairo']
+requires = ['pyshp', 'numpy', 'pyproj']  # , 'cairocffi']
 
 try:
     from PIL import Image
@@ -43,7 +43,7 @@ setup(name='pycoast',
       author_email='esn@dmi.dk',
       packages=['pycoast', 'pycoast.tests'],
       install_requires=requires,
-      extras_require={'cairo': ['pycairo']},
+      #extras_require={'cairo': ['pycairo']},
       scripts=[],
       test_suite='pycoast.tests.test_pycoast.suite',
       zip_safe=False,
