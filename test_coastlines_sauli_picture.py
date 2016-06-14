@@ -34,3 +34,4 @@ cw = ContourWriterCairo('/home/a000680/data/shapes')
 cw.add_coastlines(
     img, (proj4_string, area_extent), resolution='l', width=.5, outline='black')
 img.show()
+# img.save('/tmp/ctt_with_ovl.png')
