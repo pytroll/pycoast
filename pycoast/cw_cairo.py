@@ -31,16 +31,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Prefer cairocffi, but use API compatible pycairo if not available.
-# Why do we prefer cairocffi? FIXME
-# try:
-#     import cairocffi as cairo
-# except ImportError:
-#     logger.error('cairocffi is needed')
-#     raise
-
-#import cairo
-import cairocffi as cairo
 from cairocffi import FORMAT_ARGB32, Context, ImageSurface  
 
 
@@ -214,10 +204,6 @@ class ContourWriterCairo(ContourWriterBase):
         img = self._cairo_to_pil()
         #draw_obj.pilimage.paste(img,(0,0),mask=tmp)
         draw_obj.pilimage.paste(img)
-
-        draw_obj.pilimage.save('/tmp/kurt.png')
-
-        self._surface.write_to_png('/tmp/cairo_surface.png')
 
     def add_shapefile_shapes(self, img_ctx, area_def, filename,
                              feature_type=None, fill=None, fill_opacity=255,
