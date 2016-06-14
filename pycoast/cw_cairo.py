@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 #import cairo
 import cairocffi as cairo
-
+from cairocffi import FORMAT_ARGB32, Context, ImageSurface
 
 from .cw_base import ContourWriterBase
 
@@ -89,13 +89,14 @@ class ContourWriterCairo(ContourWriterBase):
                 'Cairo context as input not yet supported!')
 
         elif isinstance(image, Image.Image):
+            fmt = FORMAT_ARGB32
+            width, height = image.size
             data = image.convert('RGBA')
             data = np.asarray(data)
             tmp = data.copy()
-            width, height, dummy = tmp.shape
-            self._surface = cairo.ImageSurface.create_for_data(tmp, cairo.FORMAT_ARGB32,
-                                                               width, height)
+            self._surface = ImageSurface(fmt, width, height, tmp)
             canvas = CairoDrawObject(cairo.Context(self._surface), image)
+
             return canvas
         else:
             raise ValueError("Unsupported image format.")
