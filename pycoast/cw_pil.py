@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2015
+# Copyright (C) 2011-2016
 #    Esben S. Nielsen
 #    Hróbjartur Þorsteinsson
 #    Stefano Cerino
 #    Katja Hungershofer
 #    Panu Lahtinen
+#    Sauli Joro
+#    Adam Dybbroe
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +31,7 @@ import logging
 from cw_base import ContourWriterBase
 
 logger = logging.getLogger(__name__)
+
 
 class ContourWriter(ContourWriterBase):
 
@@ -57,18 +60,23 @@ class ContourWriter(ContourWriterBase):
         """Draw polygon
         """
 
+        coordinates = coordinates.flatten().tolist()
         draw.polygon(coordinates, fill=kwargs['fill'],
                      outline=kwargs['outline'])
 
     def _draw_ellipse(self, draw, coordinates, **kwargs):
         """Draw ellipse 
         """
+        # Flatten the coordinates
+        coordinates = coordinates.flatten().tolist()
         draw.ellipse(coordinates, fill=kwargs['fill'],
                      outline=kwargs['outline'])
 
     def _draw_rectangle(self, draw, coordinates, **kwargs):
         """Draw rectangle 
         """
+        # Flatten the coordinates
+        coordinates = coordinates.flatten().tolist()
         draw.rectangle(coordinates, fill=kwargs['fill'],
                        outline=kwargs['outline'])
 
@@ -87,7 +95,8 @@ class ContourWriter(ContourWriterBase):
     def _draw_line(self, draw, coordinates, **kwargs):
         """Draw line
         """
-
+        # Flatten the coordinates
+        coordinates = coordinates.flatten().tolist()
         draw.line(coordinates, fill=kwargs['outline'])
 
     def add_shapefile_shapes(self, image, area_def, filename, feature_type=None,

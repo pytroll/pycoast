@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2015
+# Copyright (C) 2011-2016
 #    Esben S. Nielsen
 #    Hróbjartur Þorsteinsson
 #    Stefano Cerino
 #    Katja Hungershofer
 #    Panu Lahtinen
+#    Sauli Joro
+#    Adam Dybbroe
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +24,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import numpy as np
-import Image
+from PIL import Image
 import logging
 
 # Prefer cairocffi, but use API compatible pycairo if not available.
+# Why do we prefer cairocffi? FIXME
 try:
     import cairocffi as cairo
 except ImportError:
@@ -35,6 +39,13 @@ except ImportError:
 from .cw_base import ContourWriterBase
 
 logger = logging.getLogger(__name__)
+
+
+class CairoDrawObject(object):
+
+    def __init__(self, context, pilimage):
+        self.context = context
+        self.pilimage = pilimage
 
 
 class ContourWriterCairo(ContourWriterBase):
@@ -51,42 +62,93 @@ class ContourWriterCairo(ContourWriterBase):
     # routine from PIL, aggdraw or Cairo should be used (unfortunately
     # they are not fully compatible)
 
+    # Map the color from string to R, G, B
+    colormap = {'white': (1, 1, 1),
+                'blue': (0, 0, .9),
+                'black': (0, 0, 0),
+                'grey': (.7, .7, .7),
+                'red': (.9, 0, 0),
+                'green': (0, .9, 0)}
+
+    # def __init__(self):
+    #    ContourWriterBase.__init__(self)
+
     def _get_canvas(self, image):
         """Returns PIL draw canvass, convert from Cairo image context if
         necessary.
         """
+
         if isinstance(image, cairo.Context):
-            return _cairo_to_pil(image)
+            # Create PIL image from cairo context:
+            raise NotImplementedError(
+                'Cairo context as input not yet supported!')
+
         elif isinstance(image, Image.Image):
-            return image
+            data = image.convert('RGBA')
+            data = np.asarray(data)
+            tmp = data.copy()
+            width, height, dummy = tmp.shape
+            self._surface = cairo.ImageSurface.create_for_data(tmp, cairo.FORMAT_ARGB32,
+                                                               width, height)
+            canvas = CairoDrawObject(cairo.Context(self._surface), image)
+            return canvas
         else:
             raise ValueError("Unsupported image format.")
 
     def _engine_text_draw(self, img_ctx, (x_pos, y_pos), txt, font, **kwargs):
+
+        #outline = kwargs.get('outline')
+        # if type(outline) is str:
+        #    r, g, b = self.colormap.get(outline)
+        # else:
+        #    r, g, b = outline
+
+        # img_ctx.set_source_rgb(r, g, b)  # Solid color
+        # img_ctx.set_line_width(kwargs['width'])
+        # img_ctx.stroke()
+
         img_ctx.move_to(x_pos, y_pos)
         img_ctx.show_text(txt)
 
-    def _draw_polygon(self, img_ctx, coordinates, **kwargs):
+    def _draw_polygon(self, draw_obj, coordinates, **kwargs):
         """Draw polygon
         """
-        img_ctx.move_to(*coordinates[0])
-        for i in xrange(1, len(coordinates)):
-            img_ctx.line_to(*coordinates[i])
 
-    def _draw_rectangle(self, img_ctx, coordinates, **kwargs):
+        outline = kwargs.get('outline')
+        if type(outline) is str:
+            if outline not in self.colormap:
+                logger.warning("Color %s not supported", outline)
+            r, g, b = self.colormap.get(outline, (1, 1, 1))
+        else:
+            r, g, b = outline
+
+        img_ctx = draw_obj.context
+
+        x, y = coordinates[0]
+        img_ctx.move_to(x, y)
+        for x, y in coordinates[1:]:
+            img_ctx.line_to(x, y)
+
+        img_ctx.set_source_rgb(r, g, b)  # Solid color
+        img_ctx.set_line_width(kwargs['width'])
+        img_ctx.stroke()
+
+    def _draw_rectangle(self, draw_obj, coordinates, **kwargs):
         """Draw rectangle
         """
-        self._draw_polygon(img_ctx, coordinates, kwargs)
+        self._draw_polygon(draw_obj, coordinates, kwargs)
 
-    def _draw_ellipse(self, img_ctx, coordinates, **kwargs):
+    def _draw_ellipse(self, draw_obj, coordinates, **kwargs):
         """Draw ellipse
         """
         raise NotImplementedError('Ellipse drawing not implemented for Cairo '
                                   'backend')
 
-    def _draw_text(self, img_ctx, position, txt, font, align='cc', **kwargs):
+    def _draw_text(self, draw_obj, position, txt, font, align='cc', **kwargs):
         """Draw text with Cairo module
         """
+        img_ctx = draw_obj.context
+
         self._set_font(img_ctx, font)
         xbearing, ybearing, txt_width, txt_height = \
             img_ctx.text_extents(txt)
@@ -104,10 +166,12 @@ class ContourWriterCairo(ContourWriterBase):
 
         self._engine_text_draw(img_ctx, (x_pos, y_pos), txt, font, **kwargs)
 
-    def _draw_text_box(self, img_ctx, text_position, text, font, outline,
+    def _draw_text_box(self, draw_obj, text_position, text, font, outline,
                        box_outline, box_opacity):
         """Add text box in xy
         """
+        img_ctx = draw_obj.context
+
         self._set_font(img_ctx, font)
         if box_outline is not None:
             xbearing, ybearing, txt_width, txt_height = \
@@ -124,20 +188,31 @@ class ContourWriterCairo(ContourWriterBase):
 
         self._draw_text(img_ctx, text_position, text, font, align="no")
 
-    def _draw_line(self, img_ctx, coordinates, **kwargs):
+    def _draw_line(self, draw_obj, coordinates, **kwargs):
         """Draw line
         """
-        self._draw_polygon(coordinates)
+        self._draw_polygon(draw_obj, coordinates, **kwargs)
 
     def _set_font(self, img_ctx, font):
         """Set font."""
         pass
         # raise NotImplementedError('Font things are not implemented.')
 
-    def _finalize(self, img_ctx):
-        """Finish the cairo image object
+    def _finalize(self, draw_obj):
+        """Finish the draw object (contains cairo image context object)
         """
-        img_ctx.finish()
+        img_ctx = draw_obj.context
+        # img_ctx.paint()
+        # img_ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
+        # img_ctx.set_line_width(3.0)
+        # img_ctx.stroke()
+
+        img = self._cairo_to_pil()
+        draw_obj.pilimage.paste(img)
+
+        draw_obj.pilimage.save('/tmp/kurt.png')
+
+        self._surface.write_to_png('/tmp/cairo_surface.png')
 
     def add_shapefile_shapes(self, img_ctx, area_def, filename,
                              feature_type=None, fill=None, fill_opacity=255,
@@ -156,7 +231,7 @@ class ContourWriterCairo(ContourWriterBase):
           |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
         filename : str
             Path to ESRI shape file
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -201,7 +276,7 @@ class ContourWriterCairo(ContourWriterBase):
             Path to ESRI shape file
         shape_id : int
             integer id of shape in shape file {0; ... }
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -615,39 +690,66 @@ class ContourWriterCairo(ContourWriterBase):
         raise NotImplementedError("Get font not implemented")
         # return aggdraw.Font(outline, font_file, size=font_size)
 
+    def _cairo_to_pil(self, out_mode='RGB'):
+        '''Convert Cairo image context to PIL image.'''
+        # Finalize the image to fix changes
+
+        cairo_format = self._surface.get_format()
+        if cairo_format == cairo.FORMAT_ARGB32:
+            pil_mode = 'RGB'
+            # Cairo buffer is supposed to be ARGB, but seems to be RGBA.
+            # Convert this to RGB for PIL which supports
+            # only RGB or RGBA. Thus, get rid of the last column (the alpha
+            # layer)
+            argb_array = np.fromstring(
+                self._surface.get_data(), 'c').reshape(-1, 4)
+
+            rgb_array = argb_array[:, :3]
+            pil_data = rgb_array.reshape(-1).tostring()
+        else:
+            raise ValueError('Unsupported cairo format: %d' % cairo_format)
+        pil_image = Image.frombuffer(pil_mode,
+                                     (self._surface.get_width(),
+                                      self._surface.get_height()),
+                                     pil_data, "raw", pil_mode, 0, 1)
+        return pil_image.convert(out_mode)
+
 
 def _pil_to_cairo(pil_img):
     '''Convert PIL image to cairo context'''
-    img_rgba = numpy.array(pil_img.convert('RGBA'))
-    data = numpy.array(img_rgba.tostring('raw', 'BGRA'))
+    img_rgba = np.array(pil_img.convert('RGBA'))
+    data = np.array(img_rgba.tostring('raw', 'BGRA'))
     width, height = img_rgba.size
     surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32,
                                                  width, height)
     return cairo.Context(surface)
 
+
 def _cairo_to_pil(img_ctx, out_mode='RGB'):
     '''Convert Cairo image context to PIL image.'''
     # Finalize the image to fix changes
-    self._finalize()
+
     cairo_format = img_ctx.get_format()
     if cairo_format == cairo.FORMAT_ARGB32:
         pil_mode = 'RGB'
         # Cairo has ARGB. Convert this to RGB for PIL which supports
         # only RGB or RGBA.
-        argb_array = numpy.fromstring(img_ctx.get_data(), 'c').reshape(-1, 4)
+        argb_array = np.fromstring(img_ctx.get_data(), 'c').reshape(-1, 4)
         rgb_array = argb_array[:, 2::-1]
         pil_data = rgb_array.reshape(-1).tostring()
     else:
-        raise ValueError('Unsupported cairo format: %d' % cairoFormat)
+        raise ValueError('Unsupported cairo format: %d' % cairo_format)
     pil_image = Image.frombuffer(pil_mode,
                                  (img_ctx.get_width(), img_ctx.get_height()),
                                  pil_data, "raw", pil_mode, 0, 1)
     return pil_image.convert(out_mode)
 
+
 def _read_image(fname):
     """Read the given file and create a cairo context."""
     img = Image.open(fname)
     return _pil_to_cairo(img)
+
 
 def _save_image(img_ctx, fname, out_mode='RGB'):
     """Save the given cairo context to a file."""

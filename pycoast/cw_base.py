@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2015
+# Copyright (C) 2011-2016
 #    Esben S. Nielsen
 #    Hróbjartur Þorsteinsson
 #    Stefano Cerino
 #    Katja Hungershofer
 #    Panu Lahtinen
+#    Sauli Joro
+#    Adam Dybbroe
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +24,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import os
 import shapefile
 import numpy as np
@@ -31,6 +34,7 @@ import logging
 from .errors import *
 
 logger = logging.getLogger(__name__)
+
 
 class ContourWriterBase(object):
 
@@ -51,6 +55,8 @@ class ContourWriterBase(object):
             self.db_root_path = os.environ['GSHHS_DATA_ROOT']
         else:
             self.db_root_path = db_root_path
+
+        self._surface = None
 
     def _draw_text(self, draw, position, txt, font, align='cc', **kwargs):
         """Draw text with agg module
@@ -265,7 +271,7 @@ class ContourWriterBase(object):
                 # make PIL draw the tick line...
                 for index_array in index_arrays:
                     self._draw_line(draw,
-                                    index_array.flatten().tolist(),
+                                    index_array,
                                     **minor_line_kwargs)
             # minor lon lines
             for lon in min_lons:
@@ -283,7 +289,7 @@ class ContourWriterBase(object):
                 # make PIL draw the tick line...
                 for index_array in index_arrays:
                     self._draw_line(draw,
-                                    index_array.flatten().tolist(),
+                                    index_array,
                                     **minor_line_kwargs)
 
         ##### MAJOR LINES AND MINOR TICKS ######
@@ -311,7 +317,7 @@ class ContourWriterBase(object):
                     # make PIL draw the tick line...
                     for index_array in index_arrays:
                         self._draw_line(draw,
-                                        index_array.flatten().tolist(),
+                                        index_array,
                                         **minor_line_kwargs)
 
             # Draw 'major' lines
@@ -329,7 +335,7 @@ class ContourWriterBase(object):
             # make PIL draw the lines...
             for index_array in index_arrays:
                 self._draw_line(draw,
-                                index_array.flatten().tolist(),
+                                index_array,
                                 **kwargs)
 
             # add lon text markings at each end of longitude line
@@ -366,7 +372,7 @@ class ContourWriterBase(object):
                     # make PIL draw the tick line...
                     for index_array in index_arrays:
                         self._draw_line(draw,
-                                        index_array.flatten().tolist(),
+                                        index_array,
                                         **minor_line_kwargs)
 
             # Draw 'major' lines
@@ -383,7 +389,7 @@ class ContourWriterBase(object):
 
             # make PIL draw the lines...
             for index_array in index_arrays:
-                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
+                self._draw_line(draw, index_array, **kwargs)
 
             # add lat text markings at each end of parallels ...
             if write_text:
@@ -416,7 +422,7 @@ class ContourWriterBase(object):
                 # make PIL draw the lines...
                 for index_array in index_arrays:
                     self._draw_line(draw,
-                                    index_array.flatten().tolist(),
+                                    index_array,
                                     **kwargs)
         if lat_min == -90.0:
             crosslats = np.arange(-90.0, -90.0 + Dlat / 2.0,
@@ -437,7 +443,7 @@ class ContourWriterBase(object):
                 # make PIL draw the lines...
                 for index_array in index_arrays:
                     self._draw_line(draw,
-                                    index_array.flatten().tolist(),
+                                    index_array,
                                     **kwargs)
         self._finalize(draw)
 
@@ -561,12 +567,12 @@ class ContourWriterBase(object):
                     if feature_type.lower() == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
                         self._draw_polygon(draw,
-                                           index_array.flatten().tolist(),
+                                           index_array,
                                            **kwargs)
                     elif feature_type.lower() == 'line' or is_reduced:
                         # Draw line
                         self._draw_line(draw,
-                                        index_array.flatten().tolist(),
+                                        index_array,
                                         **kwargs)
                     else:
                         raise ValueError('Unknown contour type: %s'
@@ -630,17 +636,20 @@ class ContourWriterBase(object):
                 if len(index_arrays) == 0:
                     continue
 
-                # Make PIL draw the polygon or line
+                # Make PIL/Cairo draw the polygon or line
+                # The functions draw_polygon and draw_line needs to be defined
+                # in the sub classes (e.g. cw_pil or cw_cairo modules)
                 for index_array in index_arrays:
                     if feature_type.lower() == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
                         self._draw_polygon(draw,
-                                           index_array.flatten().tolist(),
+                                           index_array,
                                            **kwargs)
+
                     elif feature_type.lower() == 'line' or is_reduced:
                         # Draw line
                         self._draw_line(draw,
-                                        index_array.flatten().tolist(),
+                                        index_array,
                                         **kwargs)
                     else:
                         raise ValueError('Unknown contour type: %s'
@@ -906,6 +915,7 @@ class ContourWriterBase(object):
 
         self._finalize(draw)
 
+
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values
     """
@@ -1031,4 +1041,3 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
         index_arrays.append(index_array)
 
     return index_arrays, is_reduced
-
