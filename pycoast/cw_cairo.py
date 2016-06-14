@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 #import cairo
 import cairocffi as cairo
+from cairocffi import FORMAT_ARGB32, Context, ImageSurface  
 
 
 from .cw_base import ContourWriterBase
@@ -83,19 +84,17 @@ class ContourWriterCairo(ContourWriterBase):
         necessary.
         """
 
-        if isinstance(image, cairo.Context):
+        if isinstance(image, Context):
             # Create PIL image from cairo context:
             raise NotImplementedError(
                 'Cairo context as input not yet supported!')
 
         elif isinstance(image, Image.Image):
-            data = image.convert('RGBA')
-            data = np.asarray(data)
-            tmp = data.copy()
-            width, height, dummy = tmp.shape
-            self._surface = cairo.ImageSurface.create_for_data(tmp, cairo.FORMAT_ARGB32,
-                                                               width, height)
-            canvas = CairoDrawObject(cairo.Context(self._surface), image)
+            fmt = FORMAT_ARGB32
+            data = np.asarray(image.convert('RGBA')).copy()
+            width, height = image.size
+            self._surface = ImageSurface(fmt, width, height, data.flatten())
+            canvas = CairoDrawObject(Context(self._surface), image)
             return canvas
         else:
             raise ValueError("Unsupported image format.")
@@ -213,6 +212,7 @@ class ContourWriterCairo(ContourWriterBase):
         # img_ctx.stroke()
 
         img = self._cairo_to_pil()
+        #draw_obj.pilimage.paste(img,(0,0),mask=tmp)
         draw_obj.pilimage.paste(img)
 
         draw_obj.pilimage.save('/tmp/kurt.png')
@@ -700,7 +700,7 @@ class ContourWriterCairo(ContourWriterBase):
         # Finalize the image to fix changes
 
         cairo_format = self._surface.get_format()
-        if cairo_format == cairo.FORMAT_ARGB32:
+        if cairo_format == FORMAT_ARGB32:
             pil_mode = 'RGB'
             # Cairo buffer is supposed to be ARGB, but seems to be RGBA.
             # Convert this to RGB for PIL which supports
@@ -725,9 +725,9 @@ def _pil_to_cairo(pil_img):
     img_rgba = np.array(pil_img.convert('RGBA'))
     data = np.array(img_rgba.tostring('raw', 'BGRA'))
     width, height = img_rgba.size
-    surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32,
+    surface = ImageSurface.create_for_data(data, FORMAT_ARGB32,
                                                  width, height)
-    return cairo.Context(surface)
+    return Context(surface)
 
 
 def _cairo_to_pil(img_ctx, out_mode='RGB'):
@@ -735,7 +735,7 @@ def _cairo_to_pil(img_ctx, out_mode='RGB'):
     # Finalize the image to fix changes
 
     cairo_format = img_ctx.get_format()
-    if cairo_format == cairo.FORMAT_ARGB32:
+    if cairo_format == FORMAT_ARGB32:
         pil_mode = 'RGB'
         # Cairo has ARGB. Convert this to RGB for PIL which supports
         # only RGB or RGBA.
