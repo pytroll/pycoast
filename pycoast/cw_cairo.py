@@ -39,9 +39,7 @@ logger = logging.getLogger(__name__)
 #     logger.error('cairocffi is needed')
 #     raise
 
-#import cairo
-import cairocffi as cairo
-from cairocffi import FORMAT_ARGB32, Context, ImageSurface
+from cairo import FORMAT_ARGB32, Context, ImageSurface
 
 from .cw_base import ContourWriterBase
 
@@ -83,7 +81,7 @@ class ContourWriterCairo(ContourWriterBase):
         necessary.
         """
 
-        if isinstance(image, cairo.Context):
+        if isinstance(image, Context):
             # Create PIL image from cairo context:
             raise NotImplementedError(
                 'Cairo context as input not yet supported!')
@@ -94,8 +92,9 @@ class ContourWriterCairo(ContourWriterBase):
             data = image.convert('RGBA')
             data = np.asarray(data)
             tmp = data.copy()
-            self._surface = ImageSurface(fmt, width, height, tmp)
-            canvas = CairoDrawObject(cairo.Context(self._surface), image)
+            self._surface = ImageSurface.create_for_data(tmp, FORMAT_ARGB32,
+                                                         width, height)
+            canvas = CairoDrawObject(Context(self._surface), image)
 
             return canvas
         else:
@@ -142,7 +141,7 @@ class ContourWriterCairo(ContourWriterBase):
     def _draw_rectangle(self, draw_obj, coordinates, **kwargs):
         """Draw rectangle
         """
-        self._draw_polygon(draw_obj, coordinates, kwargs)
+        self._draw_polygon(draw_obj, coordinates, **kwargs)
 
     def _draw_ellipse(self, draw_obj, coordinates, **kwargs):
         """Draw ellipse
@@ -208,10 +207,6 @@ class ContourWriterCairo(ContourWriterBase):
         """Finish the draw object (contains cairo image context object)
         """
         img_ctx = draw_obj.context
-        # img_ctx.paint()
-        # img_ctx.set_source_rgb(0.3, 0.2, 0.5)  # Solid color
-        # img_ctx.set_line_width(3.0)
-        # img_ctx.stroke()
 
         img = self._cairo_to_pil()
         draw_obj.pilimage.paste(img)
@@ -701,7 +696,7 @@ class ContourWriterCairo(ContourWriterBase):
         # Finalize the image to fix changes
 
         cairo_format = self._surface.get_format()
-        if cairo_format == cairo.FORMAT_ARGB32:
+        if cairo_format == FORMAT_ARGB32:
             pil_mode = 'RGB'
             # Cairo buffer is supposed to be ARGB, but seems to be RGBA.
             # Convert this to RGB for PIL which supports
@@ -726,9 +721,9 @@ def _pil_to_cairo(pil_img):
     img_rgba = np.array(pil_img.convert('RGBA'))
     data = np.array(img_rgba.tostring('raw', 'BGRA'))
     width, height = img_rgba.size
-    surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32,
-                                                 width, height)
-    return cairo.Context(surface)
+    surface = ImageSurface.create_for_data(data, FORMAT_ARGB32,
+                                           width, height)
+    return Context(surface)
 
 
 def _cairo_to_pil(img_ctx, out_mode='RGB'):
@@ -736,7 +731,7 @@ def _cairo_to_pil(img_ctx, out_mode='RGB'):
     # Finalize the image to fix changes
 
     cairo_format = img_ctx.get_format()
-    if cairo_format == cairo.FORMAT_ARGB32:
+    if cairo_format == FORMAT_ARGB32:
         pil_mode = 'RGB'
         # Cairo has ARGB. Convert this to RGB for PIL which supports
         # only RGB or RGBA.
