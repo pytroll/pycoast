@@ -168,7 +168,7 @@ class ContourWriterBase(object):
 
         draw = self._get_canvas(image)
 
-        is_agg = self._draw_module == "AGG"
+        is_agg = self._draw_module == "Cairo"
 
         # use kwargs for major lines ... but reform for minor lines:
         minor_line_kwargs = kwargs.copy()
@@ -186,7 +186,11 @@ class ContourWriterBase(object):
         x_text_margin = 4
 
         # Area and projection info
-        x_size, y_size = image.size
+        try:
+            x_size, y_size = image.size
+        except AttributeError:
+            x_size, y_size = image.get_width(), image.get_height()
+
         prj = pyproj.Proj(proj4_string)
 
         x_offset = 0
@@ -790,7 +794,7 @@ class ContourWriterBase(object):
                 for option in config.options(section):
                     overlays[section][option] = config.get(section, option)
 
-        is_agg = self._draw_module == "AGG"
+        is_agg = self._draw_module == "Cairo"
 
         # Coasts
         for section, fun in zip(['coasts', 'rivers', 'borders'],

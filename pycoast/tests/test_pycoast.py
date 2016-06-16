@@ -20,11 +20,7 @@ import unittest
 
 import numpy as np
 from PIL import Image, ImageFont
-
 from pycoast import ContourWriter
-
-
-import pdb
 
 
 def tmp(f):
@@ -428,14 +424,13 @@ class TestPILCairo(TestPycoast):
                     minor_outline='white', minor_outline_opacity=255, minor_width=0.5,
                     minor_is_tick=False)
         res = np.array(img)
-        pdb.set_trace()
-        img.save('/tmp/kurt.png')
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_agg_txt(self):
+        # Test not yet working: Text shifted north wards and out of canvas
+        # FIXME
         from pycoast import ContourWriterCairo
-        import aggdraw
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_europe_agg_txt.png'))
         grid_data = np.array(grid_img)
@@ -448,11 +443,13 @@ class TestPILCairo(TestPycoast):
         cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=16,
-                            opacity=200)
+        font = ImageFont.truetype(
+            os.path.join(os.path.dirname(__file__), 'test_data',
+                         'DejaVuSerif.ttf'), 26)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font,
                     outline='blue', outline_opacity=255, width=1.0,
-                    minor_outline='white', minor_outline_opacity=255, minor_width=0.5,
+                    minor_outline='white', minor_outline_opacity=255,
+                    minor_width=0.5,
                     minor_is_tick=False)
 
         res = np.array(img)
@@ -460,7 +457,7 @@ class TestPILCairo(TestPycoast):
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_geos_agg(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         geos_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_geos_agg.png'))
         geos_data = np.array(geos_img)
@@ -469,7 +466,7 @@ class TestPILCairo(TestPycoast):
         area_extent = (-5570248.4773392612, -5567248.074173444,
                        5567248.074173444, 5570248.4773392612)
         area_def = (proj4_string, area_extent)
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l')
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), fill='blue', outline='blue', minor_outline='blue',
                     write_text=False)
@@ -479,7 +476,7 @@ class TestPILCairo(TestPycoast):
             fft_metric(geos_data, res), 'Writing of geos contours failed')
 
     def test_grid_agg_file(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_europe_agg.png'))
         grid_data = np.array(grid_img)
@@ -488,7 +485,7 @@ class TestPILCairo(TestPycoast):
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines_to_file(grid_file, area_def, resolution='l', level=4)
         cw.add_grid_to_file(grid_file, area_def, (10.0, 10.0), (2.0, 2.0), write_text=False,
@@ -501,8 +498,9 @@ class TestPILCairo(TestPycoast):
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_nh_agg(self):
-        from pycoast import ContourWriterAGG
-        import aggdraw
+        # Test not yet working: Text shifted north wards and out of canvas
+        # FIXME
+        from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_nh_agg.png'))
         grid_data = np.array(grid_img)
@@ -512,11 +510,12 @@ class TestPILCairo(TestPycoast):
                        5326849.0625, 5326849.0625)
         area_def = (proj4_string, area_extent)
 
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = aggdraw.Font('blue', os.path.join(
-            os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=10)
+        font = ImageFont.truetype(
+            os.path.join(os.path.dirname(__file__), 'test_data',
+                         'DejaVuSerif.ttf'), 10)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
                     outline='blue', minor_outline='blue',
                     lon_placement='tblr', lat_placement='')
@@ -526,11 +525,21 @@ class TestPILCairo(TestPycoast):
         # NOTE: Experience inconsistency in ttf font writing between systems.
         # Still trying to figure out why this test sometimes fails to write
         # correct font markings.
+        #
+        # Adam: Using local font included in test suite. Should work now...
+        # Thu Jun 16 11:08:11 2016
+        #
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of nh grid failed for AGG')
 
     def test_add_polygon_agg(self):
-        from pycoast import ContourWriterAGG
+        # Test fails:
+        # Red polygon is not closed
+        # The filling around Iceland doesn't work (no fillin is done)
+        # Adam, Thu Jun 16 11:10:35 2016
+        # FIXME
+
+        from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'nh_polygons_agg.png'))
         grid_data = np.array(grid_img)
@@ -541,26 +550,39 @@ class TestPILCairo(TestPycoast):
                        5326849.0625, 5326849.0625)
         area_def = (proj4_string, area_extent)
 
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
 
         polygons = {
-            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39.0, 63.5), (-20, 70)),
+            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0),
+                                (0.0, 61.0), (-30.0, 61.0),
+                                (-39.0, 63.5), (-20, 70)),
             'REYKJAVIK_ATC_B': (
-                (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0,
-                                                     65), (-76, 76), (-75, 78), (-60, 82), (0, 90),
-                (30, 82), (0, 82), (0, 73), (-20, 73), (-20,
-                                                        70)),
+                (-39, 63.5), (-55 + 4 / 6.0, 63.5),
+                (-57 + 45 / 60.0, 65),
+                (-76, 76), (-75, 78),
+                (-60, 82), (0, 90),
+                (30, 82), (0, 82),
+                (0, 73), (-20, 73),
+                (-20, 70)),
             'REYKJAVIK_ATC':   (
-                (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39,
-                                                          63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
-                (-76, 76), (-75, 78), (-60, 82), (0, 90), (30, 82), (0, 82)),
-            'ICELAND_BOX':     ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
+                (0.0, 73.0), (0.0, 61.0),
+                (-30.0, 61.0), (-39, 63.5),
+                (-55 + 4 / 6.0, 63.5),
+                (-57 + 45 / 60.0, 65),
+                (-76, 76), (-75, 78),
+                (-60, 82), (0, 90),
+                (30, 82), (0, 82)),
+            'ICELAND_BOX':     ((-25, 62.5),
+                                (-25, 67),
+                                (-13, 67),
+                                (-13, 62.5))
         }
 
         cw.add_polygon(
             img, area_def, polygons['REYKJAVIK_ATC'], outline='red', width=2)
         cw.add_polygon(
-            img, area_def, polygons['ICELAND_BOX'], outline='green', fill='gray', width=2)
+            img, area_def, polygons['ICELAND_BOX'],
+            outline='green', fill='gray', width=2)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
         res = np.array(img)
@@ -568,7 +590,12 @@ class TestPILCairo(TestPycoast):
             fft_metric(grid_data, res), 'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes_agg(self):
-        from pycoast import ContourWriterAGG
+        # Test fails:
+        # The filling doesn't work (no fillin is done)
+        # Adam, Thu Jun 16 11:18:53 2016
+        # FIXME
+
+        from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'brazil_shapefiles_agg.png'))
         grid_data = np.array(grid_img)
@@ -578,12 +605,13 @@ class TestPILCairo(TestPycoast):
         area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
         area_def = (proj4_string, area_extent)
 
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_shapefile_shapes(img, area_def,
                                 os.path.join(
-                                    os.path.dirname(__file__), 'test_data/shapes/Metareas.shp'),
+                                    os.path.dirname(__file__),
+                                    'test_data/shapes/Metareas.shp'),
                                 outline='red', width=2)
         cw.add_shapefile_shape(img, area_def,
                                os.path.join(os.path.dirname(__file__),
@@ -594,6 +622,7 @@ class TestPILCairo(TestPycoast):
                                             'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
                                outline='blue', fill='green')
         res = np.array(img)
+
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
 

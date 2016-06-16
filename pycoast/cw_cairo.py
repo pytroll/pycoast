@@ -70,7 +70,7 @@ class ContourWriterCairo(ContourWriterBase):
     db_root_path : str
         Path to root dir of GSHHS and WDBII shapefiles
     """
-    _draw_module = "cairo"
+    _draw_module = "Cairo"
     # This is a flag to make _add_grid aware of which text draw
     # routine from PIL, aggdraw or Cairo should be used (unfortunately
     # they are not fully compatible)
@@ -165,10 +165,12 @@ class ContourWriterCairo(ContourWriterBase):
         img_ctx = draw_obj.context
 
         self._set_font(img_ctx, font)
-        xbearing, ybearing, txt_width, txt_height = \
-            img_ctx.text_extents(txt)
+        (xbearing, ybearing, txt_width, txt_height,
+         x_advance, y_advance) = img_ctx.text_extents(txt)
+
         x_pos, y_pos = position
         ax, ay = align.lower()
+
         if ax == 'r':
             x_pos = x_pos - txt_width
         elif ax == 'c':
@@ -189,8 +191,8 @@ class ContourWriterCairo(ContourWriterBase):
 
         self._set_font(img_ctx, font)
         if box_outline is not None:
-            xbearing, ybearing, txt_width, txt_height = \
-                img_ctx.text_extents(txt)
+            (xbearing, ybearing, txt_width, txt_height,
+             x_advance, y_advance) = img_ctx.text_extents(text)
             margin = 2
             xUL = text_position[0] - margin
             yUL = text_position[1]
@@ -257,8 +259,8 @@ class ContourWriterCairo(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_shapefile_shapes(img_ctx=img_ctx, area_def=area_def,
-                                   filename=filename, feature_type=feature_type,
+        self._add_shapefile_shapes(img_ctx, area_def,
+                                   filename, feature_type=feature_type,
                                    x_offset=x_offset, y_offset=y_offset,
                                    fill=fill, fill_opacity=fill_opacity,
                                    outline=outline, width=width,
@@ -302,9 +304,7 @@ class ContourWriterCairo(ContourWriterBase):
         y_offset : float, optional
             Pixel offset in y direction
         """
-        self._add_shapefile_shape(img_ctx=img_ctx,
-                                  area_def=area_def, filename=filename,
-                                  shape_id=shape_id,
+        self._add_shapefile_shape(img_ctx, area_def, filename, shape_id,
                                   feature_type=feature_type,
                                   x_offset=x_offset, y_offset=y_offset,
                                   fill=fill, fill_opacity=fill_opacity,
