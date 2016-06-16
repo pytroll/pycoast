@@ -24,6 +24,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import pdb
 
 import os
 import shapefile
@@ -596,7 +597,10 @@ class ContourWriterBase(object):
         draw = self._get_canvas(image)
 
         # Area and projection info
-        x_size, y_size = image.size
+        try:
+            x_size, y_size = image.size
+        except AttributeError:
+            x_size, y_size = image.get_width(), image.get_height()
         prj = pyproj.Proj(proj4_string)
 
         # Calculate min and max lons and lats of interest
