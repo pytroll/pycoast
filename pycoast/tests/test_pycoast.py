@@ -391,7 +391,7 @@ class TestPILCairo(TestPycoast):
             fft_metric(euro_data, res), 'Writing of contours failed for AGG')
 
     def test_geos_agg(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         geos_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_geos_agg.png'))
         geos_data = np.array(geos_img)
@@ -401,18 +401,16 @@ class TestPILCairo(TestPycoast):
         area_extent = (-5570248.4773392612, -5567248.074173444,
                        5567248.074173444, 5570248.4773392612)
         area_def = (proj4_string, area_extent)
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
         cw.add_coastlines(
             img, (proj4_string, area_extent), resolution='l', width=0.5)
 
-        # pdb.set_trace()
-        # img.save('/tmp/kurt.png')
         res = np.array(img)
         self.failUnless(
-            fft_metric(geos_data, res), 'Writing of geos contours failed for AGG')
+            fft_metric(geos_data, res), 'Writing of geos contours failed for Cairo')
 
     def test_grid_agg(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_europe_agg.png'))
         grid_data = np.array(grid_img)
@@ -422,7 +420,7 @@ class TestPILCairo(TestPycoast):
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), write_text=False,
@@ -430,11 +428,13 @@ class TestPILCairo(TestPycoast):
                     minor_outline='white', minor_outline_opacity=255, minor_width=0.5,
                     minor_is_tick=False)
         res = np.array(img)
+        pdb.set_trace()
+        img.save('/tmp/kurt.png')
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_agg_txt(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         import aggdraw
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_europe_agg_txt.png'))
@@ -445,7 +445,7 @@ class TestPILCairo(TestPycoast):
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=16,

@@ -714,8 +714,8 @@ class ContourWriterCairo(ContourWriterBase):
             # layer)
             argb_array = np.fromstring(
                 self._surface.get_data(), 'c').reshape(-1, 4)
-
-            rgb_array = argb_array[:, :3]
+            rgb_array = argb_array[:, 2::-1]
+            #rgb_array = argb_array[:, :3]
             pil_data = rgb_array.reshape(-1).tostring()
         else:
             raise ValueError('Unsupported cairo format: %d' % cairo_format)
