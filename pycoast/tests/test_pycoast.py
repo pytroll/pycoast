@@ -136,8 +136,6 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l')
 
-        pdb.set_trace()
-
         res = np.array(img)
         self.failUnless(
             fft_metric(geos_data, res), 'Writing of geos contours failed')
@@ -219,8 +217,6 @@ class TestPIL(TestPycoast):
                     outline='blue', minor_outline='blue',
                     lon_placement='b', lat_placement='lr')
 
-        pdb.set_trace()
-        img.save('/tmp/kurt.png')
         res = np.array(img)
         self.failUnless(
             fft_metric(dl_data, res), 'Writing of dateline crossing data failed')
@@ -284,15 +280,26 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         polygons = {
-            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39.0, 63.5), (-20, 70)),
+            'REYKJAVIK_ATC_A': ((-20.0, 73.0),
+                                (0.0, 73.0),
+                                (0.0, 61.0),
+                                (-30.0, 61.0),
+                                (-39.0, 63.5),
+                                (-20, 70)),
             'REYKJAVIK_ATC_B': (
-                (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0,
-                                                     65), (-76, 76), (-75, 78), (-60, 82), (0, 90),
-                (30, 82), (0, 82), (0, 73), (-20, 73), (-20,
-                                                        70)),
+                (-39, 63.5),
+                (-55 + 4 / 6.0, 63.5),
+                (-57 + 45 / 60.0, 65),
+                (-76, 76), (-75, 78), (-60, 82), (0, 90),
+                (30, 82), (0, 82), (0, 73), (-20, 73),
+                (-20, 70)),
             'REYKJAVIK_ATC':   (
-                (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39,
-                                                          63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
+                (0.0, 73.0),
+                (0.0, 61.0),
+                (-30.0, 61.0),
+                (-39, 63.5),
+                (-55 + 4 / 6.0, 63.5),
+                (-57 + 45 / 60.0, 65),
                 (-76, 76), (-75, 78), (-60, 82), (0, 90), (30, 82), (0, 82)),
             'ICELAND_BOX':     ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
         }
@@ -337,10 +344,10 @@ class TestPIL(TestPycoast):
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
 
 
-class TestPILAGG(TestPycoast):
+class TestPILCairo(TestPycoast):
 
     def test_europe_agg(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_europe_agg.png'))
         euro_data = np.array(euro_img)
@@ -349,18 +356,19 @@ class TestPILAGG(TestPycoast):
         proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_rivers(
             img, area_def, level=5, outline='blue', width=0.5, outline_opacity=127)
         cw.add_borders(
             img, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
+
         res = np.array(img)
         self.failUnless(
             fft_metric(euro_data, res), 'Writing of contours failed for AGG')
 
     def test_europe_agg_file(self):
-        from pycoast import ContourWriterAGG
+        from pycoast import ContourWriterCairo
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_europe_agg.png'))
         euro_data = np.array(euro_img)
@@ -368,15 +376,17 @@ class TestPILAGG(TestPycoast):
         proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
-        cw = ContourWriterAGG(gshhs_root_dir)
+        cw = ContourWriterCairo(gshhs_root_dir)
         cw.add_coastlines_to_file(test_file, area_def, resolution='l', level=4)
-        cw.add_rivers_to_file(test_file, area_def, level=5, outline='blue',
+        cw.add_rivers_to_file(test_file, area_def, level=5, outline=(0, 0, 255),
                               width=0.5, outline_opacity=127)
+        cw = ContourWriterCairo(gshhs_root_dir)
         cw.add_borders_to_file(test_file, area_def, outline=(255, 0, 0), width=3,
                                outline_opacity=32)
 
         img = Image.open(test_file)
         res = np.array(img)
+
         self.failUnless(
             fft_metric(euro_data, res), 'Writing of contours failed for AGG')
 
@@ -394,6 +404,9 @@ class TestPILAGG(TestPycoast):
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(
             img, (proj4_string, area_extent), resolution='l', width=0.5)
+
+        # pdb.set_trace()
+        # img.save('/tmp/kurt.png')
         res = np.array(img)
         self.failUnless(
             fft_metric(geos_data, res), 'Writing of geos contours failed for AGG')
@@ -589,6 +602,6 @@ def suite():
     loader = unittest.TestLoader()
     mysuite = unittest.TestSuite()
     mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
-    mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
+    mysuite.addTest(loader.loadTestsFromTestCase(TestPILCairo))
 
     return mysuite
