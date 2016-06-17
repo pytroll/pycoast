@@ -871,9 +871,9 @@ class ContourWriterBase(object):
         x_size, y_size = image.size
         prj = pyproj.Proj(proj4_string)
 
-        if np.is_scalar(lon):
+        if np.isscalar(lon):
             lon = np.array(lon)
-        if np.is_scalar(lat):
+        if np.isscalar(lat):
             lat = np.array(lat)
 
         if type(ptsize) != int:
@@ -889,7 +889,7 @@ class ContourWriterBase(object):
             dot_box = [x - ptsize / 2, y - ptsize / 2,
                        x + ptsize / 2, y + ptsize / 2]
             self._draw_ellipse(
-                draw, dot_box, fill=outline, outline=color)
+                draw, dot_box, fill=color, outline=color)
 
         self._finalize(draw)
 
