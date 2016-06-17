@@ -852,6 +852,47 @@ class ContourWriterBase(object):
 
         return foreground
 
+    def add_circles(self, image,
+                    area_def, lon, lat, ptsize, color, fill=True):
+        """
+        Add circles
+        """
+
+        try:
+            proj4_string = area_def.proj4_string
+            area_extent = area_def.area_extent
+        except AttributeError:
+            proj4_string = area_def[0]
+            area_extent = area_def[1]
+
+        draw = self._get_canvas(image)
+
+        # Area and projection info
+        x_size, y_size = image.size
+        prj = pyproj.Proj(proj4_string)
+
+        if np.is_scalar(lon):
+            lon = np.array(lon)
+        if np.is_scalar(lat):
+            lat = np.array(lat)
+
+        if type(ptsize) != int:
+            logger.warning("point size needs to be an integer")
+            ptsize = int(ptsize)
+        if lon.shape != lat.shape:
+            raise IOError(
+                'longitudes and latitudes need to have the same shape!')
+
+        points = area_def.get_xy_from_lonlat(lon, lat)
+        # add_dot
+        for x, y in points:
+            dot_box = [x - ptsize / 2, y - ptsize / 2,
+                       x + ptsize / 2, y + ptsize / 2]
+            self._draw_ellipse(
+                draw, dot_box, fill=outline, outline=color)
+
+        self._finalize(draw)
+
     def add_cities(self, image, area_def, citylist, font_file, font_size,
                    ptsize, outline, box_outline, box_opacity):
         """Add cities (point and name) to a PIL image object
