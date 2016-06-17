@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import unittest
@@ -443,6 +443,10 @@ class TestPILCairo(TestPycoast):
         cw = ContourWriterCairo(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
+
+        # font = aggdraw.Font('blue',
+        #                     os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'),
+        #                     size=16, opacity=200)
         font = ImageFont.truetype(
             os.path.join(os.path.dirname(__file__), 'test_data',
                          'DejaVuSerif.ttf'), 26)
