@@ -853,7 +853,7 @@ class ContourWriterBase(object):
         return foreground
 
     def add_circles(self, image,
-                    area_def, lon, lat, ptsize, color, fill=True):
+                    area_def, lon, lat, ptsize, color='red', fill=True):
         """
         Add circles
         """
