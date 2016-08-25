@@ -33,6 +33,7 @@ from PIL import Image, ImageFont
 import pyproj
 import logging
 from .errors import *
+from ConfigParser import ConfigParser
 
 logger = logging.getLogger(__name__)
 
