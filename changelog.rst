@@ -1,8 +1,14 @@
 Changelog
 =========
 
-v0.5.4 (2016-02-21)
--------------------
+%%version%% (unreleased)
+------------------------
+
+- Update changelog. [Martin Raspaud]
+
+- Bump version: 0.5.4 → 0.5.5. [Martin Raspaud]
+
+- Update fonts in two test images. [Martin Raspaud]
 
 - Update changelog. [Martin Raspaud]
 
@@ -20,19 +26,6 @@ v0.5.4 (2016-02-21)
 
 - Update test reference images with ones made in Ubuntu so automatic
   testing might work in Travis. [Panu Lahtinen]
-
-v0.5.3 (2016-02-21)
--------------------
-
-Fix
-~~~
-
-- Bugfix: The section is called "coasts", plural... [Martin Raspaud]
-
-- Bugfix: the refactoring used only coastal style. [Martin Raspaud]
-
-Other
-~~~~~
 
 - Update changelog. [Martin Raspaud]
 
@@ -77,6 +70,10 @@ Other
   Raspaud]
 
 - Add setup.cfg for easy rpm generation. [Martin Raspaud]
+
+- Bugfix: The section is called "coasts", plural... [Martin Raspaud]
+
+- Bugfix: the refactoring used only coastal style. [Martin Raspaud]
 
 - Some refactoring and pep8. [Martin Raspaud]
 
