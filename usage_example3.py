@@ -20,12 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""The 4th example on the pycoast Readthedoc pages, but now using cairo
+"""The 3rd example on the pycoast Readthedoc pages, but now using cairo
 """
 
 from PIL import Image
 from pycoast import ContourWriter
-img = Image.new('RGB', (1000, 1000))
+img = Image.new('RGB', (425, 425))
 proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
 area_extent = (-5570248.4773392612, -5567248.074173444,
                5567248.074173444, 5570248.4773392612)

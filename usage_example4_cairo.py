@@ -25,7 +25,7 @@
 
 from PIL import Image
 from pycoast import ContourWriterCairo
-img = Image.new('RGB', (1025, 1025))
+img = Image.new('RGB', (425, 425))
 proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
 area_extent = (-5570248.4773392612, -5567248.074173444,
                5567248.074173444, 5570248.4773392612)

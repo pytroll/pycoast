@@ -30,6 +30,6 @@ proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
 area_extent = (-5570248.4773392612, -5567248.074173444,
                5567248.074173444, 5570248.4773392612)
 area_def = (proj4_string, area_extent)
-cw = ContourWriterAGG('/home/esn/data/gshhs')
+cw = ContourWriterAGG('/home/a000680/data/shapes')
 cw.add_coastlines(img, (proj4_string, area_extent), resolution='l', width=0.5)
 img.show()
