@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import pdb
+
 import os
 import unittest
 
@@ -342,10 +344,10 @@ class TestPIL(TestPycoast):
 
 class TestPILCairo(TestPycoast):
 
-    def test_europe_agg(self):
+    def test_europe_cairo(self):
         from pycoast import ContourWriterCairo
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'contours_europe_agg.png'))
+                                           'contours_europe_cairo.png'))
         euro_data = np.array(euro_img)
 
         img = Image.new('RGB', (640, 480))
@@ -361,9 +363,9 @@ class TestPILCairo(TestPycoast):
 
         res = np.array(img)
         self.failUnless(
-            fft_metric(euro_data, res), 'Writing of contours failed for AGG')
+            fft_metric(euro_data, res), 'Writing of contours failed for Cairo')
 
-    def test_europe_agg_file(self):
+    def test_europe_cairo_file(self):
         from pycoast import ContourWriterCairo
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_europe_agg.png'))
@@ -384,12 +386,12 @@ class TestPILCairo(TestPycoast):
         res = np.array(img)
 
         self.failUnless(
-            fft_metric(euro_data, res), 'Writing of contours failed for AGG')
+            fft_metric(euro_data, res), 'Writing of contours failed for Cairo')
 
-    def test_geos_agg(self):
+    def test_geos_cairo(self):
         from pycoast import ContourWriterCairo
         geos_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'contours_geos_agg.png'))
+                                           'contours_geos_cairo.png'))
         geos_data = np.array(geos_img)
 
         img = Image.new('RGB', (425, 425))
@@ -405,10 +407,10 @@ class TestPILCairo(TestPycoast):
         self.failUnless(
             fft_metric(geos_data, res), 'Writing of geos contours failed for Cairo')
 
-    def test_grid_agg(self):
+    def test_grid_cairo(self):
         from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'grid_europe_agg.png'))
+                                           'grid_europe_cairo.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (640, 480))
@@ -425,14 +427,14 @@ class TestPILCairo(TestPycoast):
                     minor_is_tick=False)
         res = np.array(img)
         self.failUnless(
-            fft_metric(grid_data, res), 'Writing of grid failed for AGG')
+            fft_metric(grid_data, res), 'Writing of grid failed for Cairo')
 
-    def test_grid_agg_txt(self):
+    def test_grid_cairo_txt(self):
         # Test not yet working: Text shifted north wards and out of canvas
         # FIXME
         from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'grid_europe_agg_txt.png'))
+                                           'grid_europe_cairo_txt.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (640, 480))
@@ -449,16 +451,18 @@ class TestPILCairo(TestPycoast):
         #                     size=16, opacity=200)
         font = ImageFont.truetype(
             os.path.join(os.path.dirname(__file__), 'test_data',
-                         'DejaVuSerif.ttf'), 26)
+                         'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font,
                     outline='blue', outline_opacity=255, width=1.0,
                     minor_outline='white', minor_outline_opacity=255,
                     minor_width=0.5,
                     minor_is_tick=False)
 
+        # pdb.set_trace()
+        # img.save('kurt.png')
         res = np.array(img)
         self.failUnless(
-            fft_metric(grid_data, res), 'Writing of grid failed for AGG')
+            fft_metric(grid_data, res), 'Writing of grid failed for Cairo')
 
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterCairo
@@ -499,7 +503,7 @@ class TestPILCairo(TestPycoast):
         img = Image.open(grid_file)
         res = np.array(img)
         self.failUnless(
-            fft_metric(grid_data, res), 'Writing of grid failed for AGG')
+            fft_metric(grid_data, res), 'Writing of grid failed for Cairo')
 
     def test_grid_nh_agg(self):
         # Test not yet working: Text shifted north wards and out of canvas
@@ -534,7 +538,7 @@ class TestPILCairo(TestPycoast):
         # Thu Jun 16 11:08:11 2016
         #
         self.failUnless(
-            fft_metric(grid_data, res), 'Writing of nh grid failed for AGG')
+            fft_metric(grid_data, res), 'Writing of nh grid failed for Cairo')
 
     def test_add_polygon_agg(self):
         # Test fails:
