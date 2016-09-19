@@ -368,7 +368,7 @@ class TestPILCairo(TestPycoast):
     def test_europe_cairo_file(self):
         from pycoast import ContourWriterCairo
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'contours_europe_agg.png'))
+                                           'contours_europe_cairo.png'))
         euro_data = np.array(euro_img)
 
         proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
@@ -464,10 +464,10 @@ class TestPILCairo(TestPycoast):
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for Cairo')
 
-    def test_grid_geos_agg(self):
+    def test_grid_geos_cairo(self):
         from pycoast import ContourWriterCairo
         geos_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'grid_geos_agg.png'))
+                                           'grid_geos_cairo.png'))
         geos_data = np.array(geos_img)
         img = Image.new('RGB', (425, 425))
         proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
@@ -483,10 +483,10 @@ class TestPILCairo(TestPycoast):
         self.failUnless(
             fft_metric(geos_data, res), 'Writing of geos contours failed')
 
-    def test_grid_agg_file(self):
+    def test_grid_cairo_file(self):
         from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'grid_europe_agg.png'))
+                                           'grid_europe_cairo.png'))
         grid_data = np.array(grid_img)
 
         proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
@@ -505,12 +505,12 @@ class TestPILCairo(TestPycoast):
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for Cairo')
 
-    def test_grid_nh_agg(self):
+    def test_grid_nh_cairo(self):
         # Test not yet working: Text shifted north wards and out of canvas
         # FIXME
         from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'grid_nh_agg.png'))
+                                           'grid_nh_cairo.png'))
         grid_data = np.array(grid_img)
         img = Image.new('RGB', (425, 425))
         proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
@@ -540,7 +540,7 @@ class TestPILCairo(TestPycoast):
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of nh grid failed for Cairo')
 
-    def test_add_polygon_agg(self):
+    def test_add_polygon_cairo(self):
         # Test fails:
         # Red polygon is not closed
         # The filling around Iceland doesn't work (no fillin is done)
@@ -549,7 +549,7 @@ class TestPILCairo(TestPycoast):
 
         from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_polygons_agg.png'))
+                                           'nh_polygons_cairo.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (425, 425))
@@ -597,7 +597,7 @@ class TestPILCairo(TestPycoast):
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of nh polygons failed')
 
-    def test_add_shapefile_shapes_agg(self):
+    def test_add_shapefile_shapes_cairo(self):
         # Test fails:
         # The filling doesn't work (no fillin is done)
         # Adam, Thu Jun 16 11:18:53 2016
@@ -605,7 +605,7 @@ class TestPILCairo(TestPycoast):
 
         from pycoast import ContourWriterCairo
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'brazil_shapefiles_agg.png'))
+                                           'brazil_shapefiles_cairo.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (425, 425))
