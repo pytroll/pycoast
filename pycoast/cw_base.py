@@ -786,7 +786,7 @@ class ContourWriterBase(object):
                    'y_offset': 0,
                    'resolution': default_resolution}
 
-        SECTIONS = ['coasts', 'rivers', 'borders', 'cities']
+        SECTIONS = ['coasts', 'rivers', 'borders', 'cities', 'grid']
         overlays = {}
 
         for section in config.sections():
@@ -825,6 +825,31 @@ class ContourWriterBase(object):
 
                 fun(foreground, area_def, **params)
                 logger.info("%s added", section.capitalize())
+
+        # Grid management
+        if overlays.has_key('grid'):
+            lat_major = float(overlays['grid'].get('lat_major', 10))
+            lon_major = float(overlays['grid'].get('lon_major', 10))
+            lat_minor = float(overlays['grid'].get('lat_minor', lon_major))
+            lon_minor = float(overlays['grid'].get('lon_minor', lat_major))
+            font = overlays['grid'].get('font', None)
+            write_text = overlays['grid'].get('write_text', 'True')
+            write_text = write_text.lower() in ['1', 'true', 'yes']
+            fill = overlays['grid'].get('fill', None)
+            outline = overlays['grid'].get('outline', 'white')
+            minor_outline = overlays['grid'].get('minor_outline', 'white')
+            minor_is_tick = bool(overlays['grid'].get('minor_is_tick', True))
+            lon_placement = overlays['grid'].get('lon_placement', 'tb')
+            lat_placement = overlays['grid'].get('lat_placement', 'lr')
+
+            self.add_grid(foreground, area_def, (lon_major, lat_major),
+                          (lon_minor, lat_minor), font=font,
+                          write_text=write_text, fill=fill,
+                          outline=outline,
+                          minor_outline=minor_outline,
+                          minor_is_tick=minor_is_tick,
+                          lon_placement=lon_placement,
+                          lat_placement=lat_placement)
 
         # Cities management
         if overlays.has_key('cities'):
