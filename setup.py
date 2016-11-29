@@ -29,7 +29,7 @@ import os.path
 
 version = imp.load_source('pycoast.version', 'pycoast/version.py')
 
-requires = ['pyshp', 'numpy', 'pyproj', 'cairo']
+requires = ['pyshp', 'numpy', 'pyproj']  # , 'cairo']
 
 try:
     from PIL import Image
