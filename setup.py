@@ -25,10 +25,11 @@ except IOError:
 
 
 import imp
+import os.path
 
 version = imp.load_source('pycoast.version', 'pycoast/version.py')
 
-requires = ['pyshp', 'numpy', 'pyproj']  # , 'cairocffi']
+requires = ['pyshp', 'numpy', 'pyproj', 'cairo']
 
 try:
     from PIL import Image
@@ -41,9 +42,10 @@ setup(name='pycoast',
       description='Writing of coastlines, borders and rivers to images in Python',
       author='Esben S. Nielsen',
       author_email='esn@dmi.dk',
+      data_files=[(os.path.join('etc', 'DejaVuSerif.ttf'), )],
       packages=['pycoast', 'pycoast.tests'],
       install_requires=requires,
-      #extras_require={'cairo': ['pycairo']},
+      # extras_require={'cairo': ['pycairo']},
       scripts=[],
       test_suite='pycoast.tests.test_pycoast.suite',
       zip_safe=False,

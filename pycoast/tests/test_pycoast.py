@@ -458,8 +458,8 @@ class TestPILCairo(TestPycoast):
                     minor_width=0.5,
                     minor_is_tick=False)
 
-        # pdb.set_trace()
         # img.save('kurt.png')
+        # pdb.set_trace()
         res = np.array(img)
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for Cairo')
@@ -543,7 +543,7 @@ class TestPILCairo(TestPycoast):
     def test_add_polygon_cairo(self):
         # Test fails:
         # Red polygon is not closed
-        # The filling around Iceland doesn't work (no fillin is done)
+        # The filling around Iceland doesn't work (no filling is done)
         # Adam, Thu Jun 16 11:10:35 2016
         # FIXME
 
@@ -593,13 +593,15 @@ class TestPILCairo(TestPycoast):
             outline='green', fill='gray', width=2)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
+        # img.save('kurt.png')
+        # pdb.set_trace()
         res = np.array(img)
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes_cairo(self):
         # Test fails:
-        # The filling doesn't work (no fillin is done)
+        # The filling doesn't work (no filling is done)
         # Adam, Thu Jun 16 11:18:53 2016
         # FIXME
 
