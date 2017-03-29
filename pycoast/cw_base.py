@@ -33,6 +33,7 @@ from .errors import *
 
 logger = logging.getLogger(__name__)
 
+
 class ContourWriterBase(object):
 
     """Base class for contourwriters. Do not instantiate.
@@ -173,7 +174,7 @@ class ContourWriterBase(object):
             minor_line_kwargs['width'] = kwargs['minor_width']
 
         # set text fonts
-        if font == None:
+        if font is None:
             font = ImageFont.load_default()
         # text margins (at sides of image frame)
         y_text_margin = 4
@@ -247,7 +248,7 @@ class ContourWriterBase(object):
         # create dummpy shape object
         tmpshape = shapefile.Writer("")
 
-        ##### MINOR LINES ######
+        # MINOR LINES ######
         if not kwargs['minor_is_tick']:
             # minor lat lines
             for lat in min_lats:
@@ -287,7 +288,7 @@ class ContourWriterBase(object):
                                     index_array.flatten().tolist(),
                                     **minor_line_kwargs)
 
-        ##### MAJOR LINES AND MINOR TICKS ######
+        # MAJOR LINES AND MINOR TICKS ######
         # major lon lines and tick marks:
         for lon in maj_lons:
             # Draw 'minor' tick lines dlat separation along the lon
@@ -340,7 +341,8 @@ class ContourWriterBase(object):
                 else:
                     txt = "%.2dW" % (-lon)
                 xys = self._find_line_intercepts(index_array, image.size,
-                                                 (x_text_margin, y_text_margin))
+                                                 (x_text_margin,
+                                                  y_text_margin))
 
                 self._draw_grid_labels(draw, xys, 'lon_placement',
                                        txt, font, **kwargs)
@@ -393,7 +395,8 @@ class ContourWriterBase(object):
                 else:
                     txt = "%.2dS" % (-lat)
                 xys = self._find_line_intercepts(index_array, image.size,
-                                                 (x_text_margin, y_text_margin))
+                                                 (x_text_margin,
+                                                  y_text_margin))
                 self._draw_grid_labels(draw, xys, 'lat_placement',
                                        txt, font, **kwargs)
 
@@ -470,8 +473,8 @@ class ContourWriterBase(object):
             elif shape.shapeType == 5:
                 feature_type = "polygon"
             else:
-                raise ShapeFileError("Unsupported shape type: "
-                                     + str(shape.shapeType))
+                raise ShapeFileError("Unsupported shape type: " +
+                                     str(shape.shapeType))
 
         self._add_shapes(image, area_def, feature_type, [shape], **kwargs)
 
@@ -526,10 +529,10 @@ class ContourWriterBase(object):
             s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
             if lon_min > lon_max:
                 pass
-            #     # Dateline crossing
+            # Dateline crossing
             #     if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
             #             lat_max < s_lat_ll or lat_min > s_lat_ur):
-            #         # Polygon is irrelevant
+            # Polygon is irrelevant
             #         continue
             elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
                   lat_max < s_lat_ll or lat_min > s_lat_ur):
@@ -608,10 +611,10 @@ class ContourWriterBase(object):
                 s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
                 if lon_min > lon_max:
                     pass
-                #    # Dateline crossing
+                # Dateline crossing
                 #    if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
                 #            lat_max < s_lat_ll or lat_min > s_lat_ur):
-                #        # Polygon is irrelevant
+                # Polygon is irrelevant
                 #        continue
                 elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
                       lat_max < s_lat_ll or lat_min > s_lat_ur):
@@ -718,8 +721,8 @@ class ContourWriterBase(object):
         if config.has_section('cache'):
             config_file_name, config_file_extention = \
                 os.path.splitext(config_file)
-            cache_file = (config.get('cache', 'file') + '_'
-                          + area_def.area_id + '.png')
+            cache_file = (config.get('cache', 'file') + '_' +
+                          area_def.area_id + '.png')
 
             try:
                 configTime = os.path.getmtime(config_file)
@@ -786,7 +789,7 @@ class ContourWriterBase(object):
                                  self.add_rivers,
                                  self.add_borders]):
 
-            if overlays.has_key(section):
+            if section in overlays:
 
                 params = DEFAULT.copy()
                 params.update(overlays[section])
@@ -810,7 +813,7 @@ class ContourWriterBase(object):
                 logger.info("%s added", section.capitalize())
 
         # Cities management
-        if overlays.has_key('cities'):
+        if 'cities' in overlays:
             DEFAULT_FONT_SIZE = 12
             DEFAULT_OUTLINE = "yellow"
 
@@ -907,6 +910,7 @@ class ContourWriterBase(object):
 
         self._finalize(draw)
 
+
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values
     """
@@ -922,7 +926,8 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
 
     angle_sum = 0
     prev = None
-    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
+    for lon in np.concatenate((lons_s1, lons_s2,
+                               lons_s3[::-1], lons_s4[::-1])):
         if prev is not None:
             delta = lon - prev
             if abs(delta) > 180:
@@ -1032,4 +1037,3 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
         index_arrays.append(index_array)
 
     return index_arrays, is_reduced
-
