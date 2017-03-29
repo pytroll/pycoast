@@ -743,19 +743,19 @@ class ContourWriterBase(object):
         foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
         # Lines (coasts, rivers, borders) management
-        if prj.is_geocent():
+        if prj.is_latlong():
+            prj = Proj(area_def.proj4_string)
+            x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
+            x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
+            x_resolution = (x_ur - x_ll) / x_size
+            y_resolution = (y_ur - y_ll) / y_size
+        else:
             x_resolution = ((area_def.area_extent[2] -
                              area_def.area_extent[0]) /
                             x_size)
             y_resolution = ((area_def.area_extent[3] -
                              area_def.area_extent[1]) /
                             y_size)
-        else:
-            prj = Proj(area_def.proj4_string)
-            x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
-            x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
-            x_resolution = (x_ur - x_ll) / x_size
-            y_resolution = (y_ur - y_ll) / y_size
         res = min(x_resolution, y_resolution)
 
         if res > 25000:
@@ -926,7 +926,12 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     x_range = np.linspace(x_ll, x_ur, num=x_size)
     y_range = np.linspace(y_ll, y_ur, num=y_size)
 
-    if prj.is_geocent():
+    if prj.is_latlong():
+        lons_s1, lats_s1 = x_ll * np.ones(y_range.size), y_range
+        lons_s2, lats_s2 = x_range, y_ur * np.ones(x_range.size)
+        lons_s3, lats_s3 = x_ur * np.ones(y_range.size), y_range
+        lons_s4, lats_s4 = x_range, y_ll * np.ones(x_range.size)
+    else:
         lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range,
                                inverse=True)
         lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur,
@@ -935,11 +940,6 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
                                inverse=True)
         lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll,
                                inverse=True)
-    else:
-        lons_s1, lats_s1 = x_ll * np.ones(y_range.size), y_range
-        lons_s2, lats_s2 = x_range, y_ur * np.ones(x_range.size)
-        lons_s3, lats_s3 = x_ur * np.ones(y_range.size), y_range
-        lons_s4, lats_s4 = x_range, y_ll * np.ones(x_range.size)
 
     angle_sum = 0
     prev = None
@@ -1011,11 +1011,11 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
     lons = shape_data[:, 0]
     lats = shape_data[:, 1]
 
-    if prj.is_geocent():
-        x_ll, y_ll, x_ur, y_ur = area_extent
-    else:
+    if prj.is_latlong():
         x_ll, y_ll = prj(area_extent[0], area_extent[1])
         x_ur, y_ur = prj(area_extent[2], area_extent[3])
+    else:
+        x_ll, y_ll, x_ur, y_ur = area_extent
 
     x, y = prj(lons, lats)
 
