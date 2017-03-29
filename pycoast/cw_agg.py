@@ -12,7 +12,7 @@
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
+# (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,6 +29,8 @@ import logging
 import aggdraw
 
 from cw_base import ContourWriterBase
+from cw_base import _get_lon_lat_bounding_box
+from cw_base import _get_pixel_index
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +88,8 @@ class ContourWriterAGG(ContourWriterBase):
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
         draw.ellipse(coordinates, brush, pen)
 
-    def _draw_text_box(self, draw, text_position, text, font, outline, box_outline, box_opacity):
+    def _draw_text_box(self, draw, text_position, text, font, outline,
+                       box_outline, box_opacity):
         """Add text box in xy
         """
 
@@ -119,7 +122,8 @@ class ContourWriterAGG(ContourWriterBase):
 
         draw.flush()
 
-    def add_shapefile_shapes(self, image, area_def, filename, feature_type=None,
+    def add_shapefile_shapes(self, image, area_def, filename,
+                             feature_type=None,
                              fill=None, fill_opacity=255, outline='white',
                              width=1, outline_opacity=255, x_offset=0,
                              y_offset=0):
@@ -136,7 +140,7 @@ class ContourWriterAGG(ContourWriterBase):
           |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
         filename : str
             Path to ESRI shape file
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -154,7 +158,8 @@ class ContourWriterAGG(ContourWriterBase):
             Pixel offset in y direction
         """
         self._add_shapefile_shapes(image=image, area_def=area_def,
-                                   filename=filename, feature_type=feature_type,
+                                   filename=filename,
+                                   feature_type=feature_type,
                                    x_offset=x_offset, y_offset=y_offset,
                                    fill=fill, fill_opacity=fill_opacity,
                                    outline=outline, width=width,
@@ -166,7 +171,7 @@ class ContourWriterAGG(ContourWriterBase):
                             width=1, outline_opacity=255, x_offset=0,
                             y_offset=0):
         """Add a single shape file shape from an ESRI shapefile.
-        Note: To add all shapes in file use the 'add_shape_file_shapes' routine.
+        Note: To add all shapes in file use the 'add_shape_file_shapes' routine
         Note: Currently only supports lon-lat formatted coordinates.
 
         :Parameters:
@@ -181,7 +186,7 @@ class ContourWriterAGG(ContourWriterBase):
             Path to ESRI shape file
         shape_id : int
             integer id of shape in shape file {0; ... }
-        feature_type : 'polygon' or 'line', 
+        feature_type : 'polygon' or 'line',
             only to override the shape type defined in shapefile, optional
         fill : str or (R, G, B), optional
             Polygon fill color
@@ -318,7 +323,8 @@ class ContourWriterAGG(ContourWriterBase):
                        minor_outline=minor_outline, minor_width=minor_width,
                        minor_outline_opacity=minor_outline_opacity,
                        minor_is_tick=minor_is_tick,
-                       lon_placement=lon_placement, lat_placement=lat_placement)
+                       lon_placement=lon_placement,
+                       lat_placement=lat_placement)
 
     def add_grid_to_file(self, filename, area_def, (Dlon, Dlat), (dlon, dlat),
                          font=None, write_text=True,
@@ -592,130 +598,3 @@ class ContourWriterAGG(ContourWriterBase):
     def _get_font(self, outline, font_file, font_size):
         """Return a font."""
         return aggdraw.Font(outline, font_file, size=font_size)
-
-
-def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
-    """Get extreme lon and lat values
-    """
-
-    x_ll, y_ll, x_ur, y_ur = area_extent
-    x_range = np.linspace(x_ll, x_ur, num=x_size)
-    y_range = np.linspace(y_ll, y_ur, num=y_size)
-
-    lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range, inverse=True)
-    lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur, inverse=True)
-    lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
-    lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
-
-    angle_sum = 0
-    prev = None
-    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
-        if prev is not None:
-            delta = lon - prev
-            if abs(delta) > 180:
-                delta = (abs(delta) - 360) * np.sign(delta)
-            angle_sum += delta
-        prev = lon
-
-    if round(angle_sum) == -360:
-        # Covers NP
-        lat_min = min(lats_s1.min(), lats_s2.min(),
-                      lats_s3.min(), lats_s4.min())
-        lat_max = 90
-        lon_min = -180
-        lon_max = 180
-    elif round(angle_sum) == 360:
-        # Covers SP
-        lat_min = -90
-        lat_max = max(lats_s1.max(), lats_s2.max(),
-                      lats_s3.max(), lats_s4.max())
-        lon_min = -180
-        lon_max = 180
-    elif round(angle_sum) == 0:
-        # Covers no poles
-        if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1:
-            # End points of left side on different side of dateline
-            lon_min = lons_s1[lons_s1 > 0].min()
-        else:
-            lon_min = lons_s1.min()
-
-        if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1:
-            # End points of right side on different side of dateline
-            lon_max = lons_s3[lons_s3 < 0].max()
-        else:
-            lon_max = lons_s3.max()
-
-        lat_min = lats_s4.min()
-        lat_max = lats_s2.max()
-    else:
-        # Pretty strange
-        lat_min = -90
-        lat_max = 90
-        lon_min = -180
-        lon_max = 180
-
-    if not (-180 <= lon_min <= 180):
-        lon_min = -180
-    if not (-180 <= lon_max <= 180):
-        lon_max = 180
-    if not (-90 <= lat_min <= 90):
-        lat_min = -90
-    if not (-90 <= lat_max <= 90):
-        lat_max = 90
-
-    return lon_min, lon_max, lat_min, lat_max
-
-
-def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
-                     x_offset=0, y_offset=0):
-    """Map coordinates of shape to image coordinates
-    """
-
-    # Get shape data as array and reproject
-    shape_data = np.array(shape.points)
-    lons = shape_data[:, 0]
-    lats = shape_data[:, 1]
-
-    x_ll, y_ll, x_ur, y_ur = area_extent
-
-    x, y = prj(lons, lats)
-
-    # Handle out of bounds
-    i = 0
-    segments = []
-    if 1e30 in x or 1e30 in y:
-        # Split polygon in line segments within projection
-        is_reduced = True
-        if x[0] == 1e30 or y[0] == 1e30:
-            in_segment = False
-        else:
-            in_segment = True
-
-        for j in range(x.size):
-            if (x[j] == 1e30 or y[j] == 1e30):
-                if in_segment:
-                    segments.append((x[i:j], y[i:j]))
-                    in_segment = False
-            elif not in_segment:
-                in_segment = True
-                i = j
-        if in_segment:
-            segments.append((x[i:], y[i:]))
-
-    else:
-        is_reduced = False
-        segments = [(x, y)]
-
-    # Convert to pixel index coordinates
-    l_x = (x_ur - x_ll) / x_size
-    l_y = (y_ur - y_ll) / y_size
-
-    index_arrays = []
-    for x, y in segments:
-        n_x = ((-x_ll + x) / l_x) + 0.5 + x_offset
-        n_y = ((y_ur - y) / l_y) + 0.5 + y_offset
-
-        index_array = np.vstack((n_x, n_y)).T
-        index_arrays.append(index_array)
-
-    return index_arrays, is_reduced
