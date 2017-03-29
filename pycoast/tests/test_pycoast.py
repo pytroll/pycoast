@@ -157,7 +157,7 @@ class TestPIL(TestPycoast):
                                                'test_data', 'DejaVuSerif.ttf'),
                                   16)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
-                    font=font, fill='blue',
+                    font=font, fill='blue', write_text=False,
                     outline='blue', minor_outline='blue')
 
         res = np.array(img)
@@ -199,7 +199,7 @@ class TestPIL(TestPycoast):
                                                'test_data', 'DejaVuSerif.ttf'),
                                   16)
         cw.add_grid_to_file(grid_file, area_def, (10.0, 10.0), (2.0, 2.0),
-                            font=font, fill='blue',
+                            font=font, fill='blue', write_text=False,
                             outline='blue', minor_outline='blue')
 
         img = Image.open(grid_file)
@@ -223,7 +223,7 @@ class TestPIL(TestPycoast):
                                                'test_data',
                                                'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
-                    font=font, fill='blue',
+                    font=font, fill='blue', write_text=False,
                     outline='blue', minor_outline='blue',
                     lon_placement='b', lat_placement='lr')
 
@@ -250,7 +250,7 @@ class TestPIL(TestPycoast):
                                                'DejaVuSerif.ttf'), 16)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
                     font=font, fill='blue',
-                    outline='blue', minor_outline='blue',
+                    outline='blue', minor_outline='blue', write_text=False,
                     lon_placement='b', lat_placement='lr')
 
         res = np.array(img)
@@ -275,7 +275,7 @@ class TestPIL(TestPycoast):
                                   10)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
                     font=font, fill='blue',
-                    outline='blue', minor_outline='blue',
+                    outline='blue', minor_outline='blue', write_text=False,
                     lon_placement='tblr', lat_placement='')
 
         res = np.array(img)
@@ -300,8 +300,7 @@ class TestPIL(TestPycoast):
             'REYKJAVIK_ATC_B': (
                 (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
                 (-76, 76), (-75, 78), (-60, 82), (0, 90),
-                (30, 82), (0, 82), (0, 73), (-20, 73), (-20,
-                                                        70)),
+                (30, 82), (0, 82), (0, 73), (-20, 73), (-20, 70)),
             'REYKJAVIK_ATC':   (
                 (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39, 63.5),
                 (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
@@ -315,8 +314,8 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
         res = np.array(img)
-        self.failUnless(
-            fft_metric(grid_data, res), 'Writing of nh polygons failed')
+        self.failUnless(fft_metric(grid_data, res),
+                        'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -324,8 +323,6 @@ class TestPIL(TestPycoast):
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (425, 425))
-        grid_img.show()
-        img.show()
         proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
         area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
         area_def = (proj4_string, area_extent)
@@ -435,6 +432,7 @@ class TestPILAGG(TestPycoast):
                     outline='blue', outline_opacity=255, width=1.0,
                     minor_outline='white', minor_outline_opacity=255,
                     minor_width=0.5, minor_is_tick=False)
+
         res = np.array(img)
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
@@ -462,7 +460,7 @@ class TestPILAGG(TestPycoast):
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font,
                     outline='blue', outline_opacity=255, width=1.0,
                     minor_outline='white', minor_outline_opacity=255,
-                    minor_width=0.5, minor_is_tick=False)
+                    minor_width=0.5, minor_is_tick=False, write_text=False)
 
         res = np.array(img)
         self.failUnless(
@@ -532,7 +530,7 @@ class TestPILAGG(TestPycoast):
                                                  'test_data',
                                                  'DejaVuSerif.ttf'), size=10)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
-                    font=font, fill='blue',
+                    font=font, fill='blue', write_text=False,
                     outline='blue', minor_outline='blue',
                     lon_placement='tblr', lat_placement='')
 
@@ -541,8 +539,8 @@ class TestPILAGG(TestPycoast):
         # NOTE: Experience inconsistency in ttf font writing between systems.
         # Still trying to figure out why this test sometimes fails to write
         # correct font markings.
-        self.failUnless(
-            fft_metric(grid_data, res), 'Writing of nh grid failed for AGG')
+        self.failUnless(fft_metric(grid_data, res),
+                        'Writing of nh grid failed for AGG')
 
     def test_add_polygon_agg(self):
         from pycoast import ContourWriterAGG
@@ -610,6 +608,7 @@ class TestPILAGG(TestPycoast):
                                os.path.join(os.path.dirname(__file__),
                                             'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
                                outline='blue', fill='green')
+
         res = np.array(img)
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
