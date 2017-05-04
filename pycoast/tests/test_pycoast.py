@@ -90,7 +90,8 @@ class TestPIL(TestPycoast):
         euro_data = np.array(euro_img)
 
         img = Image.new('RGB', (640, 480))
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
         cw = ContourWriter(gshhs_root_dir)
@@ -99,15 +100,16 @@ class TestPIL(TestPycoast):
         cw.add_borders(img, area_def, outline=(255, 0, 0))
 
         res = np.array(img)
-        self.failUnless(
-            fft_metric(euro_data, res), 'Writing of contours failed')
+        self.failUnless(fft_metric(euro_data, res),
+                        'Writing of contours failed')
 
     def test_europe_file(self):
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_europe.png'))
         euro_data = np.array(euro_img)
 
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
         cw = ContourWriter(gshhs_root_dir)
@@ -126,7 +128,8 @@ class TestPIL(TestPycoast):
         geos_data = np.array(geos_img)
 
         img = Image.new('RGB', (425, 425))
-        proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+        proj4_string = \
+            '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
         area_extent = (-5570248.4773392612, -5567248.074173444,
                        5567248.074173444, 5570248.4773392612)
         area_def = (proj4_string, area_extent)
@@ -142,16 +145,19 @@ class TestPIL(TestPycoast):
                                            'grid_europe.png'))
         grid_data = np.array(grid_img)
         img = Image.new('RGB', (640, 480))
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  16)
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    font=font, fill='blue', write_text=False,
                     outline='blue', minor_outline='blue')
 
         res = np.array(img)
@@ -162,13 +168,15 @@ class TestPIL(TestPycoast):
             os.path.join(os.path.dirname(__file__), 'grid_geos.png'))
         geos_data = np.array(geos_img)
         img = Image.new('RGB', (425, 425))
-        proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+        proj4_string = \
+            '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
         area_extent = (-5570248.4773392612, -5567248.074173444,
                        5567248.074173444, 5570248.4773392612)
         area_def = (proj4_string, area_extent)
         cw = ContourWriter(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l')
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), fill='blue', outline='blue', minor_outline='blue',
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), fill='blue',
+                    outline='blue', minor_outline='blue',
                     write_text=False)
 
         res = np.array(img)
@@ -179,19 +187,19 @@ class TestPIL(TestPycoast):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'grid_europe.png'))
         grid_data = np.array(grid_img)
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriter(gshhs_root_dir)
 
-        import pdb
-        pdb.set_trace()
-
         cw.add_coastlines_to_file(grid_file, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
-        cw.add_grid_to_file(grid_file, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  16)
+        cw.add_grid_to_file(grid_file, area_def, (10.0, 10.0), (2.0, 2.0),
+                            font=font, fill='blue', write_text=False,
                             outline='blue', minor_outline='blue')
 
         img = Image.open(grid_file)
@@ -211,15 +219,17 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data',
+                                               'DejaVuSerif.ttf'), 16)
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    font=font, fill='blue', write_text=False,
                     outline='blue', minor_outline='blue',
                     lon_placement='b', lat_placement='lr')
 
         res = np.array(img)
-        self.failUnless(
-            fft_metric(dl_data, res), 'Writing of dateline crossing data failed')
+        self.failUnless(fft_metric(dl_data, res),
+                        'Writing of dateline crossing data failed')
 
     def test_dateline_boundary_cross(self):
         dl_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -227,22 +237,25 @@ class TestPIL(TestPycoast):
         dl_data = np.array(dl_img)
 
         img = Image.new('RGB', (640, 480))
-        proj4_string = '+proj=stere +lon_0=140.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=140.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 16)
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
-                    outline='blue', minor_outline='blue',
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data',
+                                               'DejaVuSerif.ttf'), 16)
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    font=font, fill='blue',
+                    outline='blue', minor_outline='blue', write_text=False,
                     lon_placement='b', lat_placement='lr')
 
         res = np.array(img)
-        self.failUnless(
-            fft_metric(dl_data, res), 'Writing of dateline boundary crossing data failed')
+        self.failUnless(fft_metric(dl_data, res),
+                        'Writing of dateline boundary crossing data failed')
 
     def test_grid_nh(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -257,10 +270,12 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), 10)
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
-                    outline='blue', minor_outline='blue',
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  10)
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    font=font, fill='blue',
+                    outline='blue', minor_outline='blue', write_text=False,
                     lon_placement='tblr', lat_placement='')
 
         res = np.array(img)
@@ -280,27 +295,27 @@ class TestPIL(TestPycoast):
         cw = ContourWriter(gshhs_root_dir)
 
         polygons = {
-            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39.0, 63.5), (-20, 70)),
+            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0), (0.0, 61.0),
+                                (-30.0, 61.0), (-39.0, 63.5), (-20, 70)),
             'REYKJAVIK_ATC_B': (
-                (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0,
-                                                     65), (-76, 76), (-75, 78), (-60, 82), (0, 90),
-                (30, 82), (0, 82), (0, 73), (-20, 73), (-20,
-                                                        70)),
+                (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
+                (-76, 76), (-75, 78), (-60, 82), (0, 90),
+                (30, 82), (0, 82), (0, 73), (-20, 73), (-20, 70)),
             'REYKJAVIK_ATC':   (
-                (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39,
-                                                          63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
+                (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39, 63.5),
+                (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
                 (-76, 76), (-75, 78), (-60, 82), (0, 90), (30, 82), (0, 82)),
             'ICELAND_BOX':     ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
         }
 
         cw.add_polygon(img, area_def, polygons['REYKJAVIK_ATC'], outline='red')
-        cw.add_polygon(
-            img, area_def, polygons['ICELAND_BOX'], outline='green', fill='gray')
+        cw.add_polygon(img, area_def, polygons['ICELAND_BOX'], outline='green',
+                       fill='gray')
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
         res = np.array(img)
-        self.failUnless(
-            fft_metric(grid_data, res), 'Writing of nh polygons failed')
+        self.failUnless(fft_metric(grid_data, res),
+                        'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes(self):
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -317,7 +332,8 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_shapefile_shapes(img, area_def,
                                 os.path.join(
-                                    os.path.dirname(__file__), 'test_data/shapes/Metareas.shp'),
+                                    os.path.dirname(__file__),
+                                    'test_data/shapes/Metareas.shp'),
                                 outline='red')
         cw.add_shapefile_shape(img, area_def,
                                os.path.join(os.path.dirname(__file__),
@@ -342,18 +358,19 @@ class TestPILAGG(TestPycoast):
         euro_data = np.array(euro_img)
 
         img = Image.new('RGB', (640, 480))
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        cw.add_rivers(
-            img, area_def, level=5, outline='blue', width=0.5, outline_opacity=127)
-        cw.add_borders(
-            img, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
+        cw.add_rivers(img, area_def, level=5, outline='blue', width=0.5,
+                      outline_opacity=127)
+        cw.add_borders(img, area_def, outline=(255, 0, 0),
+                       width=3, outline_opacity=32)
         res = np.array(img)
-        self.failUnless(
-            fft_metric(euro_data, res), 'Writing of contours failed for AGG')
+        self.failUnless(fft_metric(euro_data, res),
+                        'Writing of contours failed for AGG')
 
     def test_europe_agg_file(self):
         from pycoast import ContourWriterAGG
@@ -361,20 +378,21 @@ class TestPILAGG(TestPycoast):
                                            'contours_europe_agg.png'))
         euro_data = np.array(euro_img)
 
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines_to_file(test_file, area_def, resolution='l', level=4)
         cw.add_rivers_to_file(test_file, area_def, level=5, outline='blue',
                               width=0.5, outline_opacity=127)
-        cw.add_borders_to_file(test_file, area_def, outline=(255, 0, 0), width=3,
-                               outline_opacity=32)
+        cw.add_borders_to_file(test_file, area_def, outline=(255, 0, 0),
+                               width=3, outline_opacity=32)
 
         img = Image.open(test_file)
         res = np.array(img)
-        self.failUnless(
-            fft_metric(euro_data, res), 'Writing of contours failed for AGG')
+        self.failUnless(fft_metric(euro_data, res),
+                        'Writing of contours failed for AGG')
 
     def test_geos_agg(self):
         from pycoast import ContourWriterAGG
@@ -383,16 +401,17 @@ class TestPILAGG(TestPycoast):
         geos_data = np.array(geos_img)
 
         img = Image.new('RGB', (425, 425))
-        proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+        proj4_string = \
+            '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
         area_extent = (-5570248.4773392612, -5567248.074173444,
                        5567248.074173444, 5570248.4773392612)
-        area_def = (proj4_string, area_extent)
+        # area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
-        cw.add_coastlines(
-            img, (proj4_string, area_extent), resolution='l', width=0.5)
+        cw.add_coastlines(img, (proj4_string, area_extent),
+                          resolution='l', width=0.5)
         res = np.array(img)
-        self.failUnless(
-            fft_metric(geos_data, res), 'Writing of geos contours failed for AGG')
+        self.failUnless(fft_metric(geos_data, res),
+                        'Writing of geos contours failed for AGG')
 
     def test_grid_agg(self):
         from pycoast import ContourWriterAGG
@@ -401,7 +420,8 @@ class TestPILAGG(TestPycoast):
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (640, 480))
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
@@ -410,8 +430,9 @@ class TestPILAGG(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), write_text=False,
                     outline='blue', outline_opacity=255, width=1.0,
-                    minor_outline='white', minor_outline_opacity=255, minor_width=0.5,
-                    minor_is_tick=False)
+                    minor_outline='white', minor_outline_opacity=255,
+                    minor_width=0.5, minor_is_tick=False)
+
         res = np.array(img)
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
@@ -424,19 +445,22 @@ class TestPILAGG(TestPycoast):
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (640, 480))
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=16,
+        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__),
+                                                 'test_data',
+                                                 'DejaVuSerif.ttf'), size=16,
                             opacity=200)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font,
                     outline='blue', outline_opacity=255, width=1.0,
-                    minor_outline='white', minor_outline_opacity=255, minor_width=0.5,
-                    minor_is_tick=False)
+                    minor_outline='white', minor_outline_opacity=255,
+                    minor_width=0.5, minor_is_tick=False, write_text=False)
 
         res = np.array(img)
         self.failUnless(
@@ -448,13 +472,15 @@ class TestPILAGG(TestPycoast):
                                            'grid_geos_agg.png'))
         geos_data = np.array(geos_img)
         img = Image.new('RGB', (425, 425))
-        proj4_string = '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
+        proj4_string = \
+            '+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0'
         area_extent = (-5570248.4773392612, -5567248.074173444,
                        5567248.074173444, 5570248.4773392612)
         area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution='l')
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), fill='blue', outline='blue', minor_outline='blue',
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    fill='blue', outline='blue', minor_outline='blue',
                     write_text=False)
 
         res = np.array(img)
@@ -467,17 +493,19 @@ class TestPILAGG(TestPycoast):
                                            'grid_europe_agg.png'))
         grid_data = np.array(grid_img)
 
-        proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
         cw.add_coastlines_to_file(grid_file, area_def, resolution='l', level=4)
-        cw.add_grid_to_file(grid_file, area_def, (10.0, 10.0), (2.0, 2.0), write_text=False,
-                            outline='blue', outline_opacity=255, width=1.0,
-                            minor_outline='white', minor_outline_opacity=255, minor_width=0.5,
-                            minor_is_tick=False)
+        cw.add_grid_to_file(grid_file, area_def, (10.0, 10.0), (2.0, 2.0),
+                            write_text=False, outline='blue',
+                            outline_opacity=255, width=1.0,
+                            minor_outline='white', minor_outline_opacity=255,
+                            minor_width=0.5, minor_is_tick=False)
         img = Image.open(grid_file)
         res = np.array(img)
         self.failUnless(
@@ -498,9 +526,11 @@ class TestPILAGG(TestPycoast):
         cw = ContourWriterAGG(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = aggdraw.Font('blue', os.path.join(
-            os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'), size=10)
-        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, fill='blue',
+        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__),
+                                                 'test_data',
+                                                 'DejaVuSerif.ttf'), size=10)
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    font=font, fill='blue', write_text=False,
                     outline='blue', minor_outline='blue',
                     lon_placement='tblr', lat_placement='')
 
@@ -509,8 +539,8 @@ class TestPILAGG(TestPycoast):
         # NOTE: Experience inconsistency in ttf font writing between systems.
         # Still trying to figure out why this test sometimes fails to write
         # correct font markings.
-        self.failUnless(
-            fft_metric(grid_data, res), 'Writing of nh grid failed for AGG')
+        self.failUnless(fft_metric(grid_data, res),
+                        'Writing of nh grid failed for AGG')
 
     def test_add_polygon_agg(self):
         from pycoast import ContourWriterAGG
@@ -527,28 +557,28 @@ class TestPILAGG(TestPycoast):
         cw = ContourWriterAGG(gshhs_root_dir)
 
         polygons = {
-            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39.0, 63.5), (-20, 70)),
-            'REYKJAVIK_ATC_B': (
-                (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0,
-                                                     65), (-76, 76), (-75, 78), (-60, 82), (0, 90),
-                (30, 82), (0, 82), (0, 73), (-20, 73), (-20,
-                                                        70)),
-            'REYKJAVIK_ATC':   (
-                (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39,
-                                                          63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
-                (-76, 76), (-75, 78), (-60, 82), (0, 90), (30, 82), (0, 82)),
-            'ICELAND_BOX':     ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
+            'REYKJAVIK_ATC_A': ((-20.0, 73.0), (0.0, 73.0), (0.0, 61.0),
+                                (-30.0, 61.0), (-39.0, 63.5), (-20, 70)),
+            'REYKJAVIK_ATC_B': ((-39, 63.5), (-55 + 4 / 6.0, 63.5),
+                                (-57 + 45 / 60.0, 65), (-76, 76),
+                                (-75, 78), (-60, 82), (0, 90), (30, 82),
+                                (0, 82), (0, 73), (-20, 73), (-20, 70)),
+            'REYKJAVIK_ATC': ((0.0, 73.0), (0.0, 61.0), (-30.0, 61.0),
+                              (-39, 63.5), (-55 + 4 / 6.0, 63.5),
+                              (-57 + 45 / 60.0, 65), (-76, 76), (-75, 78),
+                              (-60, 82), (0, 90), (30, 82), (0, 82)),
+            'ICELAND_BOX': ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
         }
 
-        cw.add_polygon(
-            img, area_def, polygons['REYKJAVIK_ATC'], outline='red', width=2)
-        cw.add_polygon(
-            img, area_def, polygons['ICELAND_BOX'], outline='green', fill='gray', width=2)
+        cw.add_polygon(img, area_def, polygons['REYKJAVIK_ATC'],
+                       outline='red', width=2)
+        cw.add_polygon(img, area_def, polygons['ICELAND_BOX'],
+                       outline='green', fill='gray', width=2)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
         res = np.array(img)
-        self.failUnless(
-            fft_metric(grid_data, res), 'Writing of nh polygons failed')
+        self.failUnless(fft_metric(grid_data, res),
+                        'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
@@ -557,7 +587,8 @@ class TestPILAGG(TestPycoast):
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (425, 425))
-        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        proj4_string = \
+            '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
         area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
         area_def = (proj4_string, area_extent)
 
@@ -566,7 +597,8 @@ class TestPILAGG(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_shapefile_shapes(img, area_def,
                                 os.path.join(
-                                    os.path.dirname(__file__), 'test_data/shapes/Metareas.shp'),
+                                    os.path.dirname(__file__),
+                                    'test_data/shapes/Metareas.shp'),
                                 outline='red', width=2)
         cw.add_shapefile_shape(img, area_def,
                                os.path.join(os.path.dirname(__file__),
@@ -576,6 +608,7 @@ class TestPILAGG(TestPycoast):
                                os.path.join(os.path.dirname(__file__),
                                             'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
                                outline='blue', fill='green')
+
         res = np.array(img)
         self.failUnless(
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
