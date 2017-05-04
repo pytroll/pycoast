@@ -21,7 +21,7 @@ import unittest
 import numpy as np
 from PIL import Image, ImageFont
 
-from pycoast import ContourWriter
+from pycoast import ContourWriter, ContourWriterAGG
 
 
 def tmp(f):
@@ -349,6 +349,7 @@ class TestPIL(TestPycoast):
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
 
 
+@unittest.skipIf(ContourWriterAGG is ContourWriter, 'aggdraw not available')
 class TestPILAGG(TestPycoast):
 
     def test_europe_agg(self):
