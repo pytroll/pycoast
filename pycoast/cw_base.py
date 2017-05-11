@@ -743,7 +743,7 @@ class ContourWriterBase(object):
         foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
         # Lines (coasts, rivers, borders) management
-        prj = Proj(area_def.proj4_string)
+        prj = pyproj.Proj(area_def.proj4_string)
         if prj.is_latlong():
             x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
             x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
