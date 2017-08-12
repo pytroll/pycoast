@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 from setuptools import setup
 
-import imp
+if sys.version_info.major >= 3:
+    import importlib
+    importlib.import_module('version', 'pycoast')
+else:
+    import imp
+    version = imp.load_source('pycoast.version', 'pycoast/version.py')
 
-version = imp.load_source('pycoast.version', 'pycoast/version.py')
-
-requires = ["pyshp", 'numpy', 'pyproj']
-
-try:
-    from PIL import Image
-except ImportError:
-    requires.append("pillow")
+requires = ["pyshp", 'numpy', 'pyproj', 'pillow', 'six']
 
 setup(name='pycoast',
       version=version.__version__,
