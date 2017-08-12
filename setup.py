@@ -20,7 +20,7 @@ from setuptools import setup
 
 if sys.version_info.major >= 3:
     import importlib
-    importlib.import_module('version', 'pycoast')
+    version = importlib.import_module('pycoast.version')
 else:
     import imp
     version = imp.load_source('pycoast.version', 'pycoast/version.py')
