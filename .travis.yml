@@ -7,7 +7,7 @@ python:
 sudo: false
 install:
 # aggdraw is not currently supported on python 3
-- if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then pip install git+git://github.com/mraspaud/aggdraw.git; fi
+- pip install git+git://github.com/davidh-ssec/aggdraw.git
 - python setup.py install
 - pip install coveralls
 script: coverage run --source=pycoast setup.py test
