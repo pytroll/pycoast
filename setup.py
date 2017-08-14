@@ -17,7 +17,7 @@
 
 import sys
 from setuptools import setup
-from distutils.util import convert_path
+
 
 def get_version():
     if sys.version_info.major >= 3:
