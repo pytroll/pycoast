@@ -20,7 +20,7 @@ from setuptools import setup
 
 
 def get_version():
-    if sys.version_info > (3, 4):
+    if sys.version_info >= (3, 5):
         import importlib
         spec = importlib.util.spec_from_file_location('version', 'pycoast/version.py')
         version = importlib.util.module_from_spec(spec)
