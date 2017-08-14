@@ -20,12 +20,14 @@ from setuptools import setup
 
 
 def get_version():
-    if sys.version_info.major >= 3:
+    if sys.version_info > (3, 4):
         import importlib
         spec = importlib.util.spec_from_file_location('version', 'pycoast/version.py')
         version = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(version)
     else:
+        # python 2.7 doesn't have the `importlib.util` package
+        # python 3.4 doesn't have the `module_from_spec` method
         import imp
         version = imp.load_source('pycoast.version', 'pycoast/version.py')
     return version.__version__
