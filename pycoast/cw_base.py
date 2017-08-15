@@ -28,8 +28,12 @@ import numpy as np
 from PIL import Image, ImageFont
 import pyproj
 import logging
-from ConfigParser import ConfigParser
 from .errors import *
+
+try:
+    import configparser
+except ImportError:
+    from six.moves import configparser
 
 logger = logging.getLogger(__name__)
 
@@ -70,9 +74,9 @@ class ContourWriterBase(object):
         elif ay == 'c':
             y_pos = y_pos - txt_width / 2
 
-        self._engine_text_draw(draw, (x_pos, y_pos), txt, font, **kwargs)
+        self._engine_text_draw(draw, x_pos, y_pos, txt, font, **kwargs)
 
-    def _engine_text_draw(self, draw, (x_pos, y_pos), txt, font, **kwargs):
+    def _engine_text_draw(self, draw, pos, txt, font, **kwargs):
         raise NotImplementedError('Text drawing undefined for render engine')
 
     def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
@@ -91,8 +95,10 @@ class ContourWriterBase(object):
         offset by margins and returns an array of coordintes"""
         x_size, y_size = size
 
-        def is_in_box((x, y), (xmin, xmax, ymin, ymax)):
-            if x > xmin and x < xmax and y > ymin and y < ymax:
+        def is_in_box(x_y, extents):
+            x, y = x_y
+            xmin, xmax, ymin, ymax = extents
+            if xmin < x < xmax and ymin < y < ymax:
                 return True
             else:
                 return False
@@ -703,7 +709,7 @@ class ContourWriterBase(object):
             Area Definition of the creating image
         """
 
-        config = ConfigParser()
+        config = configparser.ConfigParser()
         try:
             with open(config_file, 'r'):
                 logger.info("Overlays config file %s found", str(config_file))
@@ -712,11 +718,11 @@ class ContourWriterBase(object):
             logger.error("Overlays config file %s does not exist!",
                          str(config_file))
             raise
-        except NoSectionError:
+        except configparser.NoSectionError:
             logger.error("Error in %s", str(config_file))
             raise
 
-    # Cache management
+        # Cache management
         cache_file = None
         if config.has_section('cache'):
             config_file_name, config_file_extention = \
@@ -727,7 +733,7 @@ class ContourWriterBase(object):
             try:
                 configTime = os.path.getmtime(config_file)
                 cacheTime = os.path.getmtime(cache_file)
-        # Cache file will be used only if it's newer than config file
+                # Cache file will be used only if it's newer than config file
                 if configTime < cacheTime:
                     foreground = Image.open(cache_file)
                     logger.info('Using image in cache %s', cache_file)
@@ -896,7 +902,7 @@ class ContourWriterBase(object):
 
                 try:
                     (x, y) = area_def.get_xy_from_lonlat(lons, lats)
-                except ValueError, exc:
+                except ValueError as exc:
                     logger.debug("Point not added (%s)", str(exc))
                 else:
 
