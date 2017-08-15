@@ -2,6 +2,29 @@ Changelog
 =========
 
 
+v1.0.0 (2017-08-15)
+-------------------
+- Update changelog. [Martin Raspaud]
+- Bump version: 0.6.1 → 1.0.0. [Martin Raspaud]
+- Merge remote-tracking branch 'origin/master' into pre-master. [Martin
+  Raspaud]
+- Merge pull request #9 from pytroll/feature-python3. [Martin Raspaud]
+
+  Feature python3
+- Fix version import on python 3.4 (again) [davidh-ssec]
+- Fix version import on python 3.4. [davidh-ssec]
+- Remove unused import in setup.py. [davidh-ssec]
+- Change version import to use importlib. [davidh-ssec]
+- Use davidh-ssec/aggdraw for travis builds. [davidh-ssec]
+- Fix version import in setup.py. [davidh-ssec]
+- Fix version import in setup.py and add version to main package init.
+  [davidh-ssec]
+- Remove aggdraw from python 3 travis executions for now. [davidh-ssec]
+- Add python 3 to travis tests. [davidh-ssec]
+- Fix python 3 compatiblity in cw_X.py modules. [davidh-ssec]
+- Fix tests and MANIFEST to be more modern. [davidh-ssec]
+
+
 v0.6.1 (2017-05-18)
 -------------------
 - Update changelog. [Panu Lahtinen]
@@ -36,6 +59,12 @@ v0.6.1 (2017-05-18)
 - Minor PEP8. [Panu Lahtinen]
 - Pep8 pretify. [Adam.Dybbroe]
 - Pep8. [Adam.Dybbroe]
+
+
+v0.5.5 (2016-08-31)
+-------------------
+- Update changelog. [Martin Raspaud]
+- Bump version: 0.5.4 → 0.5.5. [Martin Raspaud]
 - Update fonts in two test images. [Martin Raspaud]
 
 
@@ -70,7 +99,6 @@ Other
   Conflicts:
   	.gitignore
   	setup.py
-
 - Add a gitignore file. [Martin Raspaud]
 - Merge pull request #2 from mitkin/master. [Martin Raspaud]
 
@@ -201,5 +229,6 @@ Other
 - Added borders and rivers. [Esben S. Nielsen]
 - First version. [Esben S. Nielsen]
 - First version. [Esben S. Nielsen]
+
 
 
