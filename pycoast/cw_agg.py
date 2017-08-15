@@ -22,15 +22,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np
 from PIL import Image
 import logging
 
 import aggdraw
 
-from cw_base import ContourWriterBase
-from cw_base import _get_lon_lat_bounding_box
-from cw_base import _get_pixel_index
+from pycoast.cw_base import ContourWriterBase
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +51,7 @@ class ContourWriterAGG(ContourWriterBase):
         """
         return aggdraw.Draw(image)
 
-    def _engine_text_draw(self, draw, (x_pos, y_pos), txt, font, **kwargs):
+    def _engine_text_draw(self, draw, x_pos, y_pos, txt, font, **kwargs):
         draw.text((x_pos, y_pos), txt, font)
 
     def _draw_polygon(self, draw, coordinates, **kwargs):
@@ -278,7 +275,7 @@ class ContourWriterAGG(ContourWriterBase):
                           fill_opacity=fill_opacity, outline=outline,
                           width=width, outline_opacity=outline_opacity)
 
-    def add_grid(self, image, area_def, (Dlon, Dlat), (dlon, dlat),
+    def add_grid(self, image, area_def, Dlonlat, dlonlat,
                  font=None, write_text=True, fill=None, fill_opacity=255,
                  outline='white', width=1, outline_opacity=255,
                  minor_outline='white', minor_width=0.5,
@@ -291,9 +288,9 @@ class ContourWriterAGG(ContourWriterBase):
             PIL image object
         proj4_string : str
             Projection of area as Proj.4 string
-        (Dlon,Dlat): (float,float)
+        Dlonlat: (float, float)
             Major grid line separation
-        (dlon,dlat): (float,float)
+        dlonlat: (float, float)
             Minor grid line separation
         font: Aggdraw Font object, optional
             Font for major line markings
@@ -316,6 +313,8 @@ class ContourWriterAGG(ContourWriterBase):
         minor_is_tick : boolean, optional
             Use tick minor line style (True) or full minor line style (False)
         """
+        Dlon, Dlat = Dlonlat
+        dlon, dlat = dlonlat
         self._add_grid(image, area_def, Dlon, Dlat, dlon, dlat,
                        font=font, write_text=write_text,
                        fill=fill, fill_opacity=fill_opacity, outline=outline,
@@ -326,7 +325,7 @@ class ContourWriterAGG(ContourWriterBase):
                        lon_placement=lon_placement,
                        lat_placement=lat_placement)
 
-    def add_grid_to_file(self, filename, area_def, (Dlon, Dlat), (dlon, dlat),
+    def add_grid_to_file(self, filename, area_def, Dlonlat, dlonlat,
                          font=None, write_text=True,
                          fill=None, fill_opacity=255,
                          outline='white', width=1, outline_opacity=255,
@@ -340,9 +339,9 @@ class ContourWriterAGG(ContourWriterBase):
             PIL image object
         proj4_string : str
             Projection of area as Proj.4 string
-        (Dlon,Dlat): (float,float)
+        Dlonlat: (float, float)
             Major grid line separation
-        (dlon,dlat): (float,float)
+        dlonlat: (float, float)
             Minor grid line separation
         font: Aggdraw Font object, optional
             Font for major line markings
@@ -367,7 +366,7 @@ class ContourWriterAGG(ContourWriterBase):
         """
 
         image = Image.open(filename)
-        self.add_grid(image, area_def, (Dlon, Dlat), (dlon, dlat),
+        self.add_grid(image, area_def, Dlonlat, dlonlat,
                       font=font, write_text=write_text,
                       fill=fill, fill_opacity=fill_opacity,
                       outline=outline, width=width,

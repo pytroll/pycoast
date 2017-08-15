@@ -15,21 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 from setuptools import setup
 
-import imp
 
-version = imp.load_source('pycoast.version', 'pycoast/version.py')
+def get_version():
+    if sys.version_info >= (3, 5):
+        import importlib
+        spec = importlib.util.spec_from_file_location('version', 'pycoast/version.py')
+        version = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(version)
+    else:
+        # python 2.7 doesn't have the `importlib.util` package
+        # python 3.4 doesn't have the `module_from_spec` method
+        import imp
+        version = imp.load_source('pycoast.version', 'pycoast/version.py')
+    return version.__version__
 
-requires = ["pyshp", 'numpy', 'pyproj']
-
-try:
-    from PIL import Image
-except ImportError:
-    requires.append("pillow")
+requires = ["pyshp", 'numpy', 'pyproj', 'pillow', 'six']
 
 setup(name='pycoast',
-      version=version.__version__,
+      version=get_version(),
       description='Writing of coastlines, borders and rivers to images in Python',
       author='Esben S. Nielsen',
       author_email='esn@dmi.dk',

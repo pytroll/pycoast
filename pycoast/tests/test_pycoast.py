@@ -100,7 +100,7 @@ class TestPIL(TestPycoast):
         cw.add_borders(img, area_def, outline=(255, 0, 0))
 
         res = np.array(img)
-        self.failUnless(fft_metric(euro_data, res),
+        self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
 
     def test_europe_file(self):
@@ -119,7 +119,7 @@ class TestPIL(TestPycoast):
 
         img = Image.open(test_file)
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(euro_data, res), 'Writing of contours failed')
 
     def test_geos(self):
@@ -137,7 +137,7 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l')
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(geos_data, res), 'Writing of geos contours failed')
 
     def test_grid(self):
@@ -161,7 +161,7 @@ class TestPIL(TestPycoast):
                     outline='blue', minor_outline='blue')
 
         res = np.array(img)
-        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed')
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of grid failed')
 
     def test_grid_geos(self):
         geos_img = Image.open(
@@ -180,7 +180,7 @@ class TestPIL(TestPycoast):
                     write_text=False)
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(geos_data, res), 'Writing of geos contours failed')
 
     def test_grid_file(self):
@@ -204,7 +204,7 @@ class TestPIL(TestPycoast):
 
         img = Image.open(grid_file)
         res = np.array(img)
-        self.failUnless(fft_metric(grid_data, res), 'Writing of grid failed')
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of grid failed')
 
     def test_dateline_cross(self):
         dl_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -228,7 +228,7 @@ class TestPIL(TestPycoast):
                     lon_placement='b', lat_placement='lr')
 
         res = np.array(img)
-        self.failUnless(fft_metric(dl_data, res),
+        self.assertTrue(fft_metric(dl_data, res),
                         'Writing of dateline crossing data failed')
 
     def test_dateline_boundary_cross(self):
@@ -254,7 +254,7 @@ class TestPIL(TestPycoast):
                     lon_placement='b', lat_placement='lr')
 
         res = np.array(img)
-        self.failUnless(fft_metric(dl_data, res),
+        self.assertTrue(fft_metric(dl_data, res),
                         'Writing of dateline boundary crossing data failed')
 
     def test_grid_nh(self):
@@ -279,7 +279,7 @@ class TestPIL(TestPycoast):
                     lon_placement='tblr', lat_placement='')
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(grid_data, res), 'Writing of nh grid failed')
 
     def test_add_polygon(self):
@@ -314,7 +314,7 @@ class TestPIL(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
         res = np.array(img)
-        self.failUnless(fft_metric(grid_data, res),
+        self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes(self):
@@ -345,7 +345,7 @@ class TestPIL(TestPycoast):
                                outline='blue', fill='green')
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
 
 
@@ -370,7 +370,7 @@ class TestPILAGG(TestPycoast):
         cw.add_borders(img, area_def, outline=(255, 0, 0),
                        width=3, outline_opacity=32)
         res = np.array(img)
-        self.failUnless(fft_metric(euro_data, res),
+        self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed for AGG')
 
     def test_europe_agg_file(self):
@@ -392,7 +392,7 @@ class TestPILAGG(TestPycoast):
 
         img = Image.open(test_file)
         res = np.array(img)
-        self.failUnless(fft_metric(euro_data, res),
+        self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed for AGG')
 
     def test_geos_agg(self):
@@ -411,7 +411,7 @@ class TestPILAGG(TestPycoast):
         cw.add_coastlines(img, (proj4_string, area_extent),
                           resolution='l', width=0.5)
         res = np.array(img)
-        self.failUnless(fft_metric(geos_data, res),
+        self.assertTrue(fft_metric(geos_data, res),
                         'Writing of geos contours failed for AGG')
 
     def test_grid_agg(self):
@@ -435,7 +435,7 @@ class TestPILAGG(TestPycoast):
                     minor_width=0.5, minor_is_tick=False)
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_agg_txt(self):
@@ -464,7 +464,7 @@ class TestPILAGG(TestPycoast):
                     minor_width=0.5, minor_is_tick=False, write_text=False)
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_geos_agg(self):
@@ -485,7 +485,7 @@ class TestPILAGG(TestPycoast):
                     write_text=False)
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(geos_data, res), 'Writing of geos contours failed')
 
     def test_grid_agg_file(self):
@@ -509,7 +509,7 @@ class TestPILAGG(TestPycoast):
                             minor_width=0.5, minor_is_tick=False)
         img = Image.open(grid_file)
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
     def test_grid_nh_agg(self):
@@ -540,7 +540,7 @@ class TestPILAGG(TestPycoast):
         # NOTE: Experience inconsistency in ttf font writing between systems.
         # Still trying to figure out why this test sometimes fails to write
         # correct font markings.
-        self.failUnless(fft_metric(grid_data, res),
+        self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh grid failed for AGG')
 
     def test_add_polygon_agg(self):
@@ -578,7 +578,7 @@ class TestPILAGG(TestPycoast):
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
         res = np.array(img)
-        self.failUnless(fft_metric(grid_data, res),
+        self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
     def test_add_shapefile_shapes_agg(self):
@@ -611,7 +611,7 @@ class TestPILAGG(TestPycoast):
                                outline='blue', fill='green')
 
         res = np.array(img)
-        self.failUnless(
+        self.assertTrue(
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
 
 
