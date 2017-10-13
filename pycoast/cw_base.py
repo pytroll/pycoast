@@ -608,8 +608,14 @@ class ContourWriterBase(object):
             _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
 
         # Iterate through detail levels
-        for shapes in self._iterate_db(db_name, tag, resolution,
-                                       level, zero_pad):
+        if 'shape_generator' in kwargs:
+            shape_generator = kwargs['shape_generator']
+        else:
+            shape_generator = self._iterate_db(
+                db_name, tag, resolution, level, zero_pad
+            )
+            shape_generator = ((shape, None) for shape in shape_generator)
+        for shapes, new_kwargs in shape_generator:
 
             # Iterate through shapes
             for i, shape in enumerate(shapes):
@@ -641,17 +647,19 @@ class ContourWriterBase(object):
                     continue
 
                 # Make PIL draw the polygon or line
+                if not new_kwargs:
+                    new_kwargs = kwargs
                 for index_array in index_arrays:
                     if feature_type.lower() == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
                         self._draw_polygon(draw,
                                            index_array.flatten().tolist(),
-                                           **kwargs)
+                                           **new_kwargs)
                     elif feature_type.lower() == 'line' or is_reduced:
                         # Draw line
                         self._draw_line(draw,
                                         index_array.flatten().tolist(),
-                                        **kwargs)
+                                        **new_kwargs)
                     else:
                         raise ValueError('Unknown contour type: %s'
                                          % feature_type)
@@ -659,7 +667,7 @@ class ContourWriterBase(object):
         self._finalize(draw)
 
     def _iterate_db(self, db_name, tag, resolution, level, zero_pad):
-        """Iterate trough datasets
+        """Iterate through datasets
         """
 
         format_string = '%s_%s_'
