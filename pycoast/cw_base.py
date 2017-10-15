@@ -28,7 +28,6 @@ import numpy as np
 from PIL import Image, ImageFont
 import pyproj
 import logging
-from .errors import *
 
 try:
     import configparser
@@ -534,8 +533,8 @@ class ContourWriterBase(object):
                 elif shape.shapeType == 5:
                     ftype = "polygon"
                 else:
-                    raise ShapeFileError("Unsupported shape type: " +
-                                         str(shape.shapeType))
+                    raise ValueError("Unsupported shape type: " +
+                                     str(shape.shapeType))
             else:
                 ftype = feature_type.lower()
 
@@ -626,8 +625,8 @@ class ContourWriterBase(object):
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
             except AttributeError:
-                raise ShapeFileError('Could not find shapefile %s'
-                                     % shapefilename)
+                raise ValueError('Could not find shapefile %s'
+                                 % shapefilename)
 
             for shape in shapes:
                 yield shape
@@ -821,8 +820,8 @@ class ContourWriterBase(object):
             s = shapefile.Reader(shapefilename)
             shapes = s.shapes()
         except AttributeError:
-            raise ShapeFileError('Could not find shapefile %s'
-                                 % shapefilename)
+            raise ValueError('Could not find shapefile %s'
+                             % shapefilename)
 
         font = self._get_font(outline, font_file, font_size)
 
