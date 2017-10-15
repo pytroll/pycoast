@@ -53,7 +53,7 @@ class ContourWriterBase(object):
 
     def __init__(self, db_root_path=None):
         if db_root_path is None:
-            self.db_root_path = os.environ['GSHHS_DATA_ROOT']
+            self.db_root_path = os.environ.get('GSHHS_DATA_ROOT')
         else:
             self.db_root_path = db_root_path
 
@@ -585,19 +585,25 @@ class ContourWriterBase(object):
 
     def _add_feature(self, image, area_def, feature_type,
                      db_name, tag=None, zero_pad=False, resolution='c',
-                     level=1, x_offset=0, y_offset=0, **kwargs):
+                     level=1, x_offset=0, y_offset=0, db_root_path=None,
+                     **kwargs):
         """Add a contour feature to image
         """
         shape_generator = self._iterate_db(
-            db_name, tag, resolution, level, zero_pad
+            db_name, tag, resolution, level, zero_pad,
+            db_root_path=db_root_path
         )
 
         return self.add_shapes(image, area_def, feature_type, shape_generator,
                                x_offset=x_offset, y_offset=y_offset, **kwargs)
 
-    def _iterate_db(self, db_name, tag, resolution, level, zero_pad):
+    def _iterate_db(self, db_name, tag, resolution, level, zero_pad, db_root_path=None):
         """Iterate through datasets
         """
+        if db_root_path is None:
+            db_root_path = self.db_root_path
+        if db_root_path is None:
+            raise ValueError("'db_root_path' must be specified to use this method")
 
         format_string = '%s_%s_'
         if tag is not None:
@@ -613,12 +619,12 @@ class ContourWriterBase(object):
             # One shapefile per level
             if tag is None:
                 shapefilename = \
-                    os.path.join(self.db_root_path, '%s_shp' % db_name,
+                    os.path.join(db_root_path, '%s_shp' % db_name,
                                  resolution, format_string %
                                  (db_name, resolution, (i + 1)))
             else:
                 shapefilename = \
-                    os.path.join(self.db_root_path, '%s_shp' % db_name,
+                    os.path.join(db_root_path, '%s_shp' % db_name,
                                  resolution, format_string %
                                  (db_name, tag, resolution, (i + 1)))
             try:
@@ -792,10 +798,14 @@ class ContourWriterBase(object):
         return foreground
 
     def add_cities(self, image, area_def, citylist, font_file, font_size,
-                   ptsize, outline, box_outline, box_opacity):
+                   ptsize, outline, box_outline, box_opacity, db_root_path=None):
         """Add cities (point and name) to a PIL image object
 
         """
+        if db_root_path is None:
+            db_root_path = self.db_root_path
+        if db_root_path is None:
+            raise ValueError("'db_root_path' must be specified to use this method")
 
         try:
             proj4_string = area_def.proj4_string
@@ -814,8 +824,8 @@ class ContourWriterBase(object):
         # Sc-Kh shapefilename = os.path.join(self.db_root_path,
         # "cities_15000_alternativ.shp")
         shapefilename = os.path.join(
-            self.db_root_path, os.path.join("CITIES",
-                                            "cities_15000_alternativ.shp"))
+            db_root_path, os.path.join("CITIES",
+                                       "cities_15000_alternativ.shp"))
         try:
             s = shapefile.Reader(shapefilename)
             shapes = s.shapes()
