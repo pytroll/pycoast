@@ -614,19 +614,22 @@ class ContourWriterBase(object):
         else:
             format_string += 'L%s.shp'
 
-        for i in range(level):
+        if type(level) not in (list,):
+            level = range(1,level+1)
+                        
+        for i in level:
 
             # One shapefile per level
             if tag is None:
                 shapefilename = \
                     os.path.join(db_root_path, '%s_shp' % db_name,
                                  resolution, format_string %
-                                 (db_name, resolution, (i + 1)))
+                                 (db_name, resolution, i))
             else:
                 shapefilename = \
                     os.path.join(db_root_path, '%s_shp' % db_name,
                                  resolution, format_string %
-                                 (db_name, tag, resolution, (i + 1)))
+                                 (db_name, tag, resolution, i))
             try:
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
