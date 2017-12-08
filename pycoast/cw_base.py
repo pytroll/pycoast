@@ -28,7 +28,6 @@ import numpy as np
 from PIL import Image, ImageFont
 import pyproj
 import logging
-from .errors import *
 
 try:
     import configparser
@@ -54,7 +53,7 @@ class ContourWriterBase(object):
 
     def __init__(self, db_root_path=None):
         if db_root_path is None:
-            self.db_root_path = os.environ['GSHHS_DATA_ROOT']
+            self.db_root_path = os.environ.get('GSHHS_DATA_ROOT')
         else:
             self.db_root_path = db_root_path
 
@@ -462,9 +461,7 @@ class ContourWriterBase(object):
         file onto a PIL image
         """
         sf = shapefile.Reader(filename)
-        for i in range(len(sf.shapes())):
-            self._add_shapefile_shape(image, area_def, filename, i,
-                                      feature_type, **kwargs)
+        return self.add_shapes(image, area_def, feature_type, sf.shapes(), **kwargs)
 
     def _add_shapefile_shape(self, image, area_def, filename, shape_id,
                              feature_type=None, **kwargs):
@@ -473,16 +470,7 @@ class ContourWriterBase(object):
         """
         sf = shapefile.Reader(filename)
         shape = sf.shape(shape_id)
-        if feature_type is None:
-            if shape.shapeType == 3:
-                feature_type = "line"
-            elif shape.shapeType == 5:
-                feature_type = "polygon"
-            else:
-                raise ShapeFileError("Unsupported shape type: " +
-                                     str(shape.shapeType))
-
-        self._add_shapes(image, area_def, feature_type, [shape], **kwargs)
+        return self.add_shapes(image, area_def, feature_type, [shape], **kwargs)
 
     def _add_line(self, image, area_def, lonlats, **kwargs):
         """ For drawing a custom polyline. Lon and lat coordinates given by the
@@ -493,7 +481,7 @@ class ContourWriterBase(object):
         shape.points = lonlats
         shape.parts = [0]
         shape.bbox = self._find_bounding_box(lonlats)
-        self._add_shapes(image, area_def, "line", [shape], **kwargs)
+        self.add_shapes(image, area_def, "line", [shape], **kwargs)
 
     def _add_polygon(self, image, area_def, lonlats, **kwargs):
         """ For drawing a custom polygon. Lon and lat coordinates given by the
@@ -504,10 +492,10 @@ class ContourWriterBase(object):
         shape.points = lonlats
         shape.parts = [0]
         shape.bbox = self._find_bounding_box(lonlats)
-        self._add_shapes(image, area_def, "polygon", [shape], **kwargs)
+        self.add_shapes(image, area_def, "polygon", [shape], **kwargs)
 
-    def _add_shapes(self, image, area_def, feature_type, shapes,
-                    x_offset=0, y_offset=0, **kwargs):
+    def add_shapes(self, image, area_def, feature_type, shapes,
+                   x_offset=0, y_offset=0, **kwargs):
         """ For drawing shape objects to PIL image - better code reuse of
         drawing shapes - should be used in _add_feature and other methods of
         adding shapes including manually.
@@ -530,16 +518,30 @@ class ContourWriterBase(object):
             _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
 
         # Iterate through shapes
-        for i, shape in enumerate(shapes):
+        for shape in shapes:
+            if isinstance(shape, (list, tuple)):
+                new_kwargs = kwargs.copy()
+                if shape[1]:
+                    new_kwargs.update(shape[1])
+                shape = shape[0]
+            else:
+                new_kwargs = kwargs
+
+            if feature_type is None:
+                if shape.shapeType == 3:
+                    ftype = "line"
+                elif shape.shapeType == 5:
+                    ftype = "polygon"
+                else:
+                    raise ValueError("Unsupported shape type: " +
+                                     str(shape.shapeType))
+            else:
+                ftype = feature_type.lower()
+
             # Check if polygon is possibly relevant
             s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
             if lon_min > lon_max:
                 pass
-            # Dateline crossing
-            #     if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
-            #             lat_max < s_lat_ll or lat_min > s_lat_ur):
-            # Polygon is irrelevant
-            #         continue
             elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
                   lat_max < s_lat_ll or lat_min > s_lat_ur):
                 # Polygon is irrelevant
@@ -549,9 +551,7 @@ class ContourWriterBase(object):
             # dummy shape part object
             shape_part = type("", (), {})()
             parts = list(shape.parts) + [len(shape.points)]
-
             for i in range(len(parts) - 1):
-
                 shape_part.points = shape.points[parts[i]:parts[i + 1]]
 
                 # Get pixel index coordinates of shape
@@ -568,99 +568,42 @@ class ContourWriterBase(object):
 
                 # Make PIL draw the polygon or line
                 for index_array in index_arrays:
-                    if feature_type.lower() == 'polygon' and not is_reduced:
+                    if ftype == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
                         self._draw_polygon(draw,
                                            index_array.flatten().tolist(),
-                                           **kwargs)
-                    elif feature_type.lower() == 'line' or is_reduced:
+                                           **new_kwargs)
+                    elif ftype.lower() == 'line' or is_reduced:
                         # Draw line
                         self._draw_line(draw,
                                         index_array.flatten().tolist(),
-                                        **kwargs)
+                                        **new_kwargs)
                     else:
-                        raise ValueError('Unknown contour type: %s'
-                                         % feature_type)
+                        raise ValueError('Unknown contour type: %s' % ftype)
 
         self._finalize(draw)
 
     def _add_feature(self, image, area_def, feature_type,
                      db_name, tag=None, zero_pad=False, resolution='c',
-                     level=1, x_offset=0, y_offset=0, **kwargs):
+                     level=1, x_offset=0, y_offset=0, db_root_path=None,
+                     **kwargs):
         """Add a contour feature to image
         """
+        shape_generator = self._iterate_db(
+            db_name, tag, resolution, level, zero_pad,
+            db_root_path=db_root_path
+        )
 
-        try:
-            proj4_string = area_def.proj4_string
-            area_extent = area_def.area_extent
-        except AttributeError:
-            proj4_string = area_def[0]
-            area_extent = area_def[1]
+        return self.add_shapes(image, area_def, feature_type, shape_generator,
+                               x_offset=x_offset, y_offset=y_offset, **kwargs)
 
-        draw = self._get_canvas(image)
-
-        # Area and projection info
-        x_size, y_size = image.size
-        prj = pyproj.Proj(proj4_string)
-
-        # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = \
-            _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
-
-        # Iterate through detail levels
-        for shapes in self._iterate_db(db_name, tag, resolution,
-                                       level, zero_pad):
-
-            # Iterate through shapes
-            for i, shape in enumerate(shapes):
-                # Check if polygon is possibly relevant
-                s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
-                if lon_min > lon_max:
-                    pass
-                # Dateline crossing
-                #    if ((s_lon_ur < lon_min and s_lon_ll > lon_max) or
-                #            lat_max < s_lat_ll or lat_min > s_lat_ur):
-                # Polygon is irrelevant
-                #        continue
-                elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
-                      lat_max < s_lat_ll or lat_min > s_lat_ur):
-                    # Polygon is irrelevant
-                    continue
-
-                # Get pixel index coordinates of shape
-
-                index_arrays, is_reduced = _get_pixel_index(shape,
-                                                            area_extent,
-                                                            x_size, y_size,
-                                                            prj,
-                                                            x_offset=x_offset,
-                                                            y_offset=y_offset)
-
-                # Skip empty datasets
-                if len(index_arrays) == 0:
-                    continue
-
-                # Make PIL draw the polygon or line
-                for index_array in index_arrays:
-                    if feature_type.lower() == 'polygon' and not is_reduced:
-                        # Draw polygon if dataset has not been reduced
-                        self._draw_polygon(draw,
-                                           index_array.flatten().tolist(),
-                                           **kwargs)
-                    elif feature_type.lower() == 'line' or is_reduced:
-                        # Draw line
-                        self._draw_line(draw,
-                                        index_array.flatten().tolist(),
-                                        **kwargs)
-                    else:
-                        raise ValueError('Unknown contour type: %s'
-                                         % feature_type)
-
-        self._finalize(draw)
-
-    def _iterate_db(self, db_name, tag, resolution, level, zero_pad):
-        """Iterate trough datasets
+    def _iterate_db(self, db_name, tag, resolution, level, zero_pad, db_root_path=None):
+        """Iterate through datasets
         """
+        if db_root_path is None:
+            db_root_path = self.db_root_path
+        if db_root_path is None:
+            raise ValueError("'db_root_path' must be specified to use this method")
 
         format_string = '%s_%s_'
         if tag is not None:
@@ -671,26 +614,31 @@ class ContourWriterBase(object):
         else:
             format_string += 'L%s.shp'
 
-        for i in range(level):
+        if type(level) not in (list,):
+            level = range(1,level+1)
+                        
+        for i in level:
 
             # One shapefile per level
             if tag is None:
                 shapefilename = \
-                    os.path.join(self.db_root_path, '%s_shp' % db_name,
+                    os.path.join(db_root_path, '%s_shp' % db_name,
                                  resolution, format_string %
-                                 (db_name, resolution, (i + 1)))
+                                 (db_name, resolution, i))
             else:
                 shapefilename = \
-                    os.path.join(self.db_root_path, '%s_shp' % db_name,
+                    os.path.join(db_root_path, '%s_shp' % db_name,
                                  resolution, format_string %
-                                 (db_name, tag, resolution, (i + 1)))
+                                 (db_name, tag, resolution, i))
             try:
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
             except AttributeError:
-                raise ShapeFileError('Could not find shapefile %s'
-                                     % shapefilename)
-            yield shapes
+                raise ValueError('Could not find shapefile %s'
+                                 % shapefilename)
+
+            for shape in shapes:
+                yield shape
 
     def _finalize(self, draw):
         """Do any need finalization of the drawing
@@ -853,10 +801,14 @@ class ContourWriterBase(object):
         return foreground
 
     def add_cities(self, image, area_def, citylist, font_file, font_size,
-                   ptsize, outline, box_outline, box_opacity):
+                   ptsize, outline, box_outline, box_opacity, db_root_path=None):
         """Add cities (point and name) to a PIL image object
 
         """
+        if db_root_path is None:
+            db_root_path = self.db_root_path
+        if db_root_path is None:
+            raise ValueError("'db_root_path' must be specified to use this method")
 
         try:
             proj4_string = area_def.proj4_string
@@ -875,14 +827,14 @@ class ContourWriterBase(object):
         # Sc-Kh shapefilename = os.path.join(self.db_root_path,
         # "cities_15000_alternativ.shp")
         shapefilename = os.path.join(
-            self.db_root_path, os.path.join("CITIES",
-                                            "cities_15000_alternativ.shp"))
+            db_root_path, os.path.join("CITIES",
+                                       "cities_15000_alternativ.shp"))
         try:
             s = shapefile.Reader(shapefilename)
             shapes = s.shapes()
         except AttributeError:
-            raise ShapeFileError('Could not find shapefile %s'
-                                 % shapefilename)
+            raise ValueError('Could not find shapefile %s'
+                             % shapefilename)
 
         font = self._get_font(outline, font_file, font_size)
 
