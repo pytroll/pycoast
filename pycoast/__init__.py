@@ -3,9 +3,12 @@
 # Default to PIL based ContourWriter in case the import of aggdraw or
 # cairo fail.
 
-from .version import __version__
-from .cw_pil import ContourWriter
+from pycoast.version import __version__
+from pycoast.cw_pil import ContourWriter
 try:
-    from .cw_agg import ContourWriterAGG
+    from pycoast.cw_agg import ContourWriterAGG
+    from pycoast.decorator_agg import DecoratorAGG
 except ImportError:
+    # FIXME: This seems really wrong
     ContourWriterAGG = ContourWriter
+
