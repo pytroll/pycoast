@@ -32,7 +32,7 @@ def get_version():
         version = imp.load_source('pycoast.version', 'pycoast/version.py')
     return version.__version__
 
-requires = ["pyshp", 'numpy', 'pyproj', 'pillow', 'six']
+requires = ["pyshp", 'numpy', 'pyproj', 'pillow', 'aggdraw', 'six']
 
 setup(name='pycoast',
       version=get_version(),
@@ -40,6 +40,8 @@ setup(name='pycoast',
       author='Esben S. Nielsen',
       author_email='esn@dmi.dk',
       packages=['pycoast', 'pycoast.tests'],
+      include_package_data=True,
+      package_data={'pycoast': ['fonts/*.ttf']},
       install_requires=requires,
       test_suite='pycoast.tests.test_pycoast.suite',
       zip_safe=False,
