@@ -24,6 +24,7 @@
 
 import os
 import shapefile
+import tempfile
 import numpy as np
 from PIL import Image, ImageFont
 import pyproj
@@ -251,7 +252,8 @@ class ContourWriterBase(object):
         lin_lons = np.arange(lon_min, lon_max + Dlon / 5.0, Dlon / 10.0)
 
         # create dummpy shape object
-        tmpshape = shapefile.Writer("")
+        tmpfile = tempfile.mkstemp()[1]
+        tmpshape = shapefile.Writer(tmpfile)
 
         # MINOR LINES ######
         if not kwargs['minor_is_tick']:
@@ -448,6 +450,7 @@ class ContourWriterBase(object):
                     self._draw_line(draw,
                                     index_array.flatten().tolist(),
                                     **kwargs)
+        os.unlink(tmpfile)
         self._finalize(draw)
 
     def _find_bounding_box(self, xys):
