@@ -628,9 +628,10 @@ def suite():
     loader = unittest.TestLoader()
     mysuite = unittest.TestSuite()
     mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
-    # mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
+    mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
 
     return mysuite
+
 
 if __name__ == "__main__":
     suite()
