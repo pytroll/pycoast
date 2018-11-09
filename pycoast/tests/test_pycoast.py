@@ -472,7 +472,6 @@ class TestPILAGG(TestPycoast):
                     minor_width=0.5, minor_is_tick=False)
 
         res = np.array(img)
-        img.save('/tmp/grid_europe_agg_txt.png')
         self.assertTrue(
             fft_metric(grid_data, res), 'Writing of grid failed for AGG')
 
