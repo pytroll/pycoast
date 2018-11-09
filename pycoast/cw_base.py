@@ -38,12 +38,12 @@ logger = logging.getLogger(__name__)
 
 
 class ContourWriterBase(object):
-
     """Base class for contourwriters. Do not instantiate.
 
     :Parameters:
-    db_root_path : str
-        Path to root dir of GSHHS and WDBII shapefiles
+        db_root_path : str
+            Path to root dir of GSHHS and WDBII shapefiles
+
     """
 
     _draw_module = None
@@ -636,14 +636,14 @@ class ContourWriterBase(object):
         pass
 
     def add_overlay_from_config(self, config_file, area_def):
-        """Create and return a transparent image adding all the
-           overlays contained in a configuration file.
+        """Create and return a transparent image adding all the overlays contained in a configuration file.
 
         :Parameters:
-        config_file : str
-            Configuration file name
-        area_def : object
-            Area Definition of the creating image
+            config_file : str
+                Configuration file name
+            area_def : object
+                Area Definition of the creating image
+
         """
 
         config = configparser.ConfigParser()
