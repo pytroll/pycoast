@@ -10,14 +10,17 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
+#
+# To generate apidoc modules:
+#     sphinx-apidoc -f -T -o source/api ../pycoast ../pycoast/tests
 
-import sys, os
-import imp
+import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -26,8 +29,8 @@ import imp
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 
-              'sphinx.ext.todo', 'sphinx.ext.coverage']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage',
+              'sphinx.ext.doctest', 'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -50,7 +53,8 @@ copyright = u'2012, Esben S. Nielsen'
 # built documents.
 #
 
-current_version = imp.load_source('pycoast.version', '../../pycoast/version.py')
+from pycoast import version as current_version
+
 # The short X.Y version.
 version = current_version.__version__
 # The full version, including alpha/beta/rc tags.
@@ -218,3 +222,15 @@ man_pages = [
     ('index', 'pycoast', u'pycoast Documentation',
      [u'Esben S. Nielsen'], 1)
 ]
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'xarray': ('https://xarray.pydata.org/en/stable', None),
+    'dask': ('https://dask.pydata.org/en/latest', None),
+    'pyresample': ('https://pyresample.readthedocs.io/en/stable', None),
+    'trollsift': ('https://trollsift.readthedocs.io/en/stable', None),
+    'trollimage': ('https://trollimage.readthedocs.io/en/stable', None),
+    'pillow': ('https://pillow.readthedocs.io/en/stable', None),
+}

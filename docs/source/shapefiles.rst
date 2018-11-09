@@ -7,7 +7,7 @@ In the following example we use :attr:`add_shapefile_shapes` method to plot all 
 found in the file Metareas.shp. We then use the :attr:`add_shapefile_shape` (notice the singular) 
 to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.
 
-    >>> from pycoast import ContourWriter    
+    >>> from pycoast import ContourWriterAGG
     >>> img = Image.new('RGB', (600, 600))
     >>> proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
     >>> area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
