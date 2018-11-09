@@ -250,16 +250,12 @@ class ContourWriterBase(object):
         # end)
         lin_lons = np.arange(lon_min, lon_max + Dlon / 5.0, Dlon / 10.0)
 
-        # create dummpy shape object
-        tmpshape = shapefile.Writer("")
-
         # MINOR LINES ######
         if not kwargs['minor_is_tick']:
             # minor lat lines
             for lat in min_lats:
                 lonlats = [(x, lat) for x in lin_lons]
-                tmpshape.points = lonlats
-                index_arrays, is_reduced = _get_pixel_index(tmpshape,
+                index_arrays, is_reduced = _get_pixel_index(lonlats,
                                                             area_extent,
                                                             x_size, y_size,
                                                             prj,
@@ -277,8 +273,7 @@ class ContourWriterBase(object):
             # minor lon lines
             for lon in min_lons:
                 lonlats = [(lon, x) for x in lin_lats]
-                tmpshape.points = lonlats
-                index_arrays, is_reduced = _get_pixel_index(tmpshape,
+                index_arrays, is_reduced = _get_pixel_index(lonlats,
                                                             area_extent,
                                                             x_size, y_size,
                                                             prj,
@@ -304,9 +299,8 @@ class ContourWriterBase(object):
 
                 for lat in min_lats:
                     lonlats = [(x, lat) for x in tick_lons]
-                    tmpshape.points = lonlats
                     index_arrays, is_reduced = \
-                        _get_pixel_index(tmpshape,
+                        _get_pixel_index(lonlats,
                                          area_extent,
                                          x_size, y_size,
                                          prj,
@@ -323,8 +317,7 @@ class ContourWriterBase(object):
 
             # Draw 'major' lines
             lonlats = [(lon, x) for x in lin_lats]
-            tmpshape.points = lonlats
-            index_arrays, is_reduced = _get_pixel_index(tmpshape, area_extent,
+            index_arrays, is_reduced = _get_pixel_index(lonlats, area_extent,
                                                         x_size, y_size,
                                                         prj,
                                                         x_offset=x_offset,
@@ -361,9 +354,8 @@ class ContourWriterBase(object):
                                       Dlat / 50.0)
                 for lon in min_lons:
                     lonlats = [(lon, x) for x in tick_lats]
-                    tmpshape.points = lonlats
                     index_arrays, is_reduced = \
-                        _get_pixel_index(tmpshape, area_extent,
+                        _get_pixel_index(lonlats, area_extent,
                                          x_size, y_size,
                                          prj,
                                          x_offset=x_offset,
@@ -379,8 +371,7 @@ class ContourWriterBase(object):
 
             # Draw 'major' lines
             lonlats = [(x, lat) for x in lin_lons]
-            tmpshape.points = lonlats
-            index_arrays, is_reduced = _get_pixel_index(tmpshape, area_extent,
+            index_arrays, is_reduced = _get_pixel_index(lonlats, area_extent,
                                                         x_size, y_size,
                                                         prj,
                                                         x_offset=x_offset,
@@ -411,8 +402,7 @@ class ContourWriterBase(object):
                                   float(lat_max - lat_min) / y_size)
             for lon in (0.0, 90.0, 180.0, -90.0):
                 lonlats = [(lon, x) for x in crosslats]
-                tmpshape.points = lonlats
-                index_arrays, is_reduced = _get_pixel_index(tmpshape,
+                index_arrays, is_reduced = _get_pixel_index(lonlats,
                                                             area_extent,
                                                             x_size, y_size,
                                                             prj,
@@ -432,8 +422,7 @@ class ContourWriterBase(object):
                                   float(lat_max - lat_min) / y_size)
             for lon in (0.0, 90.0, 180.0, -90.0):
                 lonlats = [(lon, x) for x in crosslats]
-                tmpshape.points = lonlats
-                index_arrays, is_reduced = _get_pixel_index(tmpshape,
+                index_arrays, is_reduced = _get_pixel_index(lonlats,
                                                             area_extent,
                                                             x_size, y_size,
                                                             prj,
@@ -961,11 +950,9 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
 
 def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
                      x_offset=0, y_offset=0):
-    """Map coordinates of shape to image coordinates
-    """
-
+    """Map coordinates of shape to image coordinates."""
     # Get shape data as array and reproject
-    shape_data = np.array(shape.points)
+    shape_data = np.array(shape.points) if hasattr(shape, 'points') else shape
     lons = shape_data[:, 0]
     lats = shape_data[:, 1]
 
