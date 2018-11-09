@@ -952,7 +952,7 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
                      x_offset=0, y_offset=0):
     """Map coordinates of shape to image coordinates."""
     # Get shape data as array and reproject
-    shape_data = np.array(shape.points) if hasattr(shape, 'points') else shape
+    shape_data = np.array(shape.points if hasattr(shape, 'points') else shape)
     lons = shape_data[:, 0]
     lats = shape_data[:, 1]
 
