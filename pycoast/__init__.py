@@ -4,8 +4,6 @@
 # cairo fail.
 
 from .version import __version__
-from .cw_pil import ContourWriter
-try:
-    from .cw_agg import ContourWriterAGG
-except ImportError:
-    ContourWriterAGG = ContourWriter
+from .cw_pil import ContourWriter as ContourWriterPIL
+from .cw_agg import ContourWriterAGG
+ContourWriter = ContourWriterAGG
