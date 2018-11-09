@@ -32,7 +32,8 @@ def get_version():
         version = imp.load_source('pycoast.version', 'pycoast/version.py')
     return version.__version__
 
-requires = ["pyshp", 'numpy', 'pyproj', 'pillow', 'six']
+
+requires = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow', 'six']
 
 setup(name='pycoast',
       version=get_version(),
