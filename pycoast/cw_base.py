@@ -446,9 +446,7 @@ class ContourWriterBase(object):
 
     def _add_shapefile_shapes(self, image, area_def, filename,
                               feature_type=None, **kwargs):
-        """ for drawing all shapes (polygon/poly-lines) from a custom shape
-        file onto a PIL image
-        """
+        """Draw all shapes (polygon/poly-lines) from a shape file onto a PIL Image."""
         sf = shapefile.Reader(filename)
         return self.add_shapes(image, area_def, feature_type, sf.shapes(), **kwargs)
 
@@ -483,11 +481,25 @@ class ContourWriterBase(object):
         shape.bbox = self._find_bounding_box(lonlats)
         self.add_shapes(image, area_def, "polygon", [shape], **kwargs)
 
-    def add_shapes(self, image, area_def, feature_type, shapes,
-                   x_offset=0, y_offset=0, **kwargs):
-        """ For drawing shape objects to PIL image - better code reuse of
-        drawing shapes - should be used in _add_feature and other methods of
-        adding shapes including manually.
+    def add_shapes(self, image, area_def, shapes, feature_type=None, x_offset=0, y_offset=0, **kwargs):
+        """Draw shape objects to PIL image.
+
+        :Parameters:
+            image : Image
+                PIL Image to draw shapes on
+            area_def : (proj_str, area_extent) or AreaDefinition
+                Geolocation information for the provided image
+            shapes: iterable
+                Series of shape objects from pyshp. Can also be a series
+                of 2-element tuples where the first element is the shape
+                object and the second is a dictionary of additional drawing
+                parameters for this shape.
+            feature_type: str
+                'polygon' or 'line' or None for what to draw shapes as.
+                Default is to draw the shape with the type in the shapefile.
+            kwargs:
+                Extra drawing keyword arguments for all shapes
+
         """
         try:
             proj4_string = area_def.proj4_string
@@ -503,8 +515,7 @@ class ContourWriterBase(object):
         prj = pyproj.Proj(proj4_string)
 
         # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = \
-            _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
+        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
 
         # Iterate through shapes
         for shape in shapes:
@@ -517,13 +528,12 @@ class ContourWriterBase(object):
                 new_kwargs = kwargs
 
             if feature_type is None:
-                if shape.shapeType == 3:
+                if shape.shapeType == shapefile.POLYLINE:
                     ftype = "line"
-                elif shape.shapeType == 5:
+                elif shape.shapeType == shapefile.POLYGON:
                     ftype = "polygon"
                 else:
-                    raise ValueError("Unsupported shape type: " +
-                                     str(shape.shapeType))
+                    raise ValueError("Unsupported shape type: " + str(shape.shapeType))
             else:
                 ftype = feature_type.lower()
 
@@ -538,13 +548,11 @@ class ContourWriterBase(object):
 
             # iterate over shape parts (some shapes split into parts)
             # dummy shape part object
-            shape_part = type("", (), {})()
             parts = list(shape.parts) + [len(shape.points)]
             for i in range(len(parts) - 1):
-                shape_part.points = shape.points[parts[i]:parts[i + 1]]
-
                 # Get pixel index coordinates of shape
-                index_arrays, is_reduced = _get_pixel_index(shape_part,
+                points = shape.points[parts[i]:parts[i + 1]]
+                index_arrays, is_reduced = _get_pixel_index(points,
                                                             area_extent,
                                                             x_size, y_size,
                                                             prj,
@@ -559,14 +567,10 @@ class ContourWriterBase(object):
                 for index_array in index_arrays:
                     if ftype == 'polygon' and not is_reduced:
                         # Draw polygon if dataset has not been reduced
-                        self._draw_polygon(draw,
-                                           index_array.flatten().tolist(),
-                                           **new_kwargs)
-                    elif ftype.lower() == 'line' or is_reduced:
+                        self._draw_polygon(draw, index_array.flatten().tolist(), **new_kwargs)
+                    elif ftype == 'line' or is_reduced:
                         # Draw line
-                        self._draw_line(draw,
-                                        index_array.flatten().tolist(),
-                                        **new_kwargs)
+                        self._draw_line(draw, index_array.flatten().tolist(), **new_kwargs)
                     else:
                         raise ValueError('Unknown contour type: %s' % ftype)
 

@@ -19,14 +19,17 @@ to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.
                                 'test/test_data/shapes/Metareas.shp',
                                 outline='red',width=2)
     >>> cw.add_shapefile_shape(img, area_def, 
-                                'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
-				3, outline='blue')
+                               'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
+                               3, outline='blue')
     >>> cw.add_shapefile_shape(img, area_def, 
-                                'test/test_data/shapes/divisao_politica/BR_Regioes.shp', 
-				4, outline='blue', fill='green')
+                               'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
+                               4, outline='blue', fill='green')
 
 
 .. image:: images/brazil_shapefiles_agg.png
+
+Reproject unsupported shapefiles
+********************************
 
 If your shapefile is not in lonlat coordinates, then you can re-project your shape file using
 :attr:`ogr2ogr` (part of GDAL_ tools), e.g.
@@ -37,6 +40,29 @@ If your shapefile is not in lonlat coordinates, then you can re-project your sha
 
 This should work if you have all the extra meta-files original.* included with your original.shp.
 Please refer to the OGR_ documentation for more information.
+
+Complex shape drawing
+*********************
+
+To further customize how shapes are drawn the
+:meth:`~pycoast.ContourWriterAGG.add_shapes` can be used. This is the low-level
+version of the ``add_shapefile_shape`` method described above. This method
+takes an iterable of shape objects to draw with optional drawing parameters.
+In combination with python generators this can provide a high performance
+method for drawing multiple shapes with per-shape customization.
+In the below example a custom generator function is defined to open a shapefile
+and specify that each polygon should be blue and any other shape should be red.
+
+    >>> import shapefile
+    >>> def my_shapes_generator():
+    ...     sf = shapefile.Reader(filename)
+    ...     for shape in sf.shapes():
+    ...         if shape.shapeType == shapefile.POLYGON:
+    ...             kwargs = {'fill': (0, 0, 255)}
+    ...         else:
+    ...             kwargs = {'fill': (255, 0, 0)}
+    ...         yield (shape, kwargs)
+    ... cw.add_shapes(img, area_def, my_shapes_generator())
 
 .. _OGR: http://www.gdal.org/ogr2ogr.html
 .. _GDAL: http://www.gdal.org/

@@ -60,7 +60,7 @@ Creating an image with coastlines only:
     >>> area_def = (proj4_string, area_extent)
     >>> cw = ContourWriterAGG('/home/esn/data/gshhs')
     >>> cw.add_coastlines(img, area_def, resolution='l')
-    >>> img.show()    
+    >>> img.show()
 
 .. image:: images/geos_coast.png
 

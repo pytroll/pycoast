@@ -181,7 +181,7 @@ def main():
                 yield sr.shape, None
 
     LOG.info("Applying contributor locations to map image...")
-    cw.add_shapes(im, area_def, 'polygon', shape_generator(),
+    cw.add_shapes(im, area_def, shape_generator(), feature_type='polygon',
                   outline=(0, 0, 0), outline_opacity=255, width=1,
                   fill=(127, 127, 127), fill_opacity=127)
     im.save(args.output, dpi=(300, 300))
