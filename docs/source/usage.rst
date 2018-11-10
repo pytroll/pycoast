@@ -44,13 +44,11 @@ arguments. The :attr:`resolution` keyword argument controls the resolution of
 the dataset used. It defaults to 'c' for coarse. Increasing the resolution also
 increases the processing time. The :attr:`level` keyword argument controls the
 detail level of the dataset used. It defaults to *1* for the lowest detail
-level.
+level. See method docstrings for information about other possible argument
+values.
 
-Instead of a tuple for :attr:`area_def` a pyresample
-:class:`~pyresample.geometry.AreaDefinition` object can be used.
-
-See method docstrings for information about possible argument values see method
-docstrings.
+Example with tuple
+******************
 
 Creating an image with coastlines only:
 
@@ -66,7 +64,25 @@ Creating an image with coastlines only:
 
 .. image:: images/geos_coast.png
 
+Example with AreaDefinition
+***************************
+
+Instead of a tuple for :attr:`area_def` a pyresample
+:class:`~pyresample.geometry.AreaDefinition` object can be used. The code
+below produces the same image as above.
+
+    >>> from PIL import Image
+    >>> from pycoast import ContourWriterAGG
+    >>> from pyresample.geometry import AreaDefinition
+    >>> img = Image.new('RGB', (425, 425))
+    >>> area_def = AreaDefinition('my_area', 'Area Description', 'geos_proj',
+    ...     {'proj': 'geos', 'lon_0': 0.0, 'a': 6378169.00, 'b': 6356583.80, 'h': 35785831.0},
+    ...     425, 425,
+    ...     (-5570248.4773392612, -5567248.074173444, 5567248.074173444, 5570248.4773392612))
+    >>> cw = ContourWriterAGG('/home/esn/data/gshhs')
+    >>> cw.add_coastlines(img, area_def, resolution='l')
+    >>> img.show()
+
 .. _pyshp: http://code.google.com/p/pyshp/
 .. _PIL: http://www.pythonware.com/products/pil/
-.. _pyresample: http://code.google.com/p/pyresample/
 .. _aggdraw: http://effbot.org/zone/aggdraw-index.htm
