@@ -5,3 +5,5 @@ include pycoast/tests/*.ttf
 include LICENSE.txt
 include MANIFEST.in
 
+include versioneer.py
+include pycoast/version.py

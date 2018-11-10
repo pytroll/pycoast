@@ -22,5 +22,5 @@ images using data from the GSHHS and WDBII datasets
    polygons_and_lines
    shapefiles
    test
-   api
+   PyCoast API <api/pycoast>
 

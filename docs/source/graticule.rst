@@ -4,11 +4,11 @@ Adding graticule to images
 Pycoast can be used to add graticule to images. For PIL_:
 
     >>> from PIL import Image, ImageFont
-    >>> from pycoast import ContourWriter
+    >>> from pycoast import ContourWriterAGG
     >>> proj4_string = '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
     >>> area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
     >>> area_def = (proj4_string, area_extent)
-    >>> cw = ContourWriter('/home/esn/data/gshhs')
+    >>> cw = ContourWriterAGG('/home/esn/data/gshhs')
     >>> font = ImageFont.truetype("/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf",16)
     >>> img = Image.open('BMNG_clouds_201109181715_areaT2.png')
     >>> cw.add_coastlines(img, area_def, resolution='l', level=4)
@@ -17,6 +17,7 @@ Pycoast can be used to add graticule to images. For PIL_:
     >>> img.show()
 
 .. image:: images/euro_grid.png
+
 The font argument is optional for PIL if it is not given a default font will be used.
 
 and for AGG:
