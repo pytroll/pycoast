@@ -448,7 +448,7 @@ class ContourWriterBase(object):
                               feature_type=None, **kwargs):
         """Draw all shapes (polygon/poly-lines) from a shape file onto a PIL Image."""
         sf = shapefile.Reader(filename)
-        return self.add_shapes(image, area_def, feature_type, sf.shapes(), **kwargs)
+        return self.add_shapes(image, area_def, sf.shapes(), feature_type=feature_type, **kwargs)
 
     def _add_shapefile_shape(self, image, area_def, filename, shape_id,
                              feature_type=None, **kwargs):
@@ -457,7 +457,7 @@ class ContourWriterBase(object):
         """
         sf = shapefile.Reader(filename)
         shape = sf.shape(shape_id)
-        return self.add_shapes(image, area_def, feature_type, [shape], **kwargs)
+        return self.add_shapes(image, area_def, [shape], feature_type=feature_type, **kwargs)
 
     def _add_line(self, image, area_def, lonlats, **kwargs):
         """ For drawing a custom polyline. Lon and lat coordinates given by the
@@ -468,7 +468,7 @@ class ContourWriterBase(object):
         shape.points = lonlats
         shape.parts = [0]
         shape.bbox = self._find_bounding_box(lonlats)
-        self.add_shapes(image, area_def, "line", [shape], **kwargs)
+        self.add_shapes(image, area_def, [shape], feature_type="line", **kwargs)
 
     def _add_polygon(self, image, area_def, lonlats, **kwargs):
         """ For drawing a custom polygon. Lon and lat coordinates given by the
@@ -479,7 +479,7 @@ class ContourWriterBase(object):
         shape.points = lonlats
         shape.parts = [0]
         shape.bbox = self._find_bounding_box(lonlats)
-        self.add_shapes(image, area_def, "polygon", [shape], **kwargs)
+        self.add_shapes(image, area_def, [shape], feature_type="polygon", **kwargs)
 
     def add_shapes(self, image, area_def, shapes, feature_type=None, x_offset=0, y_offset=0, **kwargs):
         """Draw shape objects to PIL image.
@@ -499,6 +499,11 @@ class ContourWriterBase(object):
                 Default is to draw the shape with the type in the shapefile.
             kwargs:
                 Extra drawing keyword arguments for all shapes
+
+        .. versionchanged: 1.2.0
+
+            Interface changed to have `shapes` before `feature_type` to allow
+            `feature_type` to be optional and default to `None`.
 
         """
         try:
@@ -587,7 +592,7 @@ class ContourWriterBase(object):
             db_root_path=db_root_path
         )
 
-        return self.add_shapes(image, area_def, feature_type, shape_generator,
+        return self.add_shapes(image, area_def, shape_generator, feature_type=feature_type,
                                x_offset=x_offset, y_offset=y_offset, **kwargs)
 
     def _iterate_db(self, db_name, tag, resolution, level, zero_pad, db_root_path=None):
