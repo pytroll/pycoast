@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011, 2016  Esben S. Nielsen
+# Copyright (C) 2011-2018 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
