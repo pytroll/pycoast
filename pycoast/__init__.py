@@ -9,6 +9,14 @@ from .cw_agg import ContourWriterAGG
 
 
 class ContourWriter(ContourWriterPIL):
+    """Writer wrapper for deprecation warning.
+
+    .. deprecated:: 1.2.0
+
+        Use :class:`~pycoast.cw_pil.ContourWriterPIL` or :class:`~pycoast.cw_agg.ContourWriterAGG` instead.
+
+    """
+
     def __init__(self, *args, **kwargs):
         import warnings
         warnings.warn("'ContourWriter' has been deprecated please use "
