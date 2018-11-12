@@ -1,5 +1,10 @@
 ## Version 1.2.0 (2018/11/12)
 
+### Backwards Incompatibility
+
+* `ContourWriter` is now named `ContourWriterPIL`
+* `ContourWriterAGG` is now the preferred writer and is aliased to `ContourWriter`
+
 ### Issues Closed
 
 * [Issue 17](https://github.com/pytroll/pycoast/issues/17) - Test failures with pyshp 2.0.0
