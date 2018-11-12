@@ -37,6 +37,6 @@ deploy:
   skip_existing: true
   on:
     tags: true
-    repo: pytroll/satpy
+    repo: pytroll/pycoast
 notifications:
   slack: pytroll:96mNSYSI1dBjGyzVXkBT6qFt
