@@ -1,3 +1,14 @@
+## Version 1.2.1 (2018/11/12)
+
+### Pull Requests Merged
+
+#### Documentation changes
+
+* [PR 22](https://github.com/pytroll/pycoast/pull/22) - Add deprecation warning if using ContourWriter
+
+In this release 1 pull request was closed.
+
+
 ## Version 1.2.0 (2018/11/12)
 
 ### Backwards Incompatibility
