@@ -1,8 +1,29 @@
-Changelog
-=========
+## Version 1.2.0 (2018/11/12)
 
-v1.1.0 (2017-12-08)
--------------------
+### Issues Closed
+
+* [Issue 17](https://github.com/pytroll/pycoast/issues/17) - Test failures with pyshp 2.0.0
+* [Issue 16](https://github.com/pytroll/pycoast/issues/16) - Add/fix documentation and examples about using pyresample AreaDefs
+* [Issue 14](https://github.com/pytroll/pycoast/issues/14) - Add documentation for `add_shapes` method
+* [Issue 13](https://github.com/pytroll/pycoast/issues/13) - Wrongly positioned coastlines on near sided perspective projection
+
+In this release 4 issues were closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 19](https://github.com/pytroll/pycoast/pull/19) - Fix base writer to work with shapely 2.0+ ([18](https://github.com/pytroll/pycoast/issues/18))
+
+#### Documentation changes
+
+* [PR 21](https://github.com/pytroll/pycoast/pull/21) - Add AUTHORS list
+* [PR 20](https://github.com/pytroll/pycoast/pull/20) - Cleanup documentation and switch to versioneer for version number
+
+In this release 3 pull requests were closed.
+
+
+## v1.1.0 (2017-12-08)
 
 - Update changelog. [Panu Lahtinen]
 
@@ -33,8 +54,7 @@ v1.1.0 (2017-12-08)
 
 - Change adding features to using a generator. [davidh-ssec]
 
-v1.0.0 (2017-08-15)
--------------------
+## v1.0.0 (2017-08-15)
 
 - Update changelog. [Martin Raspaud]
 
@@ -70,8 +90,7 @@ v1.0.0 (2017-08-15)
 
 - Fix tests and MANIFEST to be more modern. [davidh-ssec]
 
-v0.6.1 (2017-05-18)
--------------------
+## v0.6.1 (2017-05-18)
 
 - Update changelog. [Panu Lahtinen]
 
@@ -81,8 +100,7 @@ v0.6.1 (2017-05-18)
 
 - Create projection before using it. [Panu Lahtinen]
 
-v0.6.0 (2017-05-09)
--------------------
+## v0.6.0 (2017-05-09)
 
 - Update changelog. [Panu Lahtinen]
 
@@ -134,8 +152,7 @@ v0.6.0 (2017-05-09)
 
 - Update fonts in two test images. [Martin Raspaud]
 
-v0.5.4 (2016-02-21)
--------------------
+## v0.5.4 (2016-02-21)
 
 - Update changelog. [Martin Raspaud]
 
@@ -154,18 +171,11 @@ v0.5.4 (2016-02-21)
 - Update test reference images with ones made in Ubuntu so automatic
   testing might work in Travis. [Panu Lahtinen]
 
-v0.5.3 (2016-02-21)
--------------------
-
-Fix
-~~~
+## v0.5.3 (2016-02-21)
 
 - Bugfix: The section is called "coasts", plural... [Martin Raspaud]
 
 - Bugfix: the refactoring used only coastal style. [Martin Raspaud]
-
-Other
-~~~~~
 
 - Update changelog. [Martin Raspaud]
 
@@ -304,8 +314,7 @@ Other
   add_polygon(...)
 
 
-v0.5.2 (2013-02-19)
--------------------
+## v0.5.2 (2013-02-19)
 
 - Built docs. [Esben S. Nielsen]
 
@@ -313,13 +322,11 @@ v0.5.2 (2013-02-19)
 
 - Flexible grid labeling and placement implemented. [Esben S. Nielsen]
 
-v0.5.1 (2013-01-24)
--------------------
+## v0.5.1 (2013-01-24)
 
 - Lon markings now account for dateline too. [Esben S. Nielsen]
 
-v0.5.0 (2013-01-23)
--------------------
+## v0.5.0 (2013-01-23)
 
 - Updated doc image. [Esben S. Nielsen]
 
@@ -330,8 +337,7 @@ v0.5.0 (2013-01-23)
 - Implemented correct dateline handling and updated tests. [Esben S.
   Nielsen]
 
-v0.4.0 (2012-09-20)
--------------------
+## v0.4.0 (2012-09-20)
 
 - Added all of docs/build/html. [Esben S. Nielsen]
 
@@ -339,13 +345,11 @@ v0.4.0 (2012-09-20)
 
 - Added graticule computation from Hrob. [Esben S. Nielsen]
 
-v0.3.1 (2011-12-05)
--------------------
+## v0.3.1 (2011-12-05)
 
 - Corrected bug in add_coastlines_to_file. [Esben S. Nielsen]
 
-v0.3.0 (2011-12-02)
--------------------
+## v0.3.0 (2011-12-02)
 
 - Bugfixing to improve accuracy. [Esben S. Nielsen]
 
