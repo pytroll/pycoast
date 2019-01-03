@@ -3,7 +3,7 @@ env:
   global:
   # Set defaults to avoid repeating in most cases
   - PYTHON_VERSION=$TRAVIS_PYTHON_VERSION
-  - NUMPY_VERSION=stable
+  - NUMPY_VERSION=1.15
   - MAIN_CMD='python setup.py'
   - CONDA_DEPENDENCIES='sphinx pillow numpy pyproj coveralls coverage mock aggdraw six pyshp'
   - PIP_DEPENDENCIES=''
