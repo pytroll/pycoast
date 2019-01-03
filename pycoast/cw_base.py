@@ -76,6 +76,9 @@ class ContourWriterBase(object):
     def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
         """Draw text with default PIL module
         """
+        if font is None:
+            # NOTE: Default font does not use font size in PIL writer
+            font = self._get_font(kwargs.get('outline', 'black'), font, 12)
         placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
@@ -173,9 +176,6 @@ class ContourWriterBase(object):
                 kwargs['minor_outline_opacity']
             minor_line_kwargs['width'] = kwargs['minor_width']
 
-        # set text fonts
-        if font is None:
-            font = ImageFont.load_default()
         # text margins (at sides of image frame)
         y_text_margin = 4
         x_text_margin = 4

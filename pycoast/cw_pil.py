@@ -464,4 +464,6 @@ class ContourWriterPIL(ContourWriterBase):
 
     def _get_font(self, outline, font_file, font_size):
         """Return a font."""
+        if font_file is None:
+            return ImageFont.load_default()
         return ImageFont.truetype(font_file, font_size)
