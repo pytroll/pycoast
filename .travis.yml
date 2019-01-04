@@ -5,7 +5,7 @@ env:
   - PYTHON_VERSION=$TRAVIS_PYTHON_VERSION
   - NUMPY_VERSION=stable
   - MAIN_CMD='python setup.py'
-  - CONDA_DEPENDENCIES='sphinx pillow numpy pyproj coveralls coverage mock aggdraw six pyshp'
+  - CONDA_DEPENDENCIES='sphinx pillow pyproj coveralls coverage mock aggdraw six pyshp'
   - PIP_DEPENDENCIES=''
   - SETUP_XVFB=False
   - EVENT_TYPE='push pull_request'
@@ -22,6 +22,9 @@ matrix:
     os: linux
   - env: PYTHON_VERSION=3.6
     os: osx
+  - env: PYTHON_VERSION=3.6
+    os: windows
+    language: bash
 install:
 - git clone --depth 1 git://github.com/astropy/ci-helpers.git
 - source ci-helpers/travis/setup_conda.sh
