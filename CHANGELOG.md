@@ -1,3 +1,14 @@
+## Version 1.2.2 (2019/01/16)
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 24](https://github.com/pytroll/pycoast/pull/24) - Fix default font loading for 'add_grid'
+
+In this release 1 pull request was closed.
+
+
 ## Version 1.2.1 (2018/11/12)
 
 ### Pull Requests Merged
