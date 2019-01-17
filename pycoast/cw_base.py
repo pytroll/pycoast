@@ -666,8 +666,6 @@ class ContourWriterBase(object):
         # Cache management
         cache_file = None
         if config.has_section('cache'):
-            config_file_name, config_file_extention = \
-                os.path.splitext(config_file)
             cache_file = (config.get('cache', 'file') + '_' +
                           area_def.area_id + '.png')
 
@@ -726,7 +724,7 @@ class ContourWriterBase(object):
                    'y_offset': 0,
                    'resolution': default_resolution}
 
-        SECTIONS = ['coasts', 'rivers', 'borders', 'cities']
+        SECTIONS = ['coasts', 'rivers', 'borders', 'cities', 'grid']
         overlays = {}
 
         for section in config.sections():
@@ -784,6 +782,32 @@ class ContourWriterBase(object):
             self.add_cities(foreground, area_def, citylist, font_file,
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
+
+        if 'grid' in overlays:
+            lon_major = float(overlays['grid'].get('lon_major', 10.0))
+            lat_major = float(overlays['grid'].get('lat_major', 10.0))
+            lon_minor = float(overlays['grid'].get('lon_minor', 2.0))
+            lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
+            font = overlays['grid'].get('font', None)
+            write_text = overlays['grid'].get('write_text',
+                                              'true').lower() in \
+                ['true', 'yes', '1']
+            fill = overlays['grid'].get('fill', None)
+            outline = overlays['grid'].get('outline', 'white')
+            minor_outline = overlays['grid'].get('minor_outline', 'white')
+            minor_is_tick = overlays['grid'].get('minor_is_tick',
+                                                 'true').lower() in \
+                ['true', 'yes', '1']
+            lon_placement = overlays['grid'].get('lon_placement', 'tb')
+            lat_placement = overlays['grid'].get('lat_placement', 'lr')
+
+            self.add_grid(foreground, area_def, (lon_major, lat_major),
+                          (lon_minor, lat_minor),
+                          font=font, write_text=write_text, fill=fill,
+                          outline=outline, minor_outline=minor_outline,
+                          minor_is_tick=minor_is_tick,
+                          lon_placement=lon_placement,
+                          lat_placement=lat_placement)
 
         if cache_file is not None:
             try:
