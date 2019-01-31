@@ -789,11 +789,19 @@ class ContourWriterBase(object):
             lon_minor = float(overlays['grid'].get('lon_minor', 2.0))
             lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
             font = overlays['grid'].get('font', None)
+            font_size = int(overlays['grid'].get('font_size', 10))
             write_text = overlays['grid'].get('write_text',
                                               'true').lower() in \
                 ['true', 'yes', '1']
-            fill = overlays['grid'].get('fill', None)
             outline = overlays['grid'].get('outline', 'white')
+            if isinstance(font, str):
+                if is_agg:
+                    from aggdraw import Font
+                    font = Font(outline, font, size=font_size)
+                else:
+                    from PIL.ImageFont import truetype
+                    font = truetype(font, font_size)
+            fill = overlays['grid'].get('fill', None)
             minor_outline = overlays['grid'].get('minor_outline', 'white')
             minor_is_tick = overlays['grid'].get('minor_is_tick',
                                                  'true').lower() in \
