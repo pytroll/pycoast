@@ -36,10 +36,10 @@ class Proj(pyproj.Proj):
     """Wrapper around pyproj to add in 'is_latlong'."""
 
     def is_latlong(self):
-        if hasattr(pyproj.Proj, 'is_latlong'):
-            # pyproj<2.2
-            return super(Proj, self).is_latlong()
-        return self.crs.is_geographic
+        if hasattr(self, 'crs'):
+            return self.crs.is_geographic
+        # pyproj<2.0
+        return super(Proj, self).is_latlong()
 
 
 class ContourWriterBase(object):
