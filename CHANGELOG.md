@@ -1,3 +1,20 @@
+## Version 1.2.3 (2019/06/06)
+
+### Issues Closed
+
+* [Issue 27](https://github.com/pytroll/pycoast/issues/27) - Not compatible with pyproj>=2.2.0 ([PR 28](https://github.com/pytroll/pycoast/pull/28))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 28](https://github.com/pytroll/pycoast/pull/28) - Fix pyproj 2.2+ is_latlong compatibility ([27](https://github.com/pytroll/pycoast/issues/27))
+
+In this release 1 pull request was closed.
+
+
 ## Version 1.2.2 (2019/01/16)
 
 ### Pull Requests Merged
