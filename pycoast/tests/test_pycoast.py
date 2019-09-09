@@ -594,6 +594,39 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
+    def test_add_shapefile_shapes_agg(self):
+        from pycoast import ContourWriterAGG
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'brazil_shapefiles_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = \
+            '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        cw.add_shapefile_shapes(img, area_def,
+                                os.path.join(
+                                    os.path.dirname(__file__),
+                                    'test_data/shapes/Metareas.shp'),
+                                outline='red', width=2)
+        cw.add_shapefile_shape(img, area_def,
+                               os.path.join(os.path.dirname(__file__),
+                                            'test_data/shapes/divisao_politica/BR_Regioes.shp'), 3,
+                               outline='blue')
+        cw.add_shapefile_shape(img, area_def,
+                               os.path.join(os.path.dirname(__file__),
+                                            'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
+                               outline='blue', fill='green')
+
+        res = np.array(img)
+        self.assertTrue(
+            fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
+
     def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG
         proj4_string = \
@@ -613,7 +646,7 @@ class TestPILAGG(TestPycoast):
 def suite():
     loader = unittest.TestLoader()
     mysuite = unittest.TestSuite()
-    #mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
+    mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
     mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
 
     return mysuite
