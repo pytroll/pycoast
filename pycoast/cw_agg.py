@@ -518,6 +518,7 @@ class ContourWriterAGG(ContourWriterBase):
 
         """
         image = Image.open(filename)
+        image = image.convert("RGBA") 
         self.add_borders(image, area_def, resolution=resolution, level=level,
                          outline=outline, width=width,
                          outline_opacity=outline_opacity, x_offset=x_offset,
@@ -589,6 +590,7 @@ class ContourWriterAGG(ContourWriterBase):
         """
 
         image = Image.open(filename)
+        image = image.convert("RGBA") 
         self.add_rivers(image, area_def, resolution=resolution, level=level,
                         outline=outline, width=width,
                         outline_opacity=outline_opacity, x_offset=x_offset,
