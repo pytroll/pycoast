@@ -326,7 +326,7 @@ class ContourWriterAGG(ContourWriterBase):
                          minor_outline='white', minor_width=0.5,
                          minor_outline_opacity=255, minor_is_tick=True,
                          lon_placement='tb', lat_placement='lr'):
-        """Add a lon-lat grid to an image.
+        """Add a lon-lat grid to an image. The resulting image is in 'RGBA' mode.
 
         :Parameters:
             image : object
@@ -361,6 +361,7 @@ class ContourWriterAGG(ContourWriterBase):
         """
 
         image = Image.open(filename)
+        image = image.convert('RGBA')
         self.add_grid(image, area_def, Dlonlat, dlonlat,
                       font=font, write_text=write_text,
                       fill=fill, fill_opacity=fill_opacity,
@@ -417,7 +418,7 @@ class ContourWriterAGG(ContourWriterBase):
                                level=1, fill=None, fill_opacity=255,
                                outline='white', width=1, outline_opacity=255,
                                x_offset=0, y_offset=0):
-        """Add coastlines to an image file.
+        """Add coastlines to an image file. The resulting image is in 'RGBA' mode.
 
         :Parameters:
             filename : str
@@ -448,6 +449,7 @@ class ContourWriterAGG(ContourWriterBase):
         """
 
         image = Image.open(filename)
+        image = image.convert('RGBA')
         self.add_coastlines(image, area_def, resolution=resolution,
                             level=level, fill=fill,
                             fill_opacity=fill_opacity, outline=outline,
@@ -492,7 +494,7 @@ class ContourWriterAGG(ContourWriterBase):
     def add_borders_to_file(self, filename, area_def, resolution='c',
                             level=1, outline='white', width=1,
                             outline_opacity=255, x_offset=0, y_offset=0):
-        """Add borders to an image file.
+        """Add borders to an image file. The resulting image is in 'RGBA' mode.
 
         :Parameters:
             image : object
@@ -563,7 +565,7 @@ class ContourWriterAGG(ContourWriterBase):
     def add_rivers_to_file(self, filename, area_def, resolution='c', level=1,
                            outline='white', width=1, outline_opacity=255,
                            x_offset=0, y_offset=0):
-        """Add rivers to an image file.
+        """Add rivers to an image file. The resulting image is in 'RGBA' mode.
 
         :Parameters:
             image : object

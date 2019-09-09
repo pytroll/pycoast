@@ -23,7 +23,6 @@ import unittest
 import numpy as np
 from PIL import Image, ImageFont
 
-
 def tmp(f):
     f.tmp = True
     return f
@@ -68,6 +67,7 @@ def fft_metric(data1, data2, max_value=0.1):
 gshhs_root_dir = os.path.join(os.path.dirname(__file__), 'test_data', 'gshhs')
 test_file = 'test_image.png'
 grid_file = 'test_grid.png'
+p_file_coasts = 'test_coasts_p_mode.png'
 
 
 class TestPycoast(unittest.TestCase):
@@ -76,10 +76,13 @@ class TestPycoast(unittest.TestCase):
         img = Image.new('RGB', (640, 480))
         img.save(test_file)
         img.save(grid_file)
+        img_p = Image.new('P', (640, 480))
+        img_p.save(p_file_coasts)
 
     def tearDown(self):
         os.remove(test_file)
         os.remove(grid_file)
+        os.remove(p_file_coasts)
 
 
 class TestPIL(TestPycoast):
@@ -591,44 +594,26 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
-    def test_add_shapefile_shapes_agg(self):
+    def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'brazil_shapefiles_agg.png'))
-        grid_data = np.array(grid_img)
-
-        img = Image.new('RGB', (425, 425))
         proj4_string = \
-            '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
-        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
+        cw.add_coastlines_to_file(p_file_coasts, area_def, resolution='l', level=4)
 
-        cw.add_coastlines(img, area_def, resolution='l', level=4)
-        cw.add_shapefile_shapes(img, area_def,
-                                os.path.join(
-                                    os.path.dirname(__file__),
-                                    'test_data/shapes/Metareas.shp'),
-                                outline='red', width=2)
-        cw.add_shapefile_shape(img, area_def,
-                               os.path.join(os.path.dirname(__file__),
-                                            'test_data/shapes/divisao_politica/BR_Regioes.shp'), 3,
-                               outline='blue')
-        cw.add_shapefile_shape(img, area_def,
-                               os.path.join(os.path.dirname(__file__),
-                                            'test_data/shapes/divisao_politica/BR_Regioes.shp'), 4,
-                               outline='blue', fill='green')
+        img = Image.open(p_file_coasts)
+        image_mode = img.mode
+        img.close()
 
-        res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
-
+        self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
 
 def suite():
     loader = unittest.TestLoader()
     mysuite = unittest.TestSuite()
-    mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
+    #mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
     mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
 
     return mysuite
