@@ -3,9 +3,9 @@
 from .version import get_versions
 __version__ = get_versions()['version']
 del get_versions
-
 from .cw_pil import ContourWriterPIL
 from .cw_agg import ContourWriterAGG
+from pycoast.cw_base import get_resolution_from_area
 
 
 class ContourWriter(ContourWriterPIL):

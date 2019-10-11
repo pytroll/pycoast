@@ -22,6 +22,7 @@ import unittest
 
 import numpy as np
 from PIL import Image, ImageFont
+import time
 
 def tmp(f):
     f.tmp = True
@@ -643,11 +644,117 @@ class TestPILAGG(TestPycoast):
 
         self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
 
+
+class FakeAreaDef():
+    """A fake area definition object."""
+
+    def __init__(self, proj4_string, area_extent, x_size, y_size):
+        self.proj4_string = proj4_string
+        self.area_extent = area_extent
+        self.x_size = x_size
+        self.y_size = y_size
+        self.area_id = 'fakearea'
+
+
+class TestFromConfig(TestPycoast):
+    """Test burning overlays from a config file."""
+
+    def test_foreground(self):
+        """Test generating a transparent foreground."""
+        from pycoast import ContourWriterPIL
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'contours_europe_alpha.png'))
+        euro_data = np.array(euro_img)
+
+        # img = Image.new('RGB', (640, 480))
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
+        area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
+        cw = ContourWriterPIL(gshhs_root_dir)
+        config_file = os.path.join(os.path.dirname(__file__), 'test_data', 'test_config.ini')
+        img = cw.add_overlay_from_config(config_file, area_def)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+
+        overlays = {'coasts': {'level': 4, 'resolution': 'l'},
+                    'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
+                    'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
+
+        img = cw.add_overlay_from_dict(overlays, area_def)
+        res = np.array(img)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+
+    def test_cache(self):
+        """Test generating a transparent foreground and cache it."""
+        from pycoast import ContourWriterPIL
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'contours_europe_alpha.png'))
+        euro_data = np.array(euro_img)
+
+        # img = Image.new('RGB', (640, 480))
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
+        area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        overlays = {'cache': {'file': '/tmp/pycoast_cache'},
+                    'coasts': {'level': 4, 'resolution': 'l'},
+                    'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
+                    'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
+
+        cache_filename = '/tmp/pycoast_cache_fakearea.png'
+        img = cw.add_overlay_from_dict(overlays, area_def)
+        res = np.array(img)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+        self.assertTrue(os.path.isfile(cache_filename))
+
+        current_time = time.time()
+
+        img = cw.add_overlay_from_dict(overlays, area_def, current_time)
+
+        mtime = os.path.getmtime(cache_filename)
+
+        self.assertGreater(mtime, current_time)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+
+        img = cw.add_overlay_from_dict(overlays, area_def, current_time)
+
+        self.assertEqual(os.path.getmtime(cache_filename), mtime)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+        overlays['cache']['regenerate'] = True
+        img = cw.add_overlay_from_dict(overlays, area_def)
+
+        self.assertNotEqual(os.path.getmtime(cache_filename), mtime)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+        os.remove('/tmp/pycoast_cache_fakearea.png')
+
+    def test_get_resolution(self):
+        """Get the automagical resolution computation."""
+        from pycoast import get_resolution_from_area
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
+        area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
+        self.assertEqual(get_resolution_from_area(area_def), 'l')
+        area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
+        self.assertEqual(get_resolution_from_area(area_def), 'h')
+
+
 def suite():
     loader = unittest.TestLoader()
     mysuite = unittest.TestSuite()
     mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
     mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
+    mysuite.addTest(loader.loadTestsFromTestCase(TestFromConfig))
 
     return mysuite
 
