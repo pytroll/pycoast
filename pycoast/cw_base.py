@@ -20,7 +20,7 @@
 import os
 import shapefile
 import numpy as np
-from PIL import Image, ImageFont
+from PIL import Image
 import pyproj
 import logging
 
@@ -619,7 +619,7 @@ class ContourWriterBase(object):
 
         if type(level) not in (list,):
             level = range(1,level+1)
-                        
+
         for i in level:
 
             # One shapefile per level
