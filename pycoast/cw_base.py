@@ -63,6 +63,7 @@ def get_resolution_from_area(area_def):
     else:
         return "f"
 
+
 class Proj(pyproj.Proj):
     """Wrapper around pyproj to add in 'is_latlong'."""
 
@@ -707,7 +708,7 @@ class ContourWriterBase(object):
                         overlays[section][option] = val
         return overlays
 
-    def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None):
+    def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
         """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
 
         :Parameters:
@@ -718,13 +719,18 @@ class ContourWriterBase(object):
             cache_epoch: seconds since epoch
                 The latest time allowed for cache the cache file. If the cache file is older than this (mtime),
                 the cache should be regenerated.
+            background: pillow image instance
+                The image on which to write the overlays on. If it's None (default),
+                a new image is created, otherwise the provide background is use
+                an change *in place*.
 
 
             The keys in `overlays` that will be taken into account are:
             cache, coasts, rivers, borders, cities, grid
 
             For all of them except `cache`, the items are the same as the corresponding
-            functions in pycoast, so refer to the docstrings of these functions.
+            functions in pycoast, so refer to the docstrings of these functions
+            (add_coastlines, add_rivers, add_borders, add_grid, add_cities).
             For cache, to parameters are configurable: `file` which specifies the directory
             and the prefix of the file to save the caches decoration to
             (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
@@ -746,6 +752,8 @@ class ContourWriterBase(object):
                         and not overlays['cache'].get('regenerate', False)):
                     foreground = Image.open(cache_file)
                     logger.info('Using image in cache %s', cache_file)
+                    if background is not None:
+                        background.paste(foreground, mask=foreground.split()[-1])
                     return foreground
                 else:
                     logger.info("Regenerating cache file.")
@@ -754,7 +762,10 @@ class ContourWriterBase(object):
 
         x_size = area_def.x_size
         y_size = area_def.y_size
-        foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
+        if cache_file is None and background is not None:
+            foreground = background
+        else:
+            foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
         default_resolution = get_resolution_from_area(area_def)
 
@@ -774,7 +785,8 @@ class ContourWriterBase(object):
         for section, fun in zip(['coasts', 'rivers', 'borders', 'grid'],
                                 [self.add_coastlines,
                                  self.add_rivers,
-                                 self.add_borders]):
+                                 self.add_borders,
+                                 self.add_grid]):
 
             if section in overlays:
 
@@ -823,10 +835,11 @@ class ContourWriterBase(object):
                 foreground.save(cache_file)
             except IOError as e:
                 logger.error("Can't save cache: %s", str(e))
-
+            if background is not None:
+                background.paste(foreground, mask=foreground.split()[-1])
         return foreground
 
-    def add_overlay_from_config(self, config_file, area_def):
+    def add_overlay_from_config(self, config_file, area_def, background=None):
         """Create and return a transparent image adding all the overlays contained in a configuration file.
 
         :Parameters:
@@ -837,7 +850,7 @@ class ContourWriterBase(object):
 
         """
         overlays = self._config_to_dict(config_file)
-        return self.add_overlay_from_dict(overlays, area_def, os.path.getmtime(config_file))
+        return self.add_overlay_from_dict(overlays, area_def, os.path.getmtime(config_file), background)
 
     def add_cities(self, image, area_def, citylist, font_file, font_size,
                    ptsize, outline, box_outline, box_opacity, db_root_path=None):
