@@ -3,7 +3,6 @@ env:
   global:
   # Set defaults to avoid repeating in most cases
   - PYTHON_VERSION=$TRAVIS_PYTHON_VERSION
-  - NUMPY_VERSION=1.16
   - MAIN_CMD='python setup.py'
   - CONDA_DEPENDENCIES='sphinx pillow pyproj coveralls coverage mock aggdraw six pyshp'
   - PIP_DEPENDENCIES=''
@@ -14,9 +13,13 @@ env:
   - CONDA_CHANNEL_PRIORITY='True'
 matrix:
   include:
-  - env: PYTHON_VERSION=2.7
+  - env:
+    - PYTHON_VERSION=2.7
+    - NUMPY_VERSION=1.16
     os: linux
-  - env: PYTHON_VERSION=2.7
+  - env:
+    - PYTHON_VERSION=2.7
+    - NUMPY_VERSION=1.16
     os: osx
   - env: PYTHON_VERSION=3.6
     os: linux
