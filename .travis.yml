@@ -26,8 +26,9 @@ matrix:
     os: windows
     language: bash
 install:
-- git clone --depth 1 git://github.com/astropy/ci-helpers.git
-- source ci-helpers/travis/setup_conda.sh
+#    - git clone --depth 1 git://github.com/astropy/ci-helpers.git
+  - git clone --depth 1 -b all-the-fixes git://github.com/djhoese/ci-helpers.git
+  - source ci-helpers/travis/setup_conda.sh
 script: coverage run --source=pycoast setup.py test
 after_success:
 - if [[ $PYTHON_VERSION == 3.6 ]]; then coveralls; fi
