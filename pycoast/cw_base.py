@@ -731,10 +731,10 @@ class ContourWriterBase(object):
             For all of them except `cache`, the items are the same as the corresponding
             functions in pycoast, so refer to the docstrings of these functions
             (add_coastlines, add_rivers, add_borders, add_grid, add_cities).
-            For cache, to parameters are configurable: `file` which specifies the directory
+            For cache, two parameters are configurable: `file` which specifies the directory
             and the prefix of the file to save the caches decoration to
             (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
-            True or False (default) to force the overwriting of the cached file.
+            True or False (default) to force the overwriting of an already cached file.
 
         """
 
