@@ -691,6 +691,7 @@ class TestFromConfig(TestPycoast):
     def test_cache(self):
         """Test generating a transparent foreground and cache it."""
         from pycoast import ContourWriterPIL
+        from tempfile import gettempdir
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_europe_alpha.png'))
         euro_data = np.array(euro_img)
@@ -702,12 +703,14 @@ class TestFromConfig(TestPycoast):
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        overlays = {'cache': {'file': '/tmp/pycoast_cache'},
+        tmp = gettempdir()
+
+        overlays = {'cache': {'file': os.path.join(tmp, 'pycoast_cache')},
                     'coasts': {'level': 4, 'resolution': 'l'},
                     'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
                     'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
 
-        cache_filename = '/tmp/pycoast_cache_fakearea.png'
+        cache_filename = os.path.join(tmp, 'pycoast_cache_fakearea.png')
         img = cw.add_overlay_from_dict(overlays, area_def)
         res = np.array(img)
         self.assertTrue(fft_metric(euro_data, res),
@@ -735,7 +738,7 @@ class TestFromConfig(TestPycoast):
         self.assertNotEqual(os.path.getmtime(cache_filename), mtime)
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
-        os.remove('/tmp/pycoast_cache_fakearea.png')
+        os.remove(os.path.join(tmp, 'pycoast_cache_fakearea.png'))
 
     def test_get_resolution(self):
         """Get the automagical resolution computation."""
