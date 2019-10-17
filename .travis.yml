@@ -4,7 +4,7 @@ env:
   # Set defaults to avoid repeating in most cases
   - PYTHON_VERSION=$TRAVIS_PYTHON_VERSION
   - MAIN_CMD='python setup.py'
-  - CONDA_DEPENDENCIES='sphinx pillow pyproj coveralls coverage mock aggdraw six pyshp'
+  - CONDA_DEPENDENCIES='sphinx pillow pyproj coveralls coverage mock aggdraw six pyshp pyresample'
   - PIP_DEPENDENCIES=''
   - SETUP_XVFB=False
   - EVENT_TYPE='push pull_request'
