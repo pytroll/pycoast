@@ -23,7 +23,6 @@ import unittest
 import numpy as np
 from PIL import Image, ImageFont
 
-
 def tmp(f):
     f.tmp = True
     return f
@@ -68,6 +67,7 @@ def fft_metric(data1, data2, max_value=0.1):
 gshhs_root_dir = os.path.join(os.path.dirname(__file__), 'test_data', 'gshhs')
 test_file = 'test_image.png'
 grid_file = 'test_grid.png'
+p_file_coasts = 'test_coasts_p_mode.png'
 
 
 class TestPycoast(unittest.TestCase):
@@ -76,10 +76,13 @@ class TestPycoast(unittest.TestCase):
         img = Image.new('RGB', (640, 480))
         img.save(test_file)
         img.save(grid_file)
+        img_p = Image.new('P', (640, 480))
+        img_p.save(p_file_coasts)
 
     def tearDown(self):
         os.remove(test_file)
         os.remove(grid_file)
+        os.remove(p_file_coasts)
 
 
 class TestPIL(TestPycoast):
@@ -671,6 +674,22 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh grid failed')
+
+    def test_coastlines_convert_to_rgba_agg(self):
+        from pycoast import ContourWriterAGG
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+        cw.add_coastlines_to_file(p_file_coasts, area_def, resolution='l', level=4)
+
+        img = Image.open(p_file_coasts)
+        image_mode = img.mode
+        img.close()
+
+        self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
 
 
 def suite():

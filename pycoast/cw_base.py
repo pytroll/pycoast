@@ -32,6 +32,16 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+class Proj(pyproj.Proj):
+    """Wrapper around pyproj to add in 'is_latlong'."""
+
+    def is_latlong(self):
+        if hasattr(self, 'crs'):
+            return self.crs.is_geographic
+        # pyproj<2.0
+        return super(Proj, self).is_latlong()
+
+
 class ContourWriterBase(object):
     """Base class for contourwriters. Do not instantiate.
 
@@ -182,7 +192,7 @@ class ContourWriterBase(object):
 
         # Area and projection info
         x_size, y_size = image.size
-        prj = pyproj.Proj(proj4_string)
+        prj = Proj(proj4_string)
 
         x_offset = 0
         y_offset = 0
@@ -512,7 +522,7 @@ class ContourWriterBase(object):
 
         # Area and projection info
         x_size, y_size = image.size
-        prj = pyproj.Proj(proj4_string)
+        prj = Proj(proj4_string)
 
         # Calculate min and max lons and lats of interest
         lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
@@ -688,7 +698,7 @@ class ContourWriterBase(object):
         foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
         # Lines (coasts, rivers, borders) management
-        prj = pyproj.Proj(area_def.proj4_string)
+        prj = Proj(area_def.proj4_string)
         if prj.is_latlong():
             x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
             x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
@@ -846,7 +856,7 @@ class ContourWriterBase(object):
 
         # Area and projection info
         x_size, y_size = image.size
-        prj = pyproj.Proj(proj4_string)
+        prj = Proj(proj4_string)
 
         # read shape file with points
         # Sc-Kh shapefilename = os.path.join(self.db_root_path,
