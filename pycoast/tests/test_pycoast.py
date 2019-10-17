@@ -697,10 +697,10 @@ class FakeAreaDef():
     """A fake area definition object."""
 
     def __init__(self, proj4_string, area_extent, x_size, y_size):
-        self.proj4_string = proj4_string
+        self.proj_str = proj4_string
         self.area_extent = area_extent
-        self.x_size = x_size
-        self.y_size = y_size
+        self.width = x_size
+        self.height = y_size
         self.area_id = 'fakearea'
 
 

@@ -35,9 +35,9 @@ logger = logging.getLogger(__name__)
 
 def get_resolution_from_area(area_def):
     """Get the best resolution for an area definition."""
-    x_size = area_def.x_size
-    y_size = area_def.y_size
-    prj = Proj(area_def.proj4_string)
+    x_size = area_def.width
+    y_size = area_def.height
+    prj = Proj(area_def.proj_str)
     if prj.is_latlong():
         x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
         x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
@@ -200,7 +200,7 @@ class ContourWriterBase(object):
         """
 
         try:
-            proj4_string = area_def.proj4_string
+            proj4_string = area_def.proj_str
             area_extent = area_def.area_extent
         except AttributeError:
             proj4_string = area_def[0]
@@ -544,7 +544,7 @@ class ContourWriterBase(object):
 
         """
         try:
-            proj4_string = area_def.proj4_string
+            proj4_string = area_def.proj_str
             area_extent = area_def.area_extent
         except AttributeError:
             proj4_string = area_def[0]
@@ -760,8 +760,8 @@ class ContourWriterBase(object):
             except OSError:
                 logger.info("No overlay image found, new overlay image will be saved in cache.")
 
-        x_size = area_def.x_size
-        y_size = area_def.y_size
+        x_size = area_def.width
+        y_size = area_def.height
         if cache_file is None and background is not None:
             foreground = background
         else:
@@ -782,11 +782,10 @@ class ContourWriterBase(object):
         is_agg = self._draw_module == "AGG"
 
         # Coasts, rivers, borders
-        for section, fun in zip(['coasts', 'rivers', 'borders', 'grid'],
+        for section, fun in zip(['coasts', 'rivers', 'borders'],
                                 [self.add_coastlines,
                                  self.add_rivers,
-                                 self.add_borders,
-                                 self.add_grid]):
+                                 self.add_borders]):
 
             if section in overlays:
 
@@ -837,9 +836,10 @@ class ContourWriterBase(object):
             lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
-            write_text = overlays['grid'].get('write_text',
-                                              'true').lower() in \
-                ['true', 'yes', '1']
+
+            write_text = overlays['grid'].get('write_text', True)
+            if isinstance(write_text, str):
+                write_text = write_text.lower() in ['true', 'yes', '1', 'on']
             outline = overlays['grid'].get('outline', 'white')
             if isinstance(font, str):
                 if is_agg:
@@ -897,7 +897,7 @@ class ContourWriterBase(object):
             raise ValueError("'db_root_path' must be specified to use this method")
 
         try:
-            proj4_string = area_def.proj4_string
+            proj4_string = area_def.proj_str
             area_extent = area_def.area_extent
         except AttributeError:
             proj4_string = area_def[0]
