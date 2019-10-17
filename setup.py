@@ -19,6 +19,8 @@ from setuptools import setup
 import versioneer
 
 requires = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow', 'six']
+tests_require = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow', 'six',
+                 'pyresample']
 
 with open('README', 'r') as readme_file:
     long_description = readme_file.read()
@@ -32,6 +34,7 @@ setup(name='pycoast',
       author_email='esn@dmi.dk',
       packages=['pycoast', 'pycoast.tests'],
       install_requires=requires,
+      tests_require=tests_require,
       test_suite='pycoast.tests.test_pycoast.suite',
       zip_safe=False,
       classifiers=[
