@@ -253,7 +253,7 @@ class ContourWriterBase(object):
 
         # lons along major lat lines (extended slightly to avoid missing the
         # end)
-        lin_lons = np.arange(lon_min, lon_max + Dlon / 5.0, Dlon / 100.0)
+        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) / 5)
 
         # MINOR LINES ######
         if not kwargs['minor_is_tick']:
@@ -298,9 +298,9 @@ class ContourWriterBase(object):
         for lon in maj_lons:
             # Draw 'minor' tick lines dlat separation along the lon
             if kwargs['minor_is_tick']:
-                tick_lons = np.arange(lon - Dlon / 20.0,
-                                      lon + Dlon / 20.0,
-                                      Dlon / 500.0)
+                tick_lons = np.linspace(lon - Dlon / 20.0,
+                                        lon + Dlon / 20.0,
+                                        5)
 
                 for lat in min_lats:
                     lonlats = [(x, lat) for x in tick_lons]
@@ -354,9 +354,9 @@ class ContourWriterBase(object):
         for lat in maj_lats:
             # Draw 'minor' tick dlon separation along the lat
             if kwargs['minor_is_tick']:
-                tick_lats = np.arange(lat - Dlat / 20.0,
-                                      lat + Dlat / 20.0,
-                                      Dlat / 500.0)
+                tick_lats = np.linspace(lat - Dlat / 20.0,
+                                        lat + Dlat / 20.0,
+                                        5)
                 for lon in min_lons:
                     lonlats = [(lon, x) for x in tick_lats]
                     index_arrays, is_reduced = \
