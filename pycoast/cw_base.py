@@ -126,7 +126,7 @@ class ContourWriterBase(object):
         # boundary
         search_box = (-10, x_size + 10, -10, y_size + 10)
 
-        # loop trough line steps and detect crossings
+        # loop through line steps and detect crossings
         intercepts = []
         align_left = 'LC'
         align_right = 'RC'
