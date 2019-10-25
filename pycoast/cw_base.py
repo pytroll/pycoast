@@ -20,7 +20,7 @@
 import os
 import shapefile
 import numpy as np
-from PIL import Image, ImageFont
+from PIL import Image
 import pyproj
 import logging
 
@@ -99,7 +99,7 @@ class ContourWriterBase(object):
 
     def _find_line_intercepts(self, xys, size, margins):
         """Finds intercepts of poly-line xys with image boundaries
-        offset by margins and returns an array of coordintes"""
+        offset by margins and returns an array of coordinates"""
         x_size, y_size = size
 
         def is_in_box(x_y, extents):
@@ -120,13 +120,13 @@ class ContourWriterBase(object):
         xlim1 = margins[0]
         ylim1 = margins[1]
         xlim2 = x_size - margins[0]
-        ylim2 = y_size - margins[0]
+        ylim2 = y_size - margins[1]
 
         # only consider crossing within a box a little bigger than grid
         # boundary
         search_box = (-10, x_size + 10, -10, y_size + 10)
 
-        # loop trought line steps and detect crossings
+        # loop through line steps and detect crossings
         intercepts = []
         align_left = 'LC'
         align_right = 'RC'
@@ -234,7 +234,7 @@ class ContourWriterBase(object):
                              lat_max - shorten_max_lat,
                              float(lat_max - lat_min) / y_size)
         # lin_lats in rather high definition so that it can be used to
-        # posituion text labels near edges of image...
+        # position text labels near edges of image...
 
         # perhaps better to find the actual length of line in pixels...
 
@@ -253,7 +253,7 @@ class ContourWriterBase(object):
 
         # lons along major lat lines (extended slightly to avoid missing the
         # end)
-        lin_lons = np.arange(lon_min, lon_max + Dlon / 5.0, Dlon / 10.0)
+        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) / 5)
 
         # MINOR LINES ######
         if not kwargs['minor_is_tick']:
@@ -298,9 +298,9 @@ class ContourWriterBase(object):
         for lon in maj_lons:
             # Draw 'minor' tick lines dlat separation along the lon
             if kwargs['minor_is_tick']:
-                tick_lons = np.arange(lon - Dlon / 20.0,
-                                      lon + Dlon / 20.0,
-                                      Dlon / 50.0)
+                tick_lons = np.linspace(lon - Dlon / 20.0,
+                                        lon + Dlon / 20.0,
+                                        5)
 
                 for lat in min_lats:
                     lonlats = [(x, lat) for x in tick_lons]
@@ -354,9 +354,9 @@ class ContourWriterBase(object):
         for lat in maj_lats:
             # Draw 'minor' tick dlon separation along the lat
             if kwargs['minor_is_tick']:
-                tick_lats = np.arange(lat - Dlat / 20.0,
-                                      lat + Dlat / 20.0,
-                                      Dlat / 50.0)
+                tick_lats = np.linspace(lat - Dlat / 20.0,
+                                        lat + Dlat / 20.0,
+                                        5)
                 for lon in min_lons:
                     lonlats = [(lon, x) for x in tick_lats]
                     index_arrays, is_reduced = \
@@ -619,7 +619,7 @@ class ContourWriterBase(object):
 
         if type(level) not in (list,):
             level = range(1,level+1)
-                        
+
         for i in level:
 
             # One shapefile per level

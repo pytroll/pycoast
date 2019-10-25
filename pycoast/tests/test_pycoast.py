@@ -170,6 +170,32 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of grid failed')
 
+    def test_grid_germ(self):
+        """Check that issue #26 is fixed."""
+        from pycoast import ContourWriterPIL
+        result_file = os.path.join(os.path.dirname(__file__), 'grid_germ.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (1024, 1024))
+        proj4_string = \
+            '+proj=stere +ellps=bessel +lat_0=90.0 +lon_0=5.0 +lat_ts=50.0 +a=6378144.0 +b=6356759.0'
+        area_extent = [-155100.436345, -4441495.37946, 868899.563655, -3417495.37946]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  16)
+        cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0),
+                    font=font, fill='yellow', write_text=True,
+                    outline='red', minor_outline='white')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of grid to germ failed')
+
     def test_grid_geos(self):
         from pycoast import ContourWriterPIL
         geos_img = Image.open(
