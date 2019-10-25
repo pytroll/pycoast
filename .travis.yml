@@ -3,7 +3,6 @@ env:
   global:
   # Set defaults to avoid repeating in most cases
   - PYTHON_VERSION=$TRAVIS_PYTHON_VERSION
-  - NUMPY_VERSION=stable
   - MAIN_CMD='python setup.py'
   - CONDA_DEPENDENCIES='sphinx pillow pyproj coveralls coverage mock aggdraw six pyshp pyresample'
   - PIP_DEPENDENCIES=''
@@ -29,9 +28,16 @@ matrix:
   - env: PYTHON_VERSION=3.6
     os: windows
     language: bash
+  - env: PYTHON_VERSION=3.7
+    os: linux
+  - env: PYTHON_VERSION=3.7
+    os: osx
+  - env: PYTHON_VERSION=3.7
+    os: windows
+    language: bash
 install:
-- git clone --depth 1 git://github.com/astropy/ci-helpers.git
-- source ci-helpers/travis/setup_conda.sh
+  - git clone --depth 1 git://github.com/astropy/ci-helpers.git
+  - source ci-helpers/travis/setup_conda.sh
 script: coverage run --source=pycoast setup.py test
 after_success:
 - if [[ $PYTHON_VERSION == 3.6 ]]; then coveralls; fi

@@ -23,6 +23,7 @@ import numpy as np
 from PIL import Image
 import pyproj
 import logging
+import ast
 
 try:
     import configparser
@@ -30,6 +31,37 @@ except ImportError:
     from six.moves import configparser
 
 logger = logging.getLogger(__name__)
+
+
+def get_resolution_from_area(area_def):
+    """Get the best resolution for an area definition."""
+    x_size = area_def.width
+    y_size = area_def.height
+    prj = Proj(area_def.proj_str)
+    if prj.is_latlong():
+        x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
+        x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
+        x_resolution = (x_ur - x_ll) / x_size
+        y_resolution = (y_ur - y_ll) / y_size
+    else:
+        x_resolution = ((area_def.area_extent[2] -
+                         area_def.area_extent[0]) /
+                        x_size)
+        y_resolution = ((area_def.area_extent[3] -
+                         area_def.area_extent[1]) /
+                        y_size)
+    res = min(x_resolution, y_resolution)
+
+    if res > 25000:
+        return "c"
+    elif res > 5000:
+        return "l"
+    elif res > 1000:
+        return "i"
+    elif res > 200:
+        return "h"
+    else:
+        return "f"
 
 
 class Proj(pyproj.Proj):
@@ -168,7 +200,7 @@ class ContourWriterBase(object):
         """
 
         try:
-            proj4_string = area_def.proj4_string
+            proj4_string = area_def.proj_str
             area_extent = area_def.area_extent
         except AttributeError:
             proj4_string = area_def[0]
@@ -512,7 +544,7 @@ class ContourWriterBase(object):
 
         """
         try:
-            proj4_string = area_def.proj4_string
+            proj4_string = area_def.proj_str
             area_extent = area_def.area_extent
         except AttributeError:
             proj4_string = area_def[0]
@@ -644,22 +676,12 @@ class ContourWriterBase(object):
                 yield shape
 
     def _finalize(self, draw):
-        """Do any need finalization of the drawing
-        """
+        """Do any need finalization of the drawing."""
 
         pass
 
-    def add_overlay_from_config(self, config_file, area_def):
-        """Create and return a transparent image adding all the overlays contained in a configuration file.
-
-        :Parameters:
-            config_file : str
-                Configuration file name
-            area_def : object
-                Area Definition of the creating image
-
-        """
-
+    def _config_to_dict(self, config_file):
+        """Convert a config file to a dict."""
         config = configparser.ConfigParser()
         try:
             with open(config_file, 'r'):
@@ -673,56 +695,79 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'grid']
+        overlays = {}
+        for section in config.sections():
+            if section in SECTIONS:
+                overlays[section] = {}
+                for option in config.options(section):
+                    val = config.get(section, option)
+                    try:
+                        overlays[section][option] = ast.literal_eval(val)
+                    except ValueError:
+                        overlays[section][option] = val
+        return overlays
+
+    def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
+        """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
+
+        :Parameters:
+            overlays : dict
+                overlays configuration
+            area_def : object
+                Area Definition of the creating image
+            cache_epoch: seconds since epoch
+                The latest time allowed for cache the cache file. If the cache file is older than this (mtime),
+                the cache should be regenerated.
+            background: pillow image instance
+                The image on which to write the overlays on. If it's None (default),
+                a new image is created, otherwise the provide background is use
+                an change *in place*.
+
+
+            The keys in `overlays` that will be taken into account are:
+            cache, coasts, rivers, borders, cities, grid
+
+            For all of them except `cache`, the items are the same as the corresponding
+            functions in pycoast, so refer to the docstrings of these functions
+            (add_coastlines, add_rivers, add_borders, add_grid, add_cities).
+            For cache, two parameters are configurable: `file` which specifies the directory
+            and the prefix of the file to save the caches decoration to
+            (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
+            True or False (default) to force the overwriting of an already cached file.
+
+        """
+
         # Cache management
         cache_file = None
-        if config.has_section('cache'):
-            cache_file = (config.get('cache', 'file') + '_' +
+        if 'cache' in overlays:
+            cache_file = (overlays['cache']['file'] + '_' +
                           area_def.area_id + '.png')
 
             try:
-                configTime = os.path.getmtime(config_file)
-                cacheTime = os.path.getmtime(cache_file)
+                config_time = cache_epoch
+                cache_time = os.path.getmtime(cache_file)
                 # Cache file will be used only if it's newer than config file
-                if configTime < cacheTime:
+                if ((config_time is not None and config_time < cache_time)
+                        and not overlays['cache'].get('regenerate', False)):
                     foreground = Image.open(cache_file)
                     logger.info('Using image in cache %s', cache_file)
+                    if background is not None:
+                        background.paste(foreground, mask=foreground.split()[-1])
                     return foreground
                 else:
-                    logger.info("Cache file is not used "
-                                "because config file has changed")
+                    logger.info("Regenerating cache file.")
             except OSError:
-                logger.info("New overlay image will be saved in cache")
+                logger.info("No overlay image found, new overlay image will be saved in cache.")
 
-        x_size = area_def.x_size
-        y_size = area_def.y_size
-        foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
-
-        # Lines (coasts, rivers, borders) management
-        prj = Proj(area_def.proj4_string)
-        if prj.is_latlong():
-            x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
-            x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
-            x_resolution = (x_ur - x_ll) / x_size
-            y_resolution = (y_ur - y_ll) / y_size
+        x_size = area_def.width
+        y_size = area_def.height
+        if cache_file is None and background is not None:
+            foreground = background
         else:
-            x_resolution = ((area_def.area_extent[2] -
-                             area_def.area_extent[0]) /
-                            x_size)
-            y_resolution = ((area_def.area_extent[3] -
-                             area_def.area_extent[1]) /
-                            y_size)
-        res = min(x_resolution, y_resolution)
+            foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
-        if res > 25000:
-            default_resolution = "c"
-        elif res > 5000:
-            default_resolution = "l"
-        elif res > 1000:
-            default_resolution = "i"
-        elif res > 200:
-            default_resolution = "h"
-        else:
-            default_resolution = "f"
+        default_resolution = get_resolution_from_area(area_def)
 
         DEFAULT = {'level': 1,
                    'outline': 'white',
@@ -734,18 +779,9 @@ class ContourWriterBase(object):
                    'y_offset': 0,
                    'resolution': default_resolution}
 
-        SECTIONS = ['coasts', 'rivers', 'borders', 'cities', 'grid']
-        overlays = {}
-
-        for section in config.sections():
-            if section in SECTIONS:
-                overlays[section] = {}
-                for option in config.options(section):
-                    overlays[section][option] = config.get(section, option)
-
         is_agg = self._draw_module == "AGG"
 
-        # Coasts
+        # Coasts, rivers, borders
         for section, fun in zip(['coasts', 'rivers', 'borders'],
                                 [self.add_coastlines,
                                  self.add_rivers,
@@ -800,9 +836,10 @@ class ContourWriterBase(object):
             lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
-            write_text = overlays['grid'].get('write_text',
-                                              'true').lower() in \
-                ['true', 'yes', '1']
+
+            write_text = overlays['grid'].get('write_text', True)
+            if isinstance(write_text, str):
+                write_text = write_text.lower() in ['true', 'yes', '1', 'on']
             outline = overlays['grid'].get('outline', 'white')
             if isinstance(font, str):
                 if is_agg:
@@ -832,8 +869,22 @@ class ContourWriterBase(object):
                 foreground.save(cache_file)
             except IOError as e:
                 logger.error("Can't save cache: %s", str(e))
-
+            if background is not None:
+                background.paste(foreground, mask=foreground.split()[-1])
         return foreground
+
+    def add_overlay_from_config(self, config_file, area_def, background=None):
+        """Create and return a transparent image adding all the overlays contained in a configuration file.
+
+        :Parameters:
+            config_file : str
+                Configuration file name
+            area_def : object
+                Area Definition of the creating image
+
+        """
+        overlays = self._config_to_dict(config_file)
+        return self.add_overlay_from_dict(overlays, area_def, os.path.getmtime(config_file), background)
 
     def add_cities(self, image, area_def, citylist, font_file, font_size,
                    ptsize, outline, box_outline, box_opacity, db_root_path=None):
@@ -846,7 +897,7 @@ class ContourWriterBase(object):
             raise ValueError("'db_root_path' must be specified to use this method")
 
         try:
-            proj4_string = area_def.proj4_string
+            proj4_string = area_def.proj_str
             area_extent = area_def.area_extent
         except AttributeError:
             proj4_string = area_def[0]
