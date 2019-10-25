@@ -1,3 +1,27 @@
+## Version 1.3.0 (2019/10/25)
+
+### Issues Closed
+
+* [Issue 29](https://github.com/pytroll/pycoast/issues/29) - pycoast compatability issue with pyproj 2+
+* [Issue 26](https://github.com/pytroll/pycoast/issues/26) - inconsitency adding lat labelling on the right (on graticules)... ([PR 33](https://github.com/pytroll/pycoast/pull/33))
+
+In this release 2 issues were closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 33](https://github.com/pytroll/pycoast/pull/33) - Fix #26 ([26](https://github.com/pytroll/pycoast/issues/26))
+
+#### Features added
+
+* [PR 32](https://github.com/pytroll/pycoast/pull/32) - Add dict configuration
+* [PR 30](https://github.com/pytroll/pycoast/pull/30) - Convert to RGBA mode when opening the image for adding coastlines or rivers to file.
+* [PR 25](https://github.com/pytroll/pycoast/pull/25) - Add coordinate grid overlaying from configuration file
+
+In this release 4 pull requests were closed.
+
+
 ## Version 1.2.3 (2019/06/06)
 
 ### Issues Closed
@@ -442,5 +466,3 @@ In this release 3 pull requests were closed.
 - First version. [Esben S. Nielsen]
 
 - First version. [Esben S. Nielsen]
-
-
