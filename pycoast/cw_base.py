@@ -850,9 +850,9 @@ class ContourWriterBase(object):
                     font = truetype(font, font_size)
             fill = overlays['grid'].get('fill', None)
             minor_outline = overlays['grid'].get('minor_outline', 'white')
-            minor_is_tick = overlays['grid'].get('minor_is_tick',
-                                                 'true').lower() in \
-                ['true', 'yes', '1']
+            minor_is_tick = overlays['grid'].get('minor_is_tick', True)
+            if isinstance(minor_is_tick, str):
+                minor_is_tick = minor_is_tick.lower() in ['true', 'yes', '1']
             lon_placement = overlays['grid'].get('lon_placement', 'tb')
             lat_placement = overlays['grid'].get('lat_placement', 'lr')
 
