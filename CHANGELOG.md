@@ -1,3 +1,14 @@
+## Version 1.3.1 (2019/11/07)
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 37](https://github.com/pytroll/pycoast/pull/37) - Fix the add overlay function to accept `minor_is_tick` as a boolean
+
+In this release 1 pull request was closed.
+
+
 ## Version 1.3.0 (2019/10/25)
 
 ### Issues Closed
