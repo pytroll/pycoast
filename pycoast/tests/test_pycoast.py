@@ -812,6 +812,13 @@ class TestFromConfig(TestPycoast):
         self.assertNotEqual(os.path.getmtime(cache_filename), mtime)
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
+
+        overlays.pop('cache')
+        overlays['grid'] = {'outline': (255, 255, 255), 'outline_opacity': 175,
+                            'minor_outline': (200, 200, 200), 'minor_outline_opacity': 127,
+                            'width': 1.0, 'minor_width': 0.5, 'minor_is_tick': True,
+                            'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b'}
+        img = cw.add_overlay_from_dict(overlays, area_def)
         os.remove(os.path.join(tmp, 'pycoast_cache_fakearea.png'))
 
     def test_get_resolution(self):
