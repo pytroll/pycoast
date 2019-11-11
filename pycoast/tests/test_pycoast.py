@@ -100,7 +100,7 @@ class TestPIL(TestPycoast):
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
         cw = ContourWriterPIL(gshhs_root_dir)
-        cw.add_coastlines(img, area_def, resolution='l', level=[4])
+        cw.add_coastlines(img, area_def, resolution='l', level=4)
         cw.add_rivers(img, area_def, level=5, outline='blue')
         cw.add_borders(img, area_def, outline=(255, 0, 0))
 
@@ -753,7 +753,7 @@ class TestFromConfig(TestPycoast):
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
 
-        overlays = {'coasts': {'level': 4, 'resolution': 'l'},
+        overlays = {'coasts': {'level': [1, 2, 3, 4], 'resolution': 'l'},
                     'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
                     'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
 

@@ -649,8 +649,8 @@ class ContourWriterBase(object):
         else:
             format_string += 'L%s.shp'
 
-        if type(level) not in (list,):
-            level = range(1,level+1)
+        if not isinstance(level, list):
+            level = range(1, level + 1)
 
         for i in level:
 
