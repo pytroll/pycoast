@@ -37,7 +37,7 @@ def get_resolution_from_area(area_def):
     """Get the best resolution for an area definition."""
     x_size = area_def.width
     y_size = area_def.height
-    prj = Proj(area_def.proj_str)
+    prj = Proj(area_def.crs if hasattr(area_def, 'crs') else area_def.proj_str)
     if prj.is_latlong():
         x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
         x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
@@ -200,10 +200,10 @@ class ContourWriterBase(object):
         """
 
         try:
-            proj4_string = area_def.proj_str
+            proj_def = area_def.crs if hasattr(area_def, 'crs') else area_def.proj_dict
             area_extent = area_def.area_extent
         except AttributeError:
-            proj4_string = area_def[0]
+            proj_def = area_def[0]
             area_extent = area_def[1]
 
         draw = self._get_canvas(image)
@@ -224,7 +224,7 @@ class ContourWriterBase(object):
 
         # Area and projection info
         x_size, y_size = image.size
-        prj = Proj(proj4_string)
+        prj = Proj(proj_def)
 
         x_offset = 0
         y_offset = 0
@@ -285,7 +285,7 @@ class ContourWriterBase(object):
 
         # lons along major lat lines (extended slightly to avoid missing the
         # end)
-        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) / 5)
+        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) // 5)
 
         # MINOR LINES ######
         if not kwargs['minor_is_tick']:
@@ -544,17 +544,17 @@ class ContourWriterBase(object):
 
         """
         try:
-            proj4_string = area_def.proj_str
+            proj_def = area_def.crs if hasattr(area_def, 'crs') else area_def.proj_dict
             area_extent = area_def.area_extent
         except AttributeError:
-            proj4_string = area_def[0]
+            proj_def = area_def[0]
             area_extent = area_def[1]
 
         draw = self._get_canvas(image)
 
         # Area and projection info
         x_size, y_size = image.size
-        prj = Proj(proj4_string)
+        prj = Proj(proj_def)
 
         # Calculate min and max lons and lats of interest
         lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
@@ -895,19 +895,7 @@ class ContourWriterBase(object):
             db_root_path = self.db_root_path
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
-
-        try:
-            proj4_string = area_def.proj_str
-            area_extent = area_def.area_extent
-        except AttributeError:
-            proj4_string = area_def[0]
-            area_extent = area_def[1]
-
         draw = self._get_canvas(image)
-
-        # Area and projection info
-        x_size, y_size = image.size
-        prj = Proj(proj4_string)
 
         # read shape file with points
         # Sc-Kh shapefilename = os.path.join(self.db_root_path,
@@ -989,6 +977,8 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     prev = None
     for lon in np.concatenate((lons_s1, lons_s2,
                                lons_s3[::-1], lons_s4[::-1])):
+        if not np.isfinite(lon):
+            continue
         if prev is not None:
             delta = lon - prev
             if abs(delta) > 180:
@@ -1033,6 +1023,7 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lon_min = -180
         lon_max = 180
 
+    # Catch inf/1e30 or other invalid values
     if not (-180 <= lon_min <= 180):
         lon_min = -180
     if not (-180 <= lon_max <= 180):
@@ -1064,16 +1055,16 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
     # Handle out of bounds
     i = 0
     segments = []
-    if 1e30 in x or 1e30 in y:
+    if (x >= 1e30).any() or (y >= 1e30).any():
         # Split polygon in line segments within projection
         is_reduced = True
-        if x[0] == 1e30 or y[0] == 1e30:
+        if x[0] >= 1e30 or y[0] >= 1e30:
             in_segment = False
         else:
             in_segment = True
 
         for j in range(x.size):
-            if (x[j] == 1e30 or y[j] == 1e30):
+            if x[j] >= 1e30 or y[j] >= 1e30:
                 if in_segment:
                     segments.append((x[i:j], y[i:j]))
                     in_segment = False
