@@ -649,8 +649,8 @@ class ContourWriterBase(object):
         else:
             format_string += 'L%s.shp'
 
-        if type(level) not in (list,):
-            level = range(1,level+1)
+        if not isinstance(level, list):
+            level = range(1, level + 1)
 
         for i in level:
 
@@ -791,13 +791,6 @@ class ContourWriterBase(object):
 
                 params = DEFAULT.copy()
                 params.update(overlays[section])
-
-                params['level'] = int(params['level'])
-                params['x_offset'] = float(params['x_offset'])
-                params['y_offset'] = float(params['y_offset'])
-                params['width'] = float(params['width'])
-                params['outline_opacity'] = int(params['outline_opacity'])
-                params['fill_opacity'] = int(params['fill_opacity'])
 
                 if section != "coasts":
                     params.pop('fill_opacity', None)

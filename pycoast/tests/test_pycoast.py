@@ -753,7 +753,7 @@ class TestFromConfig(TestPycoast):
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
 
-        overlays = {'coasts': {'level': 4, 'resolution': 'l'},
+        overlays = {'coasts': {'level': [1, 2, 3, 4], 'resolution': 'l'},
                     'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
                     'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
 
