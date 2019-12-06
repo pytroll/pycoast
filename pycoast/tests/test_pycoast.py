@@ -598,6 +598,7 @@ class TestPILAGG(TestPycoast):
                     outline='blue', minor_outline='blue',
                     lon_placement='tblr', lat_placement='')
 
+        img.save(os.path.join(os.path.dirname(__file__), 'grid_nh_agg_test.png'))
         res = np.array(img)
 
         # NOTE: Experience inconsistency in ttf font writing between systems.
@@ -640,6 +641,7 @@ class TestPILAGG(TestPycoast):
                        outline='green', fill='gray', width=2)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
+        img.save(os.path.join(os.path.dirname(__file__), 'nh_polygons_agg_test.png'))
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
@@ -723,7 +725,7 @@ class FakeAreaDef():
     """A fake area definition object."""
 
     def __init__(self, proj4_string, area_extent, x_size, y_size):
-        self.proj_str = proj4_string
+        self.proj_str = self.proj_dict = self.crs = proj4_string
         self.area_extent = area_extent
         self.width = x_size
         self.height = y_size

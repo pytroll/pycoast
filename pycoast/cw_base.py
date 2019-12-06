@@ -37,7 +37,7 @@ def get_resolution_from_area(area_def):
     """Get the best resolution for an area definition."""
     x_size = area_def.width
     y_size = area_def.height
-    prj = Proj(area_def.proj_str)
+    prj = Proj(area_def.crs if hasattr(area_def, 'crs') else area_def.proj_str)
     if prj.is_latlong():
         x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
         x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
@@ -285,7 +285,7 @@ class ContourWriterBase(object):
 
         # lons along major lat lines (extended slightly to avoid missing the
         # end)
-        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) / 5)
+        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) // 5)
 
         # MINOR LINES ######
         if not kwargs['minor_is_tick']:
