@@ -598,7 +598,6 @@ class TestPILAGG(TestPycoast):
                     outline='blue', minor_outline='blue',
                     lon_placement='tblr', lat_placement='')
 
-        img.save(os.path.join(os.path.dirname(__file__), 'grid_nh_agg_test.png'))
         res = np.array(img)
 
         # NOTE: Experience inconsistency in ttf font writing between systems.
@@ -641,7 +640,6 @@ class TestPILAGG(TestPycoast):
                        outline='green', fill='gray', width=2)
         cw.add_coastlines(img, area_def, resolution='l', level=4)
 
-        img.save(os.path.join(os.path.dirname(__file__), 'nh_polygons_agg_test.png'))
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
