@@ -724,7 +724,7 @@ class FakeAreaDef():
     """A fake area definition object."""
 
     def __init__(self, proj4_string, area_extent, x_size, y_size):
-        self.proj_str = proj4_string
+        self.proj_str = self.proj_dict = self.crs = proj4_string
         self.area_extent = area_extent
         self.width = x_size
         self.height = y_size
@@ -754,7 +754,7 @@ class TestFromConfig(TestPycoast):
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
 
-        overlays = {'coasts': {'level': 4, 'resolution': 'l'},
+        overlays = {'coasts': {'level': [1, 2, 3, 4], 'resolution': 'l'},
                     'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
                     'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
 
