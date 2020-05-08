@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders, and rivers to images in Python
 #
-# Copyright (C) 2011-2018 PyCoast Developers
+# Copyright (C) 2011-2020 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,11 +61,11 @@ class ContourWriterPIL(ContourWriterBase):
         draw.rectangle(coordinates, fill=kwargs['fill'], outline=kwargs['outline'])
 
     def _draw_text_box(self, draw, text_position, text, font, outline,
-                       box_outline, box_opacity):
+                       box_outline, box_opacity, **kwargs):
         """Add text box in xy."""
         if box_outline is not None:
             logger.warning(
-                "Box background will not added; please install aggdraw lib")
+                "Box background will not be added; please use ContourWriterAGG module")
 
         self._draw_text(
             draw, text_position, text, font, align="no", fill=outline)
@@ -73,6 +73,33 @@ class ContourWriterPIL(ContourWriterBase):
     def _draw_line(self, draw, coordinates, **kwargs):
         """Draw line."""
         draw.line(coordinates, fill=kwargs['outline'])
+
+    def _draw_asterisk(self, draw, pt_size, coordinate, **kwargs):
+        """Draw a asterisk sign '*' center at the given coordinate """
+        half_ptsize = int(round(pt_size / 2.))
+        x, y = coordinate
+
+        outline = kwargs.get('outline', 'white')
+
+        # draw '|'
+        (x_bm, y_bm) = (x, y - half_ptsize)  # bottom middle point
+        (x_tm, y_tm) = (x, y + half_ptsize)  # top middle point
+        self._draw_line(draw, [(x_bm, y_bm), (x_tm, y_tm)], outline=outline)
+
+        # draw '-'
+        (x_lm, y_lm) = (x - half_ptsize, y)  # left middle point
+        (x_rm, y_rm) = (x + half_ptsize, y)  # right middle point
+        self._draw_line(draw, [(x_lm, y_lm), (x_rm, y_rm)], outline=outline)
+
+        # draw '/'
+        (x_bl, y_bl) = (x - half_ptsize, y - half_ptsize)  # bottom left point
+        (x_tr, y_tr) = (x + half_ptsize, y + half_ptsize)  # top right point
+        self._draw_line(draw, [(x_bl, y_bl), (x_tr, y_tr)], outline=outline)
+
+        # draw '\'
+        (x_tl, y_tl) = (x - half_ptsize, y + half_ptsize)  # top left point
+        (x_br, y_br) = (x + half_ptsize, y - half_ptsize)  # bottom right point
+        self._draw_line(draw, [(x_tl, y_tl), (x_br, y_br)], outline=outline)
 
     def add_shapefile_shapes(self, image, area_def, filename, feature_type=None,
                              fill=None, outline='white',

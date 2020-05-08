@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2018 PyCoast Developers
+# Copyright (C) 2011-2020 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,23 +61,35 @@ class ContourWriterAGG(ContourWriterBase):
 
     def _draw_rectangle(self, draw, coordinates, **kwargs):
         """Draw rectangle."""
-        pen = aggdraw.Pen(kwargs['outline'])
+        pen = aggdraw.Pen(kwargs['outline'],
+                          kwargs['width'],
+                          kwargs['outline_opacity'])
 
-        fill_opacity = kwargs.get('fill_opacity', 255)
+        if kwargs['fill'] is None:
+            fill_opacity = 0
+        else:
+            fill_opacity = kwargs['fill_opacity']
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+
         draw.rectangle(coordinates, pen, brush)
 
     def _draw_ellipse(self, draw, coordinates, **kwargs):
         """Draw ellipse."""
-        pen = aggdraw.Pen(kwargs['outline'])
+        pen = aggdraw.Pen(kwargs['outline'],
+                          kwargs['width'],
+                          kwargs['outline_opacity'])
 
-        fill_opacity = kwargs.get('fill_opacity', 255)
+        if kwargs['fill'] is None:
+            fill_opacity = 0
+        else:
+            fill_opacity = kwargs['fill_opacity']
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+
         draw.ellipse(coordinates, brush, pen)
 
     def _draw_text_box(self, draw, text_position, text, font, outline,
-                       box_outline, box_opacity):
-        """Add text box in xy."""
+                       box_outline, box_opacity, **kwargs):
+        """Add a text box at position (x,y)."""
 
         if box_outline is not None:
             text_size = draw.textsize(text, font)
@@ -88,9 +100,12 @@ class ContourWriterAGG(ContourWriterBase):
             yLR = yUL + text_size[1]
             box_size = (xUL, yUL, xLR, yLR)
 
+            width = kwargs.get('textbox_linewidth', 1)
+            fill = kwargs.get('textbox_fill', None)
+
             self._draw_rectangle(
-                draw, box_size, fill=box_outline, fill_opacity=box_opacity,
-                outline=box_outline)
+                draw, box_size, outline=box_outline, width=width,
+                outline_opacity=box_opacity, fill=fill, fill_opacity=box_opacity)
 
         self._draw_text(draw, text_position, text, font, align="no")
 
@@ -100,6 +115,40 @@ class ContourWriterAGG(ContourWriterBase):
                           kwargs['width'],
                           kwargs['outline_opacity'])
         draw.line(coordinates, pen)
+
+    def _draw_asterisk(self, draw, pt_size, coordinate, **kwargs):
+        """Draw a asterisk sign '*' at the given coordinate """
+        half_ptsize = int(round(pt_size / 2.))
+        x, y = coordinate
+
+        outline = kwargs.get('outline', 'white')
+        width = kwargs.get('width', 1.)
+        outline_opacity = kwargs.get('outline_opacity', 255)
+
+        # draw '|'
+        (x_bm, y_bm) = (x, y - half_ptsize)  # bottom middle point
+        (x_tm, y_tm) = (x, y + half_ptsize)  # top middle point
+        self._draw_line(draw, [(x_bm, y_bm), (x_tm, y_tm)],
+                        outline=outline, width=width,
+                        outline_opacity=outline_opacity)
+        # draw '-'
+        (x_lm, y_lm) = (x - half_ptsize, y)  # left middle point
+        (x_rm, y_rm) = (x + half_ptsize, y)  # right middle point
+        self._draw_line(draw, [(x_lm, y_lm), (x_rm, y_rm)],
+                        outline=outline, width=width,
+                        outline_opacity=outline_opacity)
+        # draw '/'
+        (x_bl, y_bl) = (x - half_ptsize, y - half_ptsize)  # bottom left point
+        (x_tr, y_tr) = (x + half_ptsize, y + half_ptsize)  # top right point
+        self._draw_line(draw, [(x_bl, y_bl), (x_tr, y_tr)],
+                        outline=outline, width=width,
+                        outline_opacity=outline_opacity)
+        # draw '\'
+        (x_tl, y_tl) = (x - half_ptsize, y + half_ptsize)  # top left point
+        (x_br, y_br) = (x + half_ptsize, y - half_ptsize)  # bottom right point
+        self._draw_line(draw, [(x_tl, y_tl), (x_br, y_br)],
+                        outline=outline, width=width,
+                        outline_opacity=outline_opacity)
 
     def _finalize(self, draw):
         """Flush the AGG image object."""
@@ -520,7 +569,7 @@ class ContourWriterAGG(ContourWriterBase):
 
         """
         image = Image.open(filename)
-        image = image.convert("RGBA") 
+        image = image.convert("RGBA")
         self.add_borders(image, area_def, resolution=resolution, level=level,
                          outline=outline, width=width,
                          outline_opacity=outline_opacity, x_offset=x_offset,
@@ -592,7 +641,7 @@ class ContourWriterAGG(ContourWriterBase):
         """
 
         image = Image.open(filename)
-        image = image.convert("RGBA") 
+        image = image.convert("RGBA")
         self.add_rivers(image, area_def, resolution=resolution, level=level,
                         outline=outline, width=width,
                         outline_opacity=outline_opacity, x_offset=x_offset,

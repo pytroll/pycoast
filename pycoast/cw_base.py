@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2018 PyCoast Developers
+# Copyright (C) 2011-2020 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -649,8 +649,8 @@ class ContourWriterBase(object):
         else:
             format_string += 'L%s.shp'
 
-        if type(level) not in (list,):
-            level = range(1,level+1)
+        if not isinstance(level, list):
+            level = range(1, level + 1)
 
         for i in level:
 
@@ -726,11 +726,11 @@ class ContourWriterBase(object):
 
 
             The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, cities, grid
+            cache, coasts, rivers, borders, cities, poi, grid
 
             For all of them except `cache`, the items are the same as the corresponding
             functions in pycoast, so refer to the docstrings of these functions
-            (add_coastlines, add_rivers, add_borders, add_grid, add_cities).
+            (add_coastlines, add_rivers, add_borders, add_grid, add_cities, add_poi).
             For cache, two parameters are configurable: `file` which specifies the directory
             and the prefix of the file to save the caches decoration to
             (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
@@ -767,6 +767,9 @@ class ContourWriterBase(object):
         else:
             foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
+        is_agg = self._draw_module == "AGG"
+
+        # Coasts, rivers, borders
         default_resolution = get_resolution_from_area(area_def)
 
         DEFAULT = {'level': 1,
@@ -779,14 +782,10 @@ class ContourWriterBase(object):
                    'y_offset': 0,
                    'resolution': default_resolution}
 
-        is_agg = self._draw_module == "AGG"
-
-        # Coasts, rivers, borders
         for section, fun in zip(['coasts', 'rivers', 'borders'],
                                 [self.add_coastlines,
                                  self.add_rivers,
                                  self.add_borders]):
-
             if section in overlays:
 
                 params = DEFAULT.copy()
@@ -810,25 +809,40 @@ class ContourWriterBase(object):
                 fun(foreground, area_def, **params)
                 logger.info("%s added", section.capitalize())
 
-        # Cities management
-        if 'cities' in overlays:
-            DEFAULT_FONT_SIZE = 12
-            DEFAULT_OUTLINE = "yellow"
+        # Cities and poi management
+        POINTS_DEFAULT = {'pt_size': None,
+                          'font_size': 12,
+                          'outline': 'yellow',
+                          'outline_opacity': 255,
+                          'width': 1,
+                          'fill': None,
+                          'fill_opacity': 255,
+                          'textbox_outline': None,
+                          'textbox_opacity': 255}
 
-            citylist = [s.lstrip()
-                        for s in overlays['cities']['list'].split(',')]
-            font_file = overlays['cities']['font']
-            font_size = int(overlays['cities'].get('font_size',
-                                                   DEFAULT_FONT_SIZE))
-            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
-            pt_size = int(overlays['cities'].get('pt_size', None))
-            box_outline = overlays['cities'].get('box_outline', None)
-            box_opacity = int(overlays['cities'].get('box_opacity', 255))
+        for section, fun in zip(['cities', 'poi'],
+                                [self.add_cities, self.add_poi]):
+            if section in overlays:
+                params = POINTS_DEFAULT.copy()
+                params.update(overlays[section])
 
-            self.add_cities(foreground, area_def, citylist, font_file,
-                            font_size, pt_size, outline, box_outline,
-                            box_opacity)
+                pointlist = [pt.lstrip() if isinstance(pt, str) else pt
+                             for pt in overlays[section]['list'].split(',')]
 
+                params['pt_size'] = int(params['pt_size'])
+                params['font_size'] = int(params['font_size'])
+                params['outline_opacity'] = int(params['outline_opacity'])
+                params['width'] = float(params['width'])
+                params['fill_opacity'] = int(params['fill_opacity'])
+                params['box_opacity'] = int(params['textbox_opacity'])
+
+                if not is_agg:
+                    for key in ['width', 'outline_opacity', 'fill_opacity']:
+                        params.pop(key, None)
+
+                fun(foreground, area_def, pointlist, **params)
+
+        # Grids overlay
         if 'grid' in overlays:
             lon_major = float(overlays['grid'].get('lon_major', 10.0))
             lat_major = float(overlays['grid'].get('lat_major', 10.0))
@@ -896,18 +910,10 @@ class ContourWriterBase(object):
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
 
-        try:
-            proj4_string = area_def.proj_str
-            area_extent = area_def.area_extent
-        except AttributeError:
-            proj4_string = area_def[0]
-            area_extent = area_def[1]
-
         draw = self._get_canvas(image)
 
         # Area and projection info
         x_size, y_size = image.size
-        prj = Proj(proj4_string)
 
         # read shape file with points
         # Sc-Kh shapefilename = os.path.join(self.db_root_path,
@@ -943,21 +949,130 @@ class ContourWriterBase(object):
                 except ValueError as exc:
                     logger.debug("Point not added (%s)", str(exc))
                 else:
-
                     # add_dot
                     if ptsize is not None:
                         dot_box = [x - ptsize, y - ptsize,
                                    x + ptsize, y + ptsize]
                         self._draw_ellipse(
                             draw, dot_box, fill=outline, outline=outline)
-                        text_position = [x + 9, y - 5]  # FIX ME
+                        text_position = [x + 9, y - 5]  # FIXME
                     else:
                         text_position = [x, y]
 
                 # add text_box
-                    self._draw_text_box(draw, text_position, city_name, font,
-                                        outline, box_outline, box_opacity)
+                    self._draw_text_box(draw, text_position, city_name, font, outline,
+                                        box_outline, box_opacity)
                     logger.info("%s added", str(city_name))
+
+        self._finalize(draw)
+
+    def add_poi(self, image, area_def, font_file, font_size=12,
+                poi_list=None, symbol='circle', ptsize=6,
+                outline='white', fill=None, **kwargs):
+        """
+        Add a symbol or text at the point(s) of interest to a PIL image object
+        :Parameters:
+            image : object
+                PIL image object
+            area_def : list [proj4_string, area_extent]
+              | proj4_string : str
+              |     Projection of area as Proj.4 string
+              | area_extent : list
+              |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
+            font_file : str
+                Path to font file
+            font_size : int
+                Size of font
+            poi_list : list [((lon, lat), desc)]
+              | a list of points defined with (lon, lat) in float and a desc in string
+              | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
+              | lon : float
+              |    longitude of a POI
+              | lat : float
+              |    latitude of a POI
+              | desc : str
+              |    description of a POI
+            symbol : string
+                type of symbol, one of the elelment from the list
+                ['circle', 'square', 'asterisk']
+            ptsize : int
+                Size of the point.
+            outline : str or (R, G, B), optional
+                Line color of the symbol
+            fill : str or (R, G, B), optional
+                Filling color of the symbol
+
+        :Optional kwargs:
+            width : float
+                Line width of the symbol
+            outline_opacity : int, optional {0; 255}
+                Opacity of the line of the symbol.
+            fill_opacity : int, optional {0; 255}
+                Opacity of the filling of the symbol
+            textbox_outline : str or (R, G, B), optional
+                Line color of the textbox borders.
+            textbox_linewidth : float
+                Line width of the the borders of the textbox
+            textbox_fill : str or (R, G, B), optional
+                Filling color of the background of the textbox.
+            textbox_opacity : int, optional {0; 255}
+                Opacity of the background filling of the textbox.
+        """
+        draw = self._get_canvas(image)
+
+        x_size, y_size = image.size
+
+        # Iterate through poi list
+        for poi in poi_list:
+            (lon, lat), desc = poi
+            try:
+                x, y = area_def.get_xy_from_lonlat(lon, lat)
+            except ValueError:
+                logger.info("Point %s is out of the area, it will not be added to the image.", str((lon, lat)))
+            else:
+                if ptsize != 0:
+                    half_ptsize = int(round(ptsize / 2.))
+
+                    dot_box = [x - half_ptsize, y - half_ptsize,
+                               x + half_ptsize, y + half_ptsize]
+
+                    width = kwargs.get('width', 1.)
+                    outline_opacity = kwargs.get('outline_opacity', 255)
+                    fill_opacity = kwargs.get('fill_opacity', 0)
+
+                    # draw the symbol at the (x, y) position
+                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e circle with fill
+                        self._draw_ellipse(draw, dot_box,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'square':
+                        self._draw_rectangle(draw, dot_box,
+                                             outline=outline, width=width,
+                                             outline_opacity=outline_opacity,
+                                             fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'asterisk':  # an '*' sign
+                        self._draw_asterisk(draw, ptsize, (x, y),
+                                            outline=outline, width=width,
+                                            outline_opacity=outline_opacity)
+                    else:
+                        raise ValueError("Unsupported symbol type: " + str(symbol))
+
+                elif desc is None:
+                    logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
+
+                if desc is not None:
+                    text_position = [x + ptsize, y]  # draw the text box next to the point
+                    font = self._get_font(outline, font_file, font_size)
+
+                    textbox_outline = kwargs.get('textbox_outline', None)
+                    textbox_opacity = kwargs.get('textbox_opacity', 0)
+
+                    # add text_box
+                    self._draw_text_box(draw, text_position, desc, font, outline,
+                                        textbox_outline, textbox_opacity, **kwargs)
+
+            logger.debug("Point %s has been added to the image", str((lon, lat)))
 
         self._finalize(draw)
 

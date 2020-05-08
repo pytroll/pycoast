@@ -15,3 +15,4 @@ The following people have made contributions to this project:
 - [Martin Raspaud (mraspaud)](https://github.com/mraspaud)
 - [Hrobjartur Thorsteinsson (thorsteinssonh)](https://github.com/thorsteinssonh)
 - [Antonio Valentino (avalentino)](https://github.com/avalentino)
+- [Yufei Zhu (yufeizhu600)](https://github.com/yufeizhu600)

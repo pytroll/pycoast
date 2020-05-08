@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from .cw_pil import ContourWriterPIL
 from .cw_agg import ContourWriterAGG
 from pycoast.cw_base import get_resolution_from_area
 from .version import get_versions
 __version__ = get_versions()['version']
 del get_versions
+
 
 class ContourWriter(ContourWriterPIL):
     """Writer wrapper for deprecation warning.
