@@ -782,25 +782,25 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(
             fft_metric(grid_data, res), 'Writing of Brazil shapefiles failed')
 
-    @unittest.skip("All kwargs are not supported, so can't create equal results")
+#    @unittest.skip("All kwargs are not supported, so can't create equal results")
     def test_config_file_coasts_and_grid(self):
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
         overlay_config = os.path.join(os.path.dirname(__file__),
                                       "coasts_and_grid_agg.ini")
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'grid_nh_agg.png'))
+                                           'grid_nh_cfg_agg.png'))
         grid_data = np.array(grid_img)
         proj_dict = {'proj': 'laea', 'lat_0': 90.0, 'lon_0': 0.0,
                      'a': 6371228.0, 'units': 'm'}
         area_extent = (-5326849.0625, -5326849.0625,
                        5326849.0625, 5326849.0625)
-        area_def = AreaDefinition('nh', 'nh', 'nh', proj_dict, 425, 425,
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj_dict, 850, 850,
                                   area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
         overlay = cw.add_overlay_from_config(overlay_config, area_def)
-        img = Image.new('RGB', (425, 425))
+        img = Image.new('RGB', (850, 850), (255, 255, 255))
         img.paste(overlay, mask=overlay)
 
         res = np.array(img)
