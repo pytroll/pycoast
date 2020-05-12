@@ -358,14 +358,14 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
-    def test_add_poi_pil(self):
+    def test_add_points_pil(self):
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
 
         font_file = os.path.join(os.path.dirname(__file__), 'test_data',
                                  'DejaVuSerif.ttf')
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_poi_pil.png'))
+                                           'nh_points_pil.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (1024, 1024), (255, 255, 255))
@@ -383,19 +383,19 @@ class TestPIL(TestPycoast):
         cw.add_borders(img, area_def, outline='black', level=1,
                        resolution='c')
 
-        poi_list = [((13.4050, 52.5200), 'Berlin')]
-        cw.add_poi(img, area_def, poi_list=poi_list, font_file=font_file,
-                   symbol='asterisk', ptsize=6, outline='red',
-                   textbox_outline='black')
+        points_list = [((13.4050, 52.5200), 'Berlin')]
+        cw.add_points(img, area_def, points_list=points_list, font_file=font_file,
+                      symbol='asterisk', ptsize=6, outline='red',
+                      textbox_outline='black')
 
-        poi_list = [((12.4964, 41.9028), 'Rome')]
-        cw.add_poi(img, area_def, poi_list=poi_list, font_file=font_file,
-                   symbol='square', ptsize=6, outline='blue', fill='yellow',
-                   textbox_outline='black')
+        points_list = [((12.4964, 41.9028), 'Rome')]
+        cw.add_points(img, area_def, points_list=points_list, font_file=font_file,
+                      symbol='square', ptsize=6, outline='blue', fill='yellow',
+                      textbox_outline='black')
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh poi failed')
+                        'Writing of nh points failed')
 
     def test_add_shapefile_shapes(self):
         from pycoast import ContourWriterPIL
@@ -452,15 +452,15 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh grid failed')
 
-    def test_config_file_poi_and_borders_pil(self):
+    def test_config_file_points_and_borders_pil(self):
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
 
         config_file = os.path.join(os.path.dirname(__file__),
-                                   'nh_poi_pil.ini')
+                                   'nh_points_pil.ini')
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_poi_cfg_pil.png'))
+                                           'nh_points_cfg_pil.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (1024, 1024), (255, 255, 255))
@@ -478,7 +478,7 @@ class TestPIL(TestPycoast):
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh poi failed')
+                        'Writing of nh points failed')
 
 
 class TestPILAGG(TestPycoast):
@@ -712,7 +712,7 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
-    def test_add_poi_agg(self):
+    def test_add_points_agg(self):
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
 
@@ -720,7 +720,7 @@ class TestPILAGG(TestPycoast):
                                  'DejaVuSerif.ttf')
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_poi_agg.png'))
+                                           'nh_points_agg.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (1024, 1024), (255, 255, 255))
@@ -737,17 +737,17 @@ class TestPILAGG(TestPycoast):
         cw.add_borders(img, area_def, outline='black', width=3, level=1,
                        resolution='c')
 
-        poi_list = [((2.3522, 48.8566), 'Paris'),
+        points_list = [((2.3522, 48.8566), 'Paris'),
                     ((0.1278, 51.5074), 'London')]
-        cw.add_poi(img, area_def, poi_list=poi_list, font_file=font_file,
-                   symbol='circle', ptsize=16,
+        cw.add_points(img, area_def, points_list=points_list, font_file=font_file,
+                      symbol='circle', ptsize=16,
                    outline='black', width=3,
                    fill='red', fill_opacity=128,
                    textbox_outline='blue', textbox_linewidth=0.5,
                    textbox_fill='yellow', textbox_opacity=200)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), 'Writing of nh poi failed')
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of nh points failed')
 
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
@@ -807,15 +807,15 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh grid failed')
 
-    def test_config_file_poi_and_borders_agg(self):
+    def test_config_file_points_and_borders_agg(self):
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
 
         config_file = os.path.join(os.path.dirname(__file__),
-                                   'nh_poi_agg.ini')
+                                   'nh_points_agg.ini')
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_poi_cfg_agg.png'))
+                                           'nh_points_cfg_agg.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (1024, 1024), (255, 255, 255))
@@ -833,7 +833,7 @@ class TestPILAGG(TestPycoast):
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh poi failed')
+                        'Writing of nh points with agg module failed')
 
     def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG

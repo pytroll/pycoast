@@ -695,7 +695,7 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'poi', 'grid']
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'points', 'grid']
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -726,11 +726,11 @@ class ContourWriterBase(object):
 
 
             The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, cities, poi, grid
+            cache, coasts, rivers, borders, cities, points, grid
 
             For all of them except `cache`, the items are the same as the corresponding
             functions in pycoast, so refer to the docstrings of these functions
-            (add_coastlines, add_rivers, add_borders, add_grid, add_cities, add_poi).
+            (add_coastlines, add_rivers, add_borders, add_grid, add_cities, add_points).
             For cache, two parameters are configurable: `file` which specifies the directory
             and the prefix of the file to save the caches decoration to
             (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
@@ -820,17 +820,17 @@ class ContourWriterBase(object):
             self.add_cities(foreground, area_def, citylist, font_file,
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
-        # POI management
-        if 'poi' in overlays:
+        # Points management
+        if 'points' in overlays:
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
             DEFAULT_OUTLINE = 'white'
             DEFAULT_FILL = None
 
-            params = overlays['poi'].copy()
+            params = overlays['points'].copy()
 
-            poilist = list(params.pop('list'))
+            points_list = list(params.pop('list'))
             font_file = params.pop('font')
             font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
 
@@ -840,8 +840,8 @@ class ContourWriterBase(object):
             outline = params.pop('outline', DEFAULT_OUTLINE)
             fill = params.pop('fill', DEFAULT_FILL)
 
-            self.add_poi(foreground, area_def, poilist, font_file, font_size,
-                         symbol, pt_size, outline, fill, **params)
+            self.add_points(foreground, area_def, points_list, font_file, font_size,
+                            symbol, pt_size, outline, fill, **params)
 
         # Grids overlay
         if 'grid' in overlays:
@@ -964,23 +964,23 @@ class ContourWriterBase(object):
 
         self._finalize(draw)
 
-    def add_poi(self, image, area_def, poi_list, font_file, font_size=12,
-                symbol='circle', ptsize=6, outline='white', fill=None, **kwargs):
+    def add_points(self, image, area_def, points_list, font_file, font_size=12,
+                   symbol='circle', ptsize=6, outline='white', fill=None, **kwargs):
         """Add a symbol and/or text at the point(s) of interest to a PIL image object.
         :Parameters:
             image : object
                 PIL image object
             area_def : object
                 Area Definition of the provided image
-            poi_list : list [((lon, lat), desc)]
+            points_list : list [((lon, lat), desc)]
               | a list of points defined with (lon, lat) in float and a desc in string
               | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
               | lon : float
-              |    longitude of a POI
+              |    longitude of a point
               | lat : float
-              |    latitude of a POI
+              |    latitude of a point
               | desc : str
-              |    description of a POI
+              |    description of a point
             font_file : str
                 Path to font file
             font_size : int
@@ -1018,9 +1018,9 @@ class ContourWriterBase(object):
 
         draw = self._get_canvas(image)
 
-        # Iterate through poi list
-        for poi in poi_list:
-            (lon, lat), desc = poi
+        # Iterate through points list
+        for point in points_list:
+            (lon, lat), desc = point
             try:
                 x, y = area_def.get_xy_from_lonlat(lon, lat)
             except ValueError:
