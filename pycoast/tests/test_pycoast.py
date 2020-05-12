@@ -358,6 +358,45 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
+    def test_add_poi_pil(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_poi_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, outline='black', resolution='l',
+                          level=4)
+        cw.add_borders(img, area_def, outline='black', level=1,
+                       resolution='c')
+
+        poi_list = [((13.4050, 52.5200), 'Berlin')]
+        cw.add_poi(img, area_def, poi_list=poi_list, font_file=font_file,
+                   symbol='asterisk', ptsize=6, outline='red',
+                   textbox_outline='black')
+
+        poi_list = [((12.4964, 41.9028), 'Rome')]
+        cw.add_poi(img, area_def, poi_list=poi_list, font_file=font_file,
+                   symbol='square', ptsize=6, outline='blue', fill='yellow',
+                   textbox_outline='black')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh poi failed')
+
     def test_add_shapefile_shapes(self):
         from pycoast import ContourWriterPIL
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -412,6 +451,34 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh grid failed')
+
+    def test_config_file_poi_and_borders_pil(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        config_file = os.path.join(os.path.dirname(__file__),
+                                   'nh_poi_pil.ini')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_poi_cfg_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_overlay_from_config(config_file, area_def, img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh poi failed')
 
 
 class TestPILAGG(TestPycoast):
@@ -645,6 +712,43 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh polygons failed')
 
+    def test_add_poi_agg(self):
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_poi_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, outline='black', resolution='l',
+                          level=4)
+        cw.add_borders(img, area_def, outline='black', width=3, level=1,
+                       resolution='c')
+
+        poi_list = [((2.3522, 48.8566), 'Paris'),
+                    ((0.1278, 51.5074), 'London')]
+        cw.add_poi(img, area_def, poi_list=poi_list, font_file=font_file,
+                   symbol='circle', ptsize=16,
+                   outline='black', width=3,
+                   fill='red', fill_opacity=128,
+                   textbox_outline='blue', textbox_linewidth=0.5,
+                   textbox_fill='yellow', textbox_opacity=200)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of nh poi failed')
+
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -702,6 +806,34 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh grid failed')
+
+    def test_config_file_poi_and_borders_agg(self):
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        config_file = os.path.join(os.path.dirname(__file__),
+                                   'nh_poi_agg.ini')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_poi_cfg_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_overlay_from_config(config_file, area_def, img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh poi failed')
 
     def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG

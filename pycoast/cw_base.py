@@ -695,7 +695,7 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'grid']
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'poi', 'grid']
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -802,38 +802,46 @@ class ContourWriterBase(object):
                 fun(foreground, area_def, **params)
                 logger.info("%s added", section.capitalize())
 
-        # Cities and poi management
-        POINTS_DEFAULT = {'pt_size': None,
-                          'font_size': 12,
-                          'outline': 'yellow',
-                          'outline_opacity': 255,
-                          'width': 1,
-                          'fill': None,
-                          'fill_opacity': 255,
-                          'textbox_outline': None,
-                          'textbox_opacity': 255}
+        # Cities management
+        if 'cities' in overlays:
+            DEFAULT_FONT_SIZE = 12
+            DEFAULT_OUTLINE = "yellow"
 
-        for section, fun in zip(['cities', 'poi'],
-                                [self.add_cities, self.add_poi]):
-            if section in overlays:
-                params = POINTS_DEFAULT.copy()
-                params.update(overlays[section])
+            citylist = [s.lstrip()
+                        for s in overlays['cities']['list'].split(',')]
+            font_file = overlays['cities']['font']
+            font_size = int(overlays['cities'].get('font_size',
+                                                   DEFAULT_FONT_SIZE))
+            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
+            pt_size = int(overlays['cities'].get('pt_size', None))
+            box_outline = overlays['cities'].get('box_outline', None)
+            box_opacity = int(overlays['cities'].get('box_opacity', 255))
 
-                pointlist = [pt.lstrip() if isinstance(pt, str) else pt
-                             for pt in overlays[section]['list'].split(',')]
+            self.add_cities(foreground, area_def, citylist, font_file,
+                            font_size, pt_size, outline, box_outline,
+                            box_opacity)
+        # POI management
+        if 'poi' in overlays:
+            DEFAULT_FONTSIZE = 12
+            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_PTSIZE = 6
+            DEFAULT_OUTLINE = 'white'
+            DEFAULT_FILL = None
 
-                params['pt_size'] = int(params['pt_size'])
-                params['font_size'] = int(params['font_size'])
-                params['outline_opacity'] = int(params['outline_opacity'])
-                params['width'] = float(params['width'])
-                params['fill_opacity'] = int(params['fill_opacity'])
-                params['box_opacity'] = int(params['textbox_opacity'])
+            params = overlays['poi'].copy()
 
-                if not is_agg:
-                    for key in ['width', 'outline_opacity', 'fill_opacity']:
-                        params.pop(key, None)
+            poilist = list(params.pop('list'))
+            font_file = params.pop('font')
+            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
 
-                fun(foreground, area_def, pointlist, **params)
+            symbol = params.pop('symbol', DEFAULT_SYMBOL)
+            pt_size = int(params.pop('pt_size', DEFAULT_PTSIZE))
+
+            outline = params.pop('outline', DEFAULT_OUTLINE)
+            fill = params.pop('fill', DEFAULT_FILL)
+
+            self.add_poi(foreground, area_def, poilist, font_file, font_size,
+                         symbol, pt_size, outline, fill, **params)
 
         # Grids overlay
         if 'grid' in overlays:
@@ -956,23 +964,14 @@ class ContourWriterBase(object):
 
         self._finalize(draw)
 
-    def add_poi(self, image, area_def, font_file, font_size=12,
-                poi_list=None, symbol='circle', ptsize=6,
-                outline='white', fill=None, **kwargs):
-        """
-        Add a symbol or text at the point(s) of interest to a PIL image object
+    def add_poi(self, image, area_def, poi_list, font_file, font_size=12,
+                symbol='circle', ptsize=6, outline='white', fill=None, **kwargs):
+        """Add a symbol and/or text at the point(s) of interest to a PIL image object.
         :Parameters:
             image : object
                 PIL image object
-            area_def : list [proj4_string, area_extent]
-              | proj4_string : str
-              |     Projection of area as Proj.4 string
-              | area_extent : list
-              |     Area extent as a list (LL_x, LL_y, UR_x, UR_y)
-            font_file : str
-                Path to font file
-            font_size : int
-                Size of font
+            area_def : object
+                Area Definition of the provided image
             poi_list : list [((lon, lat), desc)]
               | a list of points defined with (lon, lat) in float and a desc in string
               | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
@@ -982,6 +981,10 @@ class ContourWriterBase(object):
               |    latitude of a POI
               | desc : str
               |    description of a POI
+            font_file : str
+                Path to font file
+            font_size : int
+                Size of font
             symbol : string
                 type of symbol, one of the elelment from the list
                 ['circle', 'square', 'asterisk']
@@ -992,7 +995,7 @@ class ContourWriterBase(object):
             fill : str or (R, G, B), optional
                 Filling color of the symbol
 
-        :Optional kwargs:
+        :Optional keyword arguments:
             width : float
                 Line width of the symbol
             outline_opacity : int, optional {0; 255}
@@ -1008,9 +1011,12 @@ class ContourWriterBase(object):
             textbox_opacity : int, optional {0; 255}
                 Opacity of the background filling of the textbox.
         """
-        draw = self._get_canvas(image)
+        from pyresample.geometry import AreaDefinition
 
-        x_size, y_size = image.size
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
+
+        draw = self._get_canvas(image)
 
         # Iterate through poi list
         for poi in poi_list:
@@ -1055,8 +1061,8 @@ class ContourWriterBase(object):
                     text_position = [x + ptsize, y]  # draw the text box next to the point
                     font = self._get_font(outline, font_file, font_size)
 
-                    textbox_outline = kwargs.get('textbox_outline', None)
-                    textbox_opacity = kwargs.get('textbox_opacity', 0)
+                    textbox_outline = kwargs.pop('textbox_outline', None)
+                    textbox_opacity = kwargs.pop('textbox_opacity', 0)
 
                     # add text_box
                     self._draw_text_box(draw, text_position, desc, font, outline,
