@@ -117,7 +117,7 @@ class ContourWriterAGG(ContourWriterBase):
         draw.line(coordinates, pen)
 
     def _draw_asterisk(self, draw, pt_size, coordinate, **kwargs):
-        """Draw a asterisk sign '*' at the given coordinate """
+        """Draw a asterisk sign '*' at the given coordinate. """
         half_ptsize = int(round(pt_size / 2.))
         x, y = coordinate
 
@@ -323,7 +323,7 @@ class ContourWriterAGG(ContourWriterBase):
                  minor_outline='white', minor_width=0.5,
                  minor_outline_opacity=255, minor_is_tick=True,
                  lon_placement='tb', lat_placement='lr'):
-        """Add a lon-lat grid to a PIL image object
+        """Add a lon-lat grid to a PIL image object.
 
         :Parameters:
             image : object
