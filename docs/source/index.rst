@@ -20,6 +20,7 @@ images using data from the GSHHS and WDBII datasets
    graticule
    config
    polygons_and_lines
+   points
    shapefiles
    test
    PyCoast API <api/pycoast>
