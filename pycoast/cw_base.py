@@ -965,7 +965,7 @@ class ContourWriterBase(object):
         self._finalize(draw)
 
     def add_points(self, image, area_def, points_list, font_file, font_size=12,
-                   symbol='circle', ptsize=6, outline='white', fill=None, **kwargs):
+                   symbol='circle', ptsize=6, outline='black', fill='white', **kwargs):
         """Add a symbol and/or text at the point(s) of interest to a PIL image object.
         :Parameters:
             image : object
@@ -1061,7 +1061,7 @@ class ContourWriterBase(object):
                     text_position = [x + ptsize, y]  # draw the text box next to the point
                     font = self._get_font(outline, font_file, font_size)
 
-                    textbox_outline = kwargs.pop('textbox_outline', None)
+                    textbox_outline = kwargs.pop('textbox_outline', 'white')
                     textbox_opacity = kwargs.pop('textbox_opacity', 0)
 
                     # add text_box

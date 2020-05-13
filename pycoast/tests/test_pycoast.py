@@ -738,13 +738,13 @@ class TestPILAGG(TestPycoast):
                        resolution='c')
 
         points_list = [((2.3522, 48.8566), 'Paris'),
-                    ((0.1278, 51.5074), 'London')]
+                       ((0.1278, 51.5074), 'London')]
         cw.add_points(img, area_def, points_list=points_list, font_file=font_file,
                       symbol='circle', ptsize=16,
-                   outline='black', width=3,
-                   fill='red', fill_opacity=128,
-                   textbox_outline='blue', textbox_linewidth=0.5,
-                   textbox_fill='yellow', textbox_opacity=200)
+                      outline='black', width=3,
+                      fill='red', fill_opacity=128,
+                      textbox_outline='blue', textbox_linewidth=0.5,
+                      textbox_fill='yellow', textbox_opacity=200)
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of nh points failed')
