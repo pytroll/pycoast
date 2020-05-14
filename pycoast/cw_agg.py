@@ -52,10 +52,9 @@ class ContourWriterAGG(ContourWriterBase):
         pen = aggdraw.Pen(kwargs['outline'],
                           kwargs['width'],
                           kwargs['outline_opacity'])
-        if kwargs['fill'] is None:
-            fill_opacity = 0
-        else:
-            fill_opacity = kwargs['fill_opacity']
+
+        fill_opacity = kwargs.get('fill_opacity', 255) if kwargs['fill'] else 0
+
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
         draw.polygon(coordinates, pen, brush)
 
@@ -65,10 +64,8 @@ class ContourWriterAGG(ContourWriterBase):
                           kwargs['width'],
                           kwargs['outline_opacity'])
 
-        if kwargs['fill'] is None:
-            fill_opacity = 0
-        else:
-            fill_opacity = kwargs['fill_opacity']
+        fill_opacity = kwargs.get('fill_opacity', 255) if kwargs['fill'] else 0
+
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
 
         draw.rectangle(coordinates, pen, brush)
@@ -79,10 +76,8 @@ class ContourWriterAGG(ContourWriterBase):
                           kwargs['width'],
                           kwargs['outline_opacity'])
 
-        if kwargs['fill'] is None:
-            fill_opacity = 0
-        else:
-            fill_opacity = kwargs['fill_opacity']
+        fill_opacity = kwargs.get('fill_opacity', 255) if kwargs['fill'] else 0
+
         brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
 
         draw.ellipse(coordinates, brush, pen)
