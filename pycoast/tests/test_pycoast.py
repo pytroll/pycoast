@@ -386,12 +386,12 @@ class TestPIL(TestPycoast):
         points_list = [((13.4050, 52.5200), 'Berlin')]
         cw.add_points(img, area_def, points_list=points_list, font_file=font_file,
                       symbol='asterisk', ptsize=6, outline='red',
-                      textbox_outline='black')
+                      box_outline='black')
 
         points_list = [((12.4964, 41.9028), 'Rome')]
         cw.add_points(img, area_def, points_list=points_list, font_file=font_file,
                       symbol='square', ptsize=6, outline='blue', fill='yellow',
-                      textbox_outline='black')
+                      box_outline='black')
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
@@ -743,8 +743,8 @@ class TestPILAGG(TestPycoast):
                       symbol='circle', ptsize=16,
                       outline='black', width=3,
                       fill='red', fill_opacity=128,
-                      textbox_outline='blue', textbox_linewidth=0.5,
-                      textbox_fill='yellow', textbox_opacity=200)
+                      box_outline='blue', box_linewidth=0.5,
+                      box_fill='yellow', box_opacity=200)
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of nh points failed')

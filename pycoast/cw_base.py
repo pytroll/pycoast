@@ -1009,16 +1009,19 @@ class ContourWriterBase(object):
                 Opacity of the line of the symbol.
             fill_opacity : int, optional {0; 255}
                 Opacity of the filling of the symbol
-            textbox_outline : str or (R, G, B), optional
+            box_outline : str or (R, G, B), optional
                 Line color of the textbox borders.
-            textbox_linewidth : float
+            box_linewidth : float
                 Line width of the the borders of the textbox
-            textbox_fill : str or (R, G, B), optional
+            box_fill : str or (R, G, B), optional
                 Filling color of the background of the textbox.
-            textbox_opacity : int, optional {0; 255}
+            box_opacity : int, optional {0; 255}
                 Opacity of the background filling of the textbox.
         """
-        from pyresample.geometry import AreaDefinition
+        try:
+            from pyresample.geometry import AreaDefinition
+        except ImportError:
+            raise ImportError("Missing required 'pyresample' module, please install it.")
 
         if not isinstance(area_def, AreaDefinition):
             raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
@@ -1069,12 +1072,12 @@ class ContourWriterBase(object):
                     text_position = [x + ptsize, y]  # draw the text box next to the point
                     font = self._get_font(outline, font_file, font_size)
 
-                    textbox_outline = kwargs.pop('textbox_outline', 'white')
-                    textbox_opacity = kwargs.pop('textbox_opacity', 0)
+                    box_outline = kwargs.pop('box_outline', 'white')
+                    box_opacity = kwargs.pop('box_opacity', 0)
 
                     # add text_box
                     self._draw_text_box(draw, text_position, desc, font, outline,
-                                        textbox_outline, textbox_opacity, **kwargs)
+                                        box_outline, box_opacity, **kwargs)
 
             logger.debug("Point %s has been added to the image", str((lon, lat)))
 

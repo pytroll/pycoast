@@ -95,8 +95,8 @@ class ContourWriterAGG(ContourWriterBase):
             yLR = yUL + text_size[1]
             box_size = (xUL, yUL, xLR, yLR)
 
-            width = kwargs.get('textbox_linewidth', 1)
-            fill = kwargs.get('textbox_fill', None)
+            width = kwargs.get('box_linewidth', 1)
+            fill = kwargs.get('box_fill', None)
 
             self._draw_rectangle(
                 draw, box_size, outline=box_outline, width=width,
