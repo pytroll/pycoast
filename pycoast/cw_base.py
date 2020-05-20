@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2018 PyCoast Developers
+# Copyright (C) 2011-2020 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -557,7 +557,10 @@ class ContourWriterBase(object):
         prj = Proj(proj_def)
 
         # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
+        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent,
+                                                                       x_size,
+                                                                       y_size,
+                                                                       prj)
 
         # Iterate through shapes
         for shape in shapes:
@@ -695,7 +698,7 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'grid']
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'points', 'grid']
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -709,7 +712,8 @@ class ContourWriterBase(object):
         return overlays
 
     def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
-        """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
+        """Create and return a transparent image adding all the overlays contained in
+           the `overlays` dict.
 
         :Parameters:
             overlays : dict
@@ -717,8 +721,8 @@ class ContourWriterBase(object):
             area_def : object
                 Area Definition of the creating image
             cache_epoch: seconds since epoch
-                The latest time allowed for cache the cache file. If the cache file is older than this (mtime),
-                the cache should be regenerated.
+                The latest time allowed for cache the cache file. If the cache file is older
+                than this (mtime), the cache should be regenerated.
             background: pillow image instance
                 The image on which to write the overlays on. If it's None (default),
                 a new image is created, otherwise the provide background is use
@@ -726,11 +730,11 @@ class ContourWriterBase(object):
 
 
             The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, cities, grid
+            cache, coasts, rivers, borders, cities, points, grid
 
             For all of them except `cache`, the items are the same as the corresponding
             functions in pycoast, so refer to the docstrings of these functions
-            (add_coastlines, add_rivers, add_borders, add_grid, add_cities).
+            (add_coastlines, add_rivers, add_borders, add_grid, add_cities, add_points).
             For cache, two parameters are configurable: `file` which specifies the directory
             and the prefix of the file to save the caches decoration to
             (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
@@ -767,6 +771,9 @@ class ContourWriterBase(object):
         else:
             foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
 
+        is_agg = self._draw_module == "AGG"
+
+        # Coasts, rivers, borders
         default_resolution = get_resolution_from_area(area_def)
 
         DEFAULT = {'level': 1,
@@ -779,14 +786,10 @@ class ContourWriterBase(object):
                    'y_offset': 0,
                    'resolution': default_resolution}
 
-        is_agg = self._draw_module == "AGG"
-
-        # Coasts, rivers, borders
         for section, fun in zip(['coasts', 'rivers', 'borders'],
                                 [self.add_coastlines,
                                  self.add_rivers,
                                  self.add_borders]):
-
             if section in overlays:
 
                 params = DEFAULT.copy()
@@ -821,7 +824,30 @@ class ContourWriterBase(object):
             self.add_cities(foreground, area_def, citylist, font_file,
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
+        # Points management
+        if 'points' in overlays:
+            DEFAULT_FONTSIZE = 12
+            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_PTSIZE = 6
+            DEFAULT_OUTLINE = 'white'
+            DEFAULT_FILL = None
 
+            params = overlays['points'].copy()
+
+            points_list = list(params.pop('list'))
+            font_file = params.pop('font')
+            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+
+            symbol = params.pop('symbol', DEFAULT_SYMBOL)
+            pt_size = int(params.pop('pt_size', DEFAULT_PTSIZE))
+
+            outline = params.pop('outline', DEFAULT_OUTLINE)
+            fill = params.pop('fill', DEFAULT_FILL)
+
+            self.add_points(foreground, area_def, points_list, font_file, font_size,
+                            symbol, pt_size, outline, fill, **params)
+
+        # Grids overlay
         if 'grid' in overlays:
             lon_major = float(overlays['grid'].get('lon_major', 10.0))
             lat_major = float(overlays['grid'].get('lat_major', 10.0))
@@ -867,7 +893,8 @@ class ContourWriterBase(object):
         return foreground
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
-        """Create and return a transparent image adding all the overlays contained in a configuration file.
+        """Create and return a transparent image adding all the overlays contained in
+           a configuration file.
 
         :Parameters:
             config_file : str
@@ -877,7 +904,8 @@ class ContourWriterBase(object):
 
         """
         overlays = self._config_to_dict(config_file)
-        return self.add_overlay_from_dict(overlays, area_def, os.path.getmtime(config_file), background)
+        return self.add_overlay_from_dict(overlays, area_def,
+                                          os.path.getmtime(config_file), background)
 
     def add_cities(self, image, area_def, citylist, font_file, font_size,
                    ptsize, outline, box_outline, box_opacity, db_root_path=None):
@@ -888,6 +916,7 @@ class ContourWriterBase(object):
             db_root_path = self.db_root_path
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
+
         draw = self._get_canvas(image)
 
         # read shape file with points
@@ -924,21 +953,133 @@ class ContourWriterBase(object):
                 except ValueError as exc:
                     logger.debug("Point not added (%s)", str(exc))
                 else:
-
                     # add_dot
                     if ptsize is not None:
                         dot_box = [x - ptsize, y - ptsize,
                                    x + ptsize, y + ptsize]
                         self._draw_ellipse(
                             draw, dot_box, fill=outline, outline=outline)
-                        text_position = [x + 9, y - 5]  # FIX ME
+                        text_position = [x + 9, y - 5]  # FIXME
                     else:
                         text_position = [x, y]
 
                 # add text_box
-                    self._draw_text_box(draw, text_position, city_name, font,
-                                        outline, box_outline, box_opacity)
+                    self._draw_text_box(draw, text_position, city_name, font, outline,
+                                        box_outline, box_opacity)
                     logger.info("%s added", str(city_name))
+
+        self._finalize(draw)
+
+    def add_points(self, image, area_def, points_list, font_file, font_size=12,
+                   symbol='circle', ptsize=6, outline='black', fill='white', **kwargs):
+        """Add a symbol and/or text at the point(s) of interest to a PIL image object.
+
+        :Parameters:
+            image : object
+                PIL image object
+            area_def : object
+                Area Definition of the provided image
+            points_list : list [((lon, lat), desc)]
+              | a list of points defined with (lon, lat) in float and a desc in string
+              | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
+              | lon : float
+              |    longitude of a point
+              | lat : float
+              |    latitude of a point
+              | desc : str
+              |    description of a point
+            font_file : str
+                Path to font file
+            font_size : int
+                Size of font
+            symbol : string
+                type of symbol, one of the elelment from the list
+                ['circle', 'square', 'asterisk']
+            ptsize : int
+                Size of the point.
+            outline : str or (R, G, B), optional
+                Line color of the symbol
+            fill : str or (R, G, B), optional
+                Filling color of the symbol
+
+        :Optional keyword arguments:
+            width : float
+                Line width of the symbol
+            outline_opacity : int, optional {0; 255}
+                Opacity of the line of the symbol.
+            fill_opacity : int, optional {0; 255}
+                Opacity of the filling of the symbol
+            box_outline : str or (R, G, B), optional
+                Line color of the textbox borders.
+            box_linewidth : float
+                Line width of the the borders of the textbox
+            box_fill : str or (R, G, B), optional
+                Filling color of the background of the textbox.
+            box_opacity : int, optional {0; 255}
+                Opacity of the background filling of the textbox.
+        """
+        try:
+            from pyresample.geometry import AreaDefinition
+        except ImportError:
+            raise ImportError("Missing required 'pyresample' module, please install it.")
+
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
+
+        draw = self._get_canvas(image)
+
+        # Iterate through points list
+        for point in points_list:
+            (lon, lat), desc = point
+            try:
+                x, y = area_def.get_xy_from_lonlat(lon, lat)
+            except ValueError:
+                logger.info("Point %s is out of the area, it will not be added to the image.",
+                            str((lon, lat)))
+            else:
+                if ptsize != 0:
+                    half_ptsize = int(round(ptsize / 2.))
+
+                    dot_box = [x - half_ptsize, y - half_ptsize,
+                               x + half_ptsize, y + half_ptsize]
+
+                    width = kwargs.get('width', 1.)
+                    outline_opacity = kwargs.get('outline_opacity', 255)
+                    fill_opacity = kwargs.get('fill_opacity', 0)
+
+                    # draw the symbol at the (x, y) position
+                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e circle with fill
+                        self._draw_ellipse(draw, dot_box,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'square':
+                        self._draw_rectangle(draw, dot_box,
+                                             outline=outline, width=width,
+                                             outline_opacity=outline_opacity,
+                                             fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'asterisk':  # an '*' sign
+                        self._draw_asterisk(draw, ptsize, (x, y),
+                                            outline=outline, width=width,
+                                            outline_opacity=outline_opacity)
+                    else:
+                        raise ValueError("Unsupported symbol type: " + str(symbol))
+
+                elif desc is None:
+                    logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
+
+                if desc is not None:
+                    text_position = [x + ptsize, y]  # draw the text box next to the point
+                    font = self._get_font(outline, font_file, font_size)
+
+                    box_outline = kwargs.pop('box_outline', 'white')
+                    box_opacity = kwargs.pop('box_opacity', 0)
+
+                    # add text_box
+                    self._draw_text_box(draw, text_position, desc, font, outline,
+                                        box_outline, box_opacity, **kwargs)
+
+            logger.debug("Point %s has been added to the image", str((lon, lat)))
 
         self._finalize(draw)
 
