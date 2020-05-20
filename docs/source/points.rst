@@ -62,8 +62,7 @@ with opacity set to 128.
 
 .. image:: images/nh_points_agg.png
 
-The :attr:`add_points` method accepts a list of longitude, latitude pairs, with an optional
+The :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points` method accepts a list of longitude, latitude pairs, with an optional
 Description string.
 
 .. _PIL: http://www.pythonware.com/products/pil/
-
