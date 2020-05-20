@@ -46,7 +46,7 @@ The example below will draw a square symbol at the location of Paris.
     ...               fill='blue', fill_opacity=128)
 
 Finally, we can fully costomize the annotation as the example below, which will add
-a circle in black with linewide set to 2 and filled in red color with opacity equals 255;
+a circle in black with linewidth set to 2 and filled in red color with opacity equals 255;
 the description will be 'London' in a textbox with blue borders and filled with green color
 with opacity set to 128.
 
