@@ -585,9 +585,9 @@ class TestPILAGG(TestPycoast):
         cw = ContourWriterAGG(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__),
-                                                 'test_data',
-                                                 'DejaVuSerif.ttf'), size=16,
+        font = aggdraw.Font('blue',
+                            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'),
+                            size=16,
                             opacity=200)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font,
                     outline='blue', outline_opacity=255, width=1.0,
