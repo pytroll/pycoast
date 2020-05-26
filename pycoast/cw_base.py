@@ -834,7 +834,7 @@ class ContourWriterBase(object):
 
             params = overlays['points'].copy()
 
-            points_list = list(params.pop('list'))
+            points_list = list(params.pop('points_list'))
             font_file = params.pop('font')
             font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
 
