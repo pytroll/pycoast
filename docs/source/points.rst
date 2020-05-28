@@ -66,4 +66,23 @@ with opacity set to 128.
 Please check out the docstrings of the :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points`
 function for the full description of the parameters.
 
+Moreover, we can organize the overlay parameters in a dictionary and use :meth:`~pycoast.cw_agg.ContourWriterAGG.add_overlay_from_dict`
+to apply the overlays in one shot.
+
+    >>> points = {'points_list': [((2.3522, 48.8566), 'Paris'), ((0.1278, 51.5074), 'London')],
+    ...           'font': font_file,
+    ...           'symbol': 'circle', 'ptsize': 16,
+    ...           'outline': 'black', 'width': 3,
+    ...           'fill': 'red', 'fill_opacity': 128,
+    ...           'box_outline': 'blue', 'box_linewidth': 0.5,
+    ...           'box_fill': 'yellow', 'box_opacity': 200}
+
+    >>> overlays = {'coasts': {'outline': 'black', 'level': 4, 'resolution': 'l'},
+    ...             'borders': {'outline': 'black', 'width': 3, 'level': 1, 'resolution': 'c'},
+    ...             'points': points}
+
+    >>> img = cw.add_overlay_from_dict(overlays, area_def)
+
+    >>> img.save('./add_overlays_from_dict.png')
+
 .. _PIL: http://www.pythonware.com/products/pil/
