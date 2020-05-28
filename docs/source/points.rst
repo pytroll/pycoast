@@ -63,9 +63,7 @@ with opacity set to 128.
 .. image:: images/nh_points_agg.png
 
 
-
 Please check out the docstrings of the :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points`
 function for the full description of the parameters.
 
 .. _PIL: http://www.pythonware.com/products/pil/
-
