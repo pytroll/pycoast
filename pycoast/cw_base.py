@@ -839,13 +839,13 @@ class ContourWriterBase(object):
             font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
 
             symbol = params.pop('symbol', DEFAULT_SYMBOL)
-            pt_size = int(params.pop('pt_size', DEFAULT_PTSIZE))
+            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
 
             outline = params.pop('outline', DEFAULT_OUTLINE)
             fill = params.pop('fill', DEFAULT_FILL)
 
             self.add_points(foreground, area_def, points_list, font_file, font_size,
-                            symbol, pt_size, outline, fill, **params)
+                            symbol, ptsize, outline, fill, **params)
 
         # Grids overlay
         if 'grid' in overlays:
@@ -1072,12 +1072,14 @@ class ContourWriterBase(object):
                     text_position = [x + ptsize, y]  # draw the text box next to the point
                     font = self._get_font(outline, font_file, font_size)
 
-                    box_outline = kwargs.pop('box_outline', 'white')
-                    box_opacity = kwargs.pop('box_opacity', 0)
+                    new_kwargs = kwargs.copy()
+
+                    box_outline = new_kwargs.pop('box_outline', 'white')
+                    box_opacity = new_kwargs.pop('box_opacity', 0)
 
                     # add text_box
                     self._draw_text_box(draw, text_position, desc, font, outline,
-                                        box_outline, box_opacity, **kwargs)
+                                        box_outline, box_opacity, **new_kwargs)
 
             logger.debug("Point %s has been added to the image", str((lon, lat)))
 

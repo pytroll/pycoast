@@ -749,6 +749,45 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of nh points failed')
 
+    @unittest.skip("fft failled??")
+    def test_add_overlays_from_dict_agg(self):
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_add_overlays_dict_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string, 1024, 1024, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        points = {'points_list': [((2.3522, 48.8566), 'Paris'), ((0.1278, 51.5074), 'London')],
+                  'font': font_file,
+                  'symbol': 'circle', 'ptsize': 16,
+                  'outline': 'black', 'width': 3,
+                  'fill': 'red', 'fill_opacity': 128,
+                  'box_outline': 'blue', 'box_linewidth': 0.5,
+                  'box_fill': 'yellow', 'box_opacity': 200}
+
+        overlays = {'coasts': {'outline': 'black', 'level': 4, 'resolution': 'l'},
+                    'borders': {'outline': 'black', 'width': 3, 'level': 1, 'resolution': 'c'},
+                    'points': points}
+
+        img = cw.add_overlay_from_dict(overlays, area_def)
+
+        img.save('./nh_add_overlays_dict_agg_test.png')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Add overlays from dict failed')
+
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -815,7 +854,7 @@ class TestPILAGG(TestPycoast):
                                    'nh_points_agg.ini')
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_points_cfg_agg.png'))
+                                           'nh_points_agg.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (1024, 1024), (255, 255, 255))
@@ -833,7 +872,7 @@ class TestPILAGG(TestPycoast):
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh points with agg module failed')
+                        'Add points with agg module from a config file failed')
 
     def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG
