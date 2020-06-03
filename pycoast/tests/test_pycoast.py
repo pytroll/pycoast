@@ -585,9 +585,9 @@ class TestPILAGG(TestPycoast):
         cw = ContourWriterAGG(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution='l', level=4)
-        font = aggdraw.Font('blue', os.path.join(os.path.dirname(__file__),
-                                                 'test_data',
-                                                 'DejaVuSerif.ttf'), size=16,
+        font = aggdraw.Font('blue',
+                            os.path.join(os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'),
+                            size=16,
                             opacity=200)
         cw.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font,
                     outline='blue', outline_opacity=255, width=1.0,
@@ -815,7 +815,7 @@ class TestPILAGG(TestPycoast):
                                    'nh_points_agg.ini')
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
-                                           'nh_points_cfg_agg.png'))
+                                           'nh_points_agg.png'))
         grid_data = np.array(grid_img)
 
         img = Image.new('RGB', (1024, 1024), (255, 255, 255))
@@ -833,7 +833,7 @@ class TestPILAGG(TestPycoast):
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh points with agg module failed')
+                        'Add points with agg module from a config file failed')
 
     def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG

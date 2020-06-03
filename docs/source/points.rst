@@ -1,8 +1,8 @@
-Custom points with or without textbox
---------------------------------
+Add custom points with descriptions
+-----------------------------------
 
 Pycoast can add a symbol to points of interest on an image. The following examples show how
-we might use the :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points`  method to annotate the
+we might use the :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points` method to annotate the
 points on an image.
 
 First of all, we setup a PIL image with an area definition, then we add coastlines and
@@ -19,7 +19,7 @@ borders for reference.
     >>> cw.add_borders(img, area_def, outline='black', width=3, level=1, resolution='c')
 
 Now we can add a circle, which is the default symbol, with default point size 6 at the
-location of Berlin, the name of the lacation will marked in a text box with black borders
+location of Berlin, the name of the location will marked in a text box with black borders
 and the default text size is 12.
 
     >>> points_list = [((13.4050, 52.5200), 'Berlin')]
@@ -39,14 +39,14 @@ Similarly, assign the description as an empty string will only draw the symbol o
 The example below will draw a square symbol at the location of Paris.
 
     >>> points_list = [((2.3522, 48.8566), '')]
-    >>> cw.add_points(pil_img, area, points_list=points_list,i
+    >>> cw.add_points(pil_img, area, points_list=points_list,
     ...               font_file=font_file,
     ...               symbol='square', ptsize=10,
     ...               outline='red', width=1,
     ...               fill='blue', fill_opacity=128)
 
-Finally, we can fully costomize the annotation as the example below, which will add
-a circle in black with linewidth set to 2 and filled in red color with opacity equals 255;
+Finally, we can fully customize the annotation as the example below, which will add
+a circle in black with line width set to 2 and filled in red color with opacity equals 255;
 the description will be 'London' in a textbox with blue borders and filled with green color
 with opacity set to 128.
 
@@ -62,7 +62,27 @@ with opacity set to 128.
 
 .. image:: images/nh_points_agg.png
 
-The :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points` method accepts a list of longitude, latitude pairs, with an optional
-Description string.
+
+Please check out the docstrings of the :meth:`~pycoast.cw_agg.ContourWriterAGG.add_points`
+function for the full description of the parameters.
+
+Moreover, we can organize the overlay parameters in a dictionary and use :meth:`~pycoast.cw_agg.ContourWriterAGG.add_overlay_from_dict`
+to apply the overlays in one shot.
+
+    >>> points = {'points_list': [((2.3522, 48.8566), 'Paris'), ((0.1278, 51.5074), 'London')],
+    ...           'font': font_file,
+    ...           'symbol': 'circle', 'ptsize': 16,
+    ...           'outline': 'black', 'width': 3,
+    ...           'fill': 'red', 'fill_opacity': 128,
+    ...           'box_outline': 'blue', 'box_linewidth': 0.5,
+    ...           'box_fill': 'yellow', 'box_opacity': 200}
+
+    >>> overlays = {'coasts': {'outline': 'black', 'level': 4, 'resolution': 'l'},
+    ...             'borders': {'outline': 'black', 'width': 3, 'level': 1, 'resolution': 'c'},
+    ...             'points': points}
+
+    >>> img = cw.add_overlay_from_dict(overlays, area_def)
+
+    >>> img.save('./add_overlays_from_dict.png')
 
 .. _PIL: http://www.pythonware.com/products/pil/
