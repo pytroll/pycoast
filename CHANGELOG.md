@@ -13,7 +13,11 @@ In this release 1 issue was closed.
 * [PR 45](https://github.com/pytroll/pycoast/pull/45) - Fix cached overlays always being regenerated
 * [PR 44](https://github.com/pytroll/pycoast/pull/44) - Fix adding textbox in the add_points method
 
-In this release 2 pull requests were closed.
+#### Features added
+
+* [PR 42](https://github.com/pytroll/pycoast/pull/42) - Add "add_points" method for point/symbol data ([36](https://github.com/pytroll/pycoast/issues/36))
+
+In this release 3 pull requests were closed.
 
 
 ## Version 1.3.2 (2019/12/06)
