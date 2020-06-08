@@ -1,3 +1,21 @@
+## Version 1.3.2 (2019/12/06)
+
+### Issues Closed
+
+* [Issue 39](https://github.com/pytroll/pycoast/issues/39) - distorted/strange coastlines with pyproj-2.4.2 ([PR 40](https://github.com/pytroll/pycoast/pull/40))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 40](https://github.com/pytroll/pycoast/pull/40) - Fix compatibility with pyproj 2.4.2 and reduce generated warnings ([39](https://github.com/pytroll/pycoast/issues/39))
+* [PR 38](https://github.com/pytroll/pycoast/pull/38) - Remove unnecessary casting in adding overlay from dictionary
+
+In this release 2 pull requests were closed.
+
+
 ## Version 1.3.1 (2019/11/07)
 
 ### Pull Requests Merged
