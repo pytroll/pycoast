@@ -1,3 +1,21 @@
+## Version 1.4.0 (2020/06/08)
+
+### Issues Closed
+
+* [Issue 36](https://github.com/pytroll/pycoast/issues/36) - Add points to an image with list of lat/long pairs ([PR 42](https://github.com/pytroll/pycoast/pull/42))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 45](https://github.com/pytroll/pycoast/pull/45) - Fix cached overlays always being regenerated
+* [PR 44](https://github.com/pytroll/pycoast/pull/44) - Fix adding textbox in the add_points method
+
+In this release 2 pull requests were closed.
+
+
 ## Version 1.3.2 (2019/12/06)
 
 ### Issues Closed
