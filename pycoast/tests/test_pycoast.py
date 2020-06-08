@@ -917,30 +917,37 @@ class TestFromConfig(TestPycoast):
                     'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
                     'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
 
+        # Create the original cache file
         cache_filename = os.path.join(tmp, 'pycoast_cache_fakearea.png')
         img = cw.add_overlay_from_dict(overlays, area_def)
         res = np.array(img)
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
         self.assertTrue(os.path.isfile(cache_filename))
-
-        current_time = time.time()
-
-        img = cw.add_overlay_from_dict(overlays, area_def, current_time)
-
         mtime = os.path.getmtime(cache_filename)
 
+        # Reuse the generated cache file
+        img = cw.add_overlay_from_dict(overlays, area_def)
+        res = np.array(img)
+        self.assertTrue(fft_metric(euro_data, res),
+                        'Writing of contours failed')
+        self.assertTrue(os.path.isfile(cache_filename))
+        self.assertEqual(os.path.getmtime(cache_filename), mtime)
+
+        # Regenerate cache file
+        current_time = time.time()
+        cw.add_overlay_from_dict(overlays, area_def, current_time)
+        mtime = os.path.getmtime(cache_filename)
         self.assertGreater(mtime, current_time)
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
 
-        img = cw.add_overlay_from_dict(overlays, area_def, current_time)
-
+        cw.add_overlay_from_dict(overlays, area_def, current_time)
         self.assertEqual(os.path.getmtime(cache_filename), mtime)
         self.assertTrue(fft_metric(euro_data, res),
                         'Writing of contours failed')
         overlays['cache']['regenerate'] = True
-        img = cw.add_overlay_from_dict(overlays, area_def)
+        cw.add_overlay_from_dict(overlays, area_def)
 
         self.assertNotEqual(os.path.getmtime(cache_filename), mtime)
         self.assertTrue(fft_metric(euro_data, res),
