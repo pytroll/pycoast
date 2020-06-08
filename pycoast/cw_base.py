@@ -721,24 +721,31 @@ class ContourWriterBase(object):
             area_def : object
                 Area Definition of the creating image
             cache_epoch: seconds since epoch
-                The latest time allowed for cache the cache file. If the cache file is older
-                than this (mtime), the cache should be regenerated.
+                The latest time allowed for cache the cache file. If the cache
+                file is older than this (mtime), the cache should be
+                regenerated. Defaults to 0 meaning always reuse the cached
+                file if it exists. Requires "cache" to be configured in the
+                provided dictionary (see below).
             background: pillow image instance
                 The image on which to write the overlays on. If it's None (default),
-                a new image is created, otherwise the provide background is use
-                an change *in place*.
+                a new image is created, otherwise the provide background is
+                used and changed *in place*.
 
 
             The keys in `overlays` that will be taken into account are:
             cache, coasts, rivers, borders, cities, points, grid
 
-            For all of them except `cache`, the items are the same as the corresponding
-            functions in pycoast, so refer to the docstrings of these functions
-            (add_coastlines, add_rivers, add_borders, add_grid, add_cities, add_points).
-            For cache, two parameters are configurable: `file` which specifies the directory
-            and the prefix of the file to save the caches decoration to
-            (for example /var/run/black_coasts_red_borders), and `regenerate` that can be
-            True or False (default) to force the overwriting of an already cached file.
+            For all of them except `cache`, the items are the same as the
+            corresponding functions in pycoast, so refer to the docstrings of
+            these functions (add_coastlines, add_rivers, add_borders,
+            add_grid, add_cities, add_points). For cache, two parameters are
+            configurable:
+
+            - `file`: specify the directory and the prefix
+                  of the file to save the caches decoration to (for example
+                  /var/run/black_coasts_red_borders)
+            - `regenerate`: True or False (default) to force the overwriting
+                  of an already cached file.
 
         """
 
@@ -749,7 +756,7 @@ class ContourWriterBase(object):
                           area_def.area_id + '.png')
 
             try:
-                config_time = cache_epoch
+                config_time = cache_epoch or 0
                 cache_time = os.path.getmtime(cache_file)
                 # Cache file will be used only if it's newer than config file
                 if ((config_time is not None and config_time < cache_time)
