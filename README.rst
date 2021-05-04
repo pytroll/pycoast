@@ -1,7 +1,7 @@
 PyCoast
 =======
 
-.. image:: https://travis-ci.org/pytroll/pycoast.svg?branch=master
+.. image:: https://travis-ci.org/pytroll/pycoast.svg?branch=main
     :target: https://travis-ci.org/pytroll/pycoast
 
 .. image:: https://img.shields.io/pypi/v/pycoast.svg
