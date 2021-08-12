@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""Base class for contour writers."""
 
 import os
 import shapefile
@@ -41,12 +42,8 @@ def get_resolution_from_area(area_def):
         x_resolution = (x_ur - x_ll) / x_size
         y_resolution = (y_ur - y_ll) / y_size
     else:
-        x_resolution = ((area_def.area_extent[2] -
-                         area_def.area_extent[0]) /
-                        x_size)
-        y_resolution = ((area_def.area_extent[3] -
-                         area_def.area_extent[1]) /
-                        y_size)
+        x_resolution = (area_def.area_extent[2] - area_def.area_extent[0]) / x_size
+        y_resolution = (area_def.area_extent[3] - area_def.area_extent[1]) / y_size
     res = min(x_resolution, y_resolution)
 
     if res > 25000:
@@ -92,8 +89,7 @@ class ContourWriterBase(object):
             self.db_root_path = db_root_path
 
     def _draw_text(self, draw, position, txt, font, align='cc', **kwargs):
-        """Draw text with agg module
-        """
+        """Draw text with agg module."""
         txt_width, txt_height = draw.textsize(txt, font)
         x_pos, y_pos = position
         ax, ay = align.lower()
@@ -113,8 +109,7 @@ class ContourWriterBase(object):
         raise NotImplementedError('Text drawing undefined for render engine')
 
     def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
-        """Draw text with default PIL module
-        """
+        """Draw text with default PIL module."""
         if font is None:
             # NOTE: Default font does not use font size in PIL writer
             font = self._get_font(kwargs.get('outline', 'black'), font, 12)
@@ -127,8 +122,11 @@ class ContourWriterBase(object):
                 self._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
 
     def _find_line_intercepts(self, xys, size, margins):
-        """Finds intercepts of poly-line xys with image boundaries
-        offset by margins and returns an array of coordinates"""
+        """Find intercepts of poly-line xys with image boundaries offset by margins.
+
+        Returns an array of coordinates.
+
+        """
         x_size, y_size = size
 
         def is_in_box(x_y, extents):
@@ -193,9 +191,7 @@ class ContourWriterBase(object):
                   Dlon, Dlat,
                   dlon, dlat,
                   font=None, write_text=True, **kwargs):
-        """Add a lat lon grid to image
-        """
-
+        """Add a lat lon grid to image."""
         try:
             proj_def = area_def.crs if hasattr(area_def, 'crs') else area_def.proj_dict
             area_extent = area_def.area_extent
@@ -486,16 +482,20 @@ class ContourWriterBase(object):
 
     def _add_shapefile_shape(self, image, area_def, filename, shape_id,
                              feature_type=None, **kwargs):
-        """ for drawing a single shape (polygon/poly-line) definiton with id,
-        shape_id from a custom shape file onto a PIL image
+        """Draw a single shape (polygon/poly-line) definition.
+
+        Accesses single shape using shape_id from a custom shape file.
+
         """
         sf = shapefile.Reader(filename)
         shape = sf.shape(shape_id)
         return self.add_shapes(image, area_def, [shape], feature_type=feature_type, **kwargs)
 
     def _add_line(self, image, area_def, lonlats, **kwargs):
-        """ For drawing a custom polyline. Lon and lat coordinates given by the
-        list lonlat.
+        """Draw a custom polyline.
+
+        Lon and lat coordinates given by the list lonlat.
+
         """
         # create dummpy shapelike object
         shape = type("", (), {})()
@@ -505,8 +505,10 @@ class ContourWriterBase(object):
         self.add_shapes(image, area_def, [shape], feature_type="line", **kwargs)
 
     def _add_polygon(self, image, area_def, lonlats, **kwargs):
-        """ For drawing a custom polygon. Lon and lat coordinates given by the
-        list lonlat.
+        """Draw a custom polygon.
+
+        Lon and lat coordinates given by the list lonlat.
+
         """
         # create dummpy shapelike object
         shape = type("", (), {})()
@@ -581,10 +583,9 @@ class ContourWriterBase(object):
 
             # Check if polygon is possibly relevant
             s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
-            if lon_min > lon_max:
-                pass
-            elif (lon_max < s_lon_ll or lon_min > s_lon_ur or
-                  lat_max < s_lat_ll or lat_min > s_lat_ur):
+            shape_is_outside_lon = lon_max < s_lon_ll or lon_min > s_lon_ur
+            shape_is_outside_lat = lat_max < s_lat_ll or lat_min > s_lat_ur
+            if lon_min <= lon_max and (shape_is_outside_lon or shape_is_outside_lat):
                 # Polygon is irrelevant
                 continue
 
@@ -622,8 +623,7 @@ class ContourWriterBase(object):
                      db_name, tag=None, zero_pad=False, resolution='c',
                      level=1, x_offset=0, y_offset=0, db_root_path=None,
                      **kwargs):
-        """Add a contour feature to image
-        """
+        """Add a contour feature to image."""
         shape_generator = self._iterate_db(
             db_name, tag, resolution, level, zero_pad,
             db_root_path=db_root_path
@@ -633,8 +633,7 @@ class ContourWriterBase(object):
                                x_offset=x_offset, y_offset=y_offset, **kwargs)
 
     def _iterate_db(self, db_name, tag, resolution, level, zero_pad, db_root_path=None):
-        """Iterate through datasets
-        """
+        """Iterate through datasets."""
         if db_root_path is None:
             db_root_path = self.db_root_path
         if db_root_path is None:
@@ -677,7 +676,6 @@ class ContourWriterBase(object):
 
     def _finalize(self, draw):
         """Do any need finalization of the drawing."""
-
         pass
 
     def _config_to_dict(self, config_file):
@@ -709,8 +707,7 @@ class ContourWriterBase(object):
         return overlays
 
     def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
-        """Create and return a transparent image adding all the overlays contained in
-           the `overlays` dict.
+        """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
 
         :Parameters:
             overlays : dict
@@ -745,19 +742,18 @@ class ContourWriterBase(object):
                   of an already cached file.
 
         """
-
         # Cache management
         cache_file = None
         if 'cache' in overlays:
-            cache_file = (overlays['cache']['file'] + '_' +
-                          area_def.area_id + '.png')
+            cache_file = overlays['cache']['file'] + '_' + area_def.area_id + '.png'
 
             try:
                 config_time = cache_epoch or 0
                 cache_time = os.path.getmtime(cache_file)
                 # Cache file will be used only if it's newer than config file
-                if ((config_time is not None and config_time < cache_time)
-                        and not overlays['cache'].get('regenerate', False)):
+                cache_is_recent = config_time is not None and config_time < cache_time
+                should_regen = overlays['cache'].get('regenerate', False)
+                if cache_is_recent and not should_regen:
                     foreground = Image.open(cache_file)
                     logger.info('Using image in cache %s', cache_file)
                     if background is not None:
@@ -897,8 +893,7 @@ class ContourWriterBase(object):
         return foreground
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
-        """Create and return a transparent image adding all the overlays contained in
-           a configuration file.
+        """Create and return a transparent image adding all the overlays contained in a configuration file.
 
         :Parameters:
             config_file : str
@@ -913,9 +908,7 @@ class ContourWriterBase(object):
 
     def add_cities(self, image, area_def, citylist, font_file, font_size,
                    ptsize, outline, box_outline, box_opacity, db_root_path=None):
-        """Add cities (point and name) to a PIL image object
-
-        """
+        """Add cities (point and name) to a PIL image object."""
         if db_root_path is None:
             db_root_path = self.db_root_path
         if db_root_path is None:
@@ -1091,9 +1084,7 @@ class ContourWriterBase(object):
 
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
-    """Get extreme lon and lat values
-    """
-
+    """Get extreme lon and lat values."""
     x_ll, y_ll, x_ur, y_ur = area_extent
     x_range = np.linspace(x_ll, x_ur, num=x_size)
     y_range = np.linspace(y_ll, y_ur, num=y_size)

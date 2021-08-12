@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""PIL-based ContourWriter."""
 
 from PIL import Image, ImageFont
 from PIL import ImageDraw
@@ -41,8 +42,7 @@ class ContourWriterPIL(ContourWriterBase):
     # they are not fully compatible)
 
     def _get_canvas(self, image):
-        """Returns PIL image object."""
-
+        """Return PIL image object."""
         return ImageDraw.Draw(image)
 
     def _engine_text_draw(self, draw, x_pos, y_pos, txt, font, **kwargs):
@@ -75,7 +75,7 @@ class ContourWriterPIL(ContourWriterBase):
         draw.line(coordinates, fill=kwargs['outline'])
 
     def _draw_asterisk(self, draw, pt_size, coordinate, **kwargs):
-        """Draw a asterisk sign '*' center at the given coordinate """
+        """Draw a asterisk sign '*' center at the given coordinate."""
         half_ptsize = int(round(pt_size / 2.))
         x, y = coordinate
 
@@ -333,7 +333,6 @@ class ContourWriterPIL(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         self._add_feature(image, area_def, 'polygon', 'GSHHS',
                           resolution=resolution, level=level,
                           fill=fill, outline=outline, x_offset=x_offset,
@@ -365,7 +364,6 @@ class ContourWriterPIL(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         image = Image.open(filename)
         self.add_coastlines(image, area_def,
                             resolution=resolution, level=level,
@@ -396,7 +394,6 @@ class ContourWriterPIL(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         self._add_feature(image, area_def, 'line', 'WDBII',
                           tag='border', resolution=resolution, level=level,
                           outline=outline, x_offset=x_offset,
@@ -454,7 +451,6 @@ class ContourWriterPIL(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         self._add_feature(image, area_def, 'line', 'WDBII',
                           tag='river', zero_pad=True, resolution=resolution,
                           level=level, outline=outline, x_offset=x_offset,
@@ -483,7 +479,6 @@ class ContourWriterPIL(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         image = Image.open(filename)
         self.add_rivers(image, area_def, resolution=resolution, level=level,
                         outline=outline, x_offset=x_offset, y_offset=y_offset)
