@@ -40,6 +40,7 @@ jobs:
 
       - name: Install Pycoast
         run: |
+          python -m pip install -U pip wheel
           python -m pip install -e .[docs]
 
       - name: Run Sphinx Build
@@ -88,6 +89,7 @@ jobs:
 
       - name: Install pycoast
         run: |
+          python -m pip install -U pip wheel
           python -m pip install -e .[tests]
 
       - name: Run unit tests
