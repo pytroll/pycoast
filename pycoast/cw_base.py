@@ -752,8 +752,10 @@ class ContourWriterBase(object):
         # Cache management
         cache_file = None
         if 'cache' in overlays:
+            area_hash = hash(area_def)
+            # TODO: Hash parameters dictionary
             cache_file = (overlays['cache']['file'] + '_' +
-                          area_def.area_id + '.png')
+                          str(area_hash) + '.png')
 
             try:
                 config_time = cache_epoch or 0
@@ -797,21 +799,21 @@ class ContourWriterBase(object):
                                 [self.add_coastlines,
                                  self.add_rivers,
                                  self.add_borders]):
-            if section in overlays:
+            if section not in overlays:
+                continue
+            params = DEFAULT.copy()
+            params.update(overlays[section])
 
-                params = DEFAULT.copy()
-                params.update(overlays[section])
+            if section != "coasts":
+                params.pop('fill_opacity', None)
+                params.pop('fill', None)
 
-                if section != "coasts":
-                    params.pop('fill_opacity', None)
-                    params.pop('fill', None)
+            if not is_agg:
+                for key in ['width', 'outline_opacity', 'fill_opacity']:
+                    params.pop(key, None)
 
-                if not is_agg:
-                    for key in ['width', 'outline_opacity', 'fill_opacity']:
-                        params.pop(key, None)
-
-                fun(foreground, area_def, **params)
-                logger.info("%s added", section.capitalize())
+            fun(foreground, area_def, **params)
+            logger.info("%s added", section.capitalize())
 
         # Cities management
         if 'cities' in overlays:
@@ -862,6 +864,10 @@ class ContourWriterBase(object):
             lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
+            grid_kwargs = {}
+            if is_agg:
+                width = float(overlays['grid'].get('width', 1.0))
+                grid_kwargs["width"] = width
 
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
@@ -888,7 +894,8 @@ class ContourWriterBase(object):
                           outline=outline, minor_outline=minor_outline,
                           minor_is_tick=minor_is_tick,
                           lon_placement=lon_placement,
-                          lat_placement=lat_placement)
+                          lat_placement=lat_placement,
+                          **grid_kwargs)
 
         if cache_file is not None:
             try:
