@@ -11,3 +11,4 @@ dependencies:
   - pyshp
   - pyresample
   - pytest
+  - pytest-cov
