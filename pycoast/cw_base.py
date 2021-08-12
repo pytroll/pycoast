@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import hashlib
+import json
 import shapefile
 import numpy as np
 from PIL import Image
@@ -62,6 +64,13 @@ def get_resolution_from_area(area_def):
         return "h"
     else:
         return "f"
+
+
+def hash_dict(dict_to_hash: dict) -> str:
+    dhash = hashlib.md5()
+    encoded = json.dumps(dict_to_hash, sort_keys=True).encode()
+    dhash.update(encoded)
+    return dhash.hexdigest()
 
 
 class Proj(pyproj.Proj):
@@ -747,15 +756,20 @@ class ContourWriterBase(object):
             - `regenerate`: True or False (default) to force the overwriting
                   of an already cached file.
 
+            Cached results are identified by hashing the provided
+            AreaDefinition and the overlay dictionary. Note that font objects
+            are ignored as part of this hashing as they can't be easily hashed.
+
         """
 
         # Cache management
         cache_file = None
         if 'cache' in overlays:
-            area_hash = hash(area_def)
-            # TODO: Hash parameters dictionary
-            cache_file = (overlays['cache']['file'] + '_' +
-                          str(area_hash) + '.png')
+            cache_file = self._generate_cache_filename(
+                overlays['cache']['file'],
+                area_def,
+                overlays,
+            )
 
             try:
                 config_time = cache_epoch or 0
@@ -905,6 +919,27 @@ class ContourWriterBase(object):
             if background is not None:
                 background.paste(foreground, mask=foreground.split()[-1])
         return foreground
+
+    def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
+        area_hash = hash(area_def)
+        base_dir, file_prefix = os.path.split(cache_prefix)
+        params_to_hash = self._prepare_hashable_dict(overlays_dict)
+        param_hash = hash_dict(params_to_hash)
+        return os.path.join(base_dir, f"{file_prefix}_{area_hash}_{param_hash}.png")
+
+    @staticmethod
+    def _prepare_hashable_dict(nonhashable_dict):
+        params_to_hash = {}
+        # avoid wasteful deep copy by only doing two levels of copying
+        for overlay_name, overlay_dict in nonhashable_dict.items():
+            if overlay_name == 'cache':
+                continue
+            params_to_hash[overlay_name] = overlay_dict.copy()
+        # font objects are not hashable
+        for font_cat in ('cities', 'points', 'grid'):
+            if font_cat in params_to_hash:
+                params_to_hash[font_cat].pop('font', None)
+        return params_to_hash
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
         """Create and return a transparent image adding all the overlays contained in

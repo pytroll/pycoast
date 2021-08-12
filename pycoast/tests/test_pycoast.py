@@ -901,7 +901,6 @@ class TestFromConfig:
                                            'contours_europe_alpha.png'))
         euro_data = np.array(euro_img)
 
-        # img = Image.new('RGB', (640, 480))
         proj4_string = \
             '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
@@ -953,6 +952,42 @@ class TestFromConfig:
                             'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b'}
         cw.add_overlay_from_dict(overlays, area_def)
         os.remove(cache_filename)
+
+    def test_caching_with_fonts(self, tmpdir):
+        """Testing caching when fonts are in the parameters."""
+        from pycoast import ContourWriterPIL
+
+        # img = Image.new('RGB', (640, 480))
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
+        area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        font = ImageFont.truetype(os.path.join(
+            os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'))
+        overlays = {'cache': {'file': os.path.join(tmpdir, 'pycoast_cache')},
+                    'grid': {'font': font}}
+
+        # Create the original cache file
+        cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
+        cache_filename = cache_glob[0]
+        assert os.path.isfile(cache_filename)
+        mtime = os.path.getmtime(cache_filename)
+
+        # Reuse the generated cache file
+        cw.add_overlay_from_dict(overlays, area_def)
+        assert os.path.isfile(cache_filename)
+        assert os.path.getmtime(cache_filename) == mtime
+
+        # Remove the font option, should produce the same result
+        # font is not considered when caching
+        del overlays['grid']['font']
+        cw.add_overlay_from_dict(overlays, area_def)
+        assert os.path.isfile(cache_filename)
+        assert os.path.getmtime(cache_filename) == mtime
 
     def test_get_resolution(self):
         """Get the automagical resolution computation."""
