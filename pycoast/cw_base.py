@@ -770,22 +770,10 @@ class ContourWriterBase(object):
                 area_def,
                 overlays,
             )
-
-            try:
-                config_time = cache_epoch or 0
-                cache_time = os.path.getmtime(cache_file)
-                # Cache file will be used only if it's newer than config file
-                if ((config_time is not None and config_time < cache_time)
-                        and not overlays['cache'].get('regenerate', False)):
-                    foreground = Image.open(cache_file)
-                    logger.info('Using image in cache %s', cache_file)
-                    if background is not None:
-                        background.paste(foreground, mask=foreground.split()[-1])
-                    return foreground
-                else:
-                    logger.info("Regenerating cache file.")
-            except OSError:
-                logger.info("No overlay image found, new overlay image will be saved in cache.")
+            regenerate = overlays['cache'].get('regenerate', False)
+            foreground = self._apply_cached_image(cache_file, cache_epoch, background, regenerate=regenerate)
+            if foreground is not None:
+                return foreground
 
         x_size = area_def.width
         y_size = area_def.height
@@ -810,9 +798,7 @@ class ContourWriterBase(object):
                    'resolution': default_resolution}
 
         for section, fun in zip(['coasts', 'rivers', 'borders'],
-                                [self.add_coastlines,
-                                 self.add_rivers,
-                                 self.add_borders]):
+                                [self.add_coastlines, self.add_rivers, self.add_borders]):
             if section not in overlays:
                 continue
             params = DEFAULT.copy()
@@ -912,13 +898,34 @@ class ContourWriterBase(object):
                           **grid_kwargs)
 
         if cache_file is not None:
-            try:
-                foreground.save(cache_file)
-            except IOError as e:
-                logger.error("Can't save cache: %s", str(e))
-            if background is not None:
-                background.paste(foreground, mask=foreground.split()[-1])
+            self._write_and_apply_new_cached_image(cache_file, foreground, background)
         return foreground
+
+    @staticmethod
+    def _apply_cached_image(cache_file, cache_epoch, background, regenerate=False):
+        try:
+            config_time = cache_epoch or 0
+            cache_time = os.path.getmtime(cache_file)
+            # Cache file will be used only if it's newer than config file
+            if config_time is not None and config_time < cache_time and not regenerate:
+                foreground = Image.open(cache_file)
+                logger.info('Using image in cache %s', cache_file)
+                if background is not None:
+                    background.paste(foreground, mask=foreground.split()[-1])
+                return foreground
+            logger.info("Regenerating cache file.")
+        except OSError:
+            logger.info("No overlay image found, new overlay image will be saved in cache.")
+        return None
+
+    @staticmethod
+    def _write_and_apply_new_cached_image(cache_file, foreground, background):
+        try:
+            foreground.save(cache_file)
+        except IOError as e:
+            logger.error("Can't save cache: %s", str(e))
+        if background is not None:
+            background.paste(foreground, mask=foreground.split()[-1])
 
     def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
         area_hash = hash(area_def)
