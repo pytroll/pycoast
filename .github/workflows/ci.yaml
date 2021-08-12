@@ -52,6 +52,7 @@ jobs:
           python -m pip install --no-deps -e .
 
       - name: Run Sphinx Build
+        shell: bash -l {0}
         run: |
           cd docs; \
           make html SPHINXOPTS="-W"
@@ -106,8 +107,7 @@ jobs:
 
       - name: Install pycoast
         run: |
-          python -m pip install -U pip wheel
-          python -m pip install -e .[tests]
+          python -m pip install --no-deps -e .
 
       - name: Run unit tests
         run: |
