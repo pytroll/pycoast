@@ -25,10 +25,7 @@ import pyproj
 import logging
 import ast
 
-try:
-    import configparser
-except ImportError:
-    from six.moves import configparser
+import configparser
 
 logger = logging.getLogger(__name__)
 

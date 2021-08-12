@@ -25,11 +25,6 @@ from PIL import Image, ImageFont
 import time
 
 
-def tmp(f):
-    f.tmp = True
-    return f
-
-
 def fft_proj_rms(a1, a2):
     """Compute the RMS of differences between FFT vectors of a1
     and projection of FFT vectors of a2.
@@ -971,17 +966,3 @@ class TestFromConfig(TestPycoast):
         self.assertEqual(get_resolution_from_area(area_def), 'l')
         area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
         self.assertEqual(get_resolution_from_area(area_def), 'h')
-
-
-def suite():
-    loader = unittest.TestLoader()
-    mysuite = unittest.TestSuite()
-    mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
-    mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
-    mysuite.addTest(loader.loadTestsFromTestCase(TestFromConfig))
-
-    return mysuite
-
-
-if __name__ == "__main__":
-    suite()

@@ -1,8 +1,11 @@
 PyCoast
 =======
 
-.. image:: https://travis-ci.org/pytroll/pycoast.svg?branch=main
-    :target: https://travis-ci.org/pytroll/pycoast
+.. image:: https://github.com/pytroll/pycoast/workflows/CI/badge.svg?branch=main
+    :target: https://github.com/pytroll/pycoast/actions?query=workflow%3A%22CI%22
+
+.. image:: https://coveralls.io/repos/github/pytroll/pycoast/badge.svg?branch=main
+    :target: https://coveralls.io/github/pytroll/pycoast?branch=main
 
 .. image:: https://img.shields.io/pypi/v/pycoast.svg
         :target: https://pypi.python.org/pypi/pycoast
