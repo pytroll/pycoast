@@ -39,7 +39,6 @@ jobs:
           python-version: 3.9
 
       - name: Install Pycoast
-        shell: bash -l {0}
         run: |
           python -m pip install -e .[docs]
 
@@ -90,7 +89,6 @@ jobs:
           numpy;
 
       - name: Install pycoast
-        shell: bash -l {0}
         run: |
           python -m pip install -e .[tests]
 
