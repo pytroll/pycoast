@@ -41,7 +41,7 @@ jobs:
       - name: Install Pycoast
         shell: bash -l {0}
         run: |
-          pip install -e .[docs]
+          python -m pip install -e .[docs]
 
       - name: Run Sphinx Build
         shell: bash -l {0}
@@ -92,7 +92,7 @@ jobs:
       - name: Install pycoast
         shell: bash -l {0}
         run: |
-          pip install -e .[tests]
+          python -m pip install -e .[tests]
 
       - name: Run unit tests
         shell: bash -l {0}
