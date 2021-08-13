@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""ContourWriter based on the aggdraw library."""
 
 from PIL import Image
 import logging
@@ -35,13 +36,14 @@ class ContourWriterAGG(ContourWriterBase):
             Path to root dir of GSHHS and WDBII shapefiles
 
     """
+
     _draw_module = "AGG"
     # This is a flag to make _add_grid aware of which text draw routine
     # from PIL or from aggdraw should be used
     # (unfortunately they are not fully compatible)
 
     def _get_canvas(self, image):
-        """Returns AGG image object."""
+        """Return AGG image object."""
         return aggdraw.Draw(image)
 
     def _engine_text_draw(self, draw, x_pos, y_pos, txt, font, **kwargs):
@@ -85,7 +87,6 @@ class ContourWriterAGG(ContourWriterBase):
     def _draw_text_box(self, draw, text_position, text, font, outline,
                        box_outline, box_opacity, **kwargs):
         """Add a text box at position (x,y)."""
-
         if box_outline is not None:
             text_size = draw.textsize(text, font)
             margin = 2
@@ -112,7 +113,7 @@ class ContourWriterAGG(ContourWriterBase):
         draw.line(coordinates, pen)
 
     def _draw_asterisk(self, draw, pt_size, coordinate, **kwargs):
-        """Draw a asterisk sign '*' at the given coordinate. """
+        """Draw a asterisk sign '*' at the given coordinate."""
         half_ptsize = int(round(pt_size / 2.))
         x, y = coordinate
 
@@ -403,7 +404,6 @@ class ContourWriterAGG(ContourWriterBase):
                 Use tick minor line style (True) or full minor line style (False)
 
         """
-
         image = Image.open(filename)
         image = image.convert('RGBA')
         self.add_grid(image, area_def, Dlonlat, dlonlat,
@@ -450,7 +450,6 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         self._add_feature(image, area_def, 'polygon', 'GSHHS',
                           resolution=resolution, level=level,
                           fill=fill, fill_opacity=fill_opacity,
@@ -491,7 +490,6 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         image = Image.open(filename)
         image = image.convert('RGBA')
         self.add_coastlines(image, area_def, resolution=resolution,
@@ -529,7 +527,6 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         self._add_feature(image, area_def, 'line', 'WDBII', tag='border',
                           resolution=resolution, level=level, outline=outline,
                           width=width, outline_opacity=outline_opacity,
@@ -599,7 +596,6 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         self._add_feature(image, area_def, 'line', 'WDBII', tag='river',
                           zero_pad=True, resolution=resolution, level=level,
                           outline=outline, width=width,
@@ -634,7 +630,6 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-
         image = Image.open(filename)
         image = image.convert("RGBA")
         self.add_rivers(image, area_def, resolution=resolution, level=level,

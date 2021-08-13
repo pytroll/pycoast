@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""Main unit tests for pycoast."""
 
 import os
 import unittest
@@ -25,20 +26,13 @@ from PIL import Image, ImageFont
 import time
 
 
-def tmp(f):
-    f.tmp = True
-    return f
-
-
 def fft_proj_rms(a1, a2):
-    """Compute the RMS of differences between FFT vectors of a1
-    and projection of FFT vectors of a2.
+    """Compute the RMS of differences between FFT vectors of a1 and projection of FFT vectors of a2.
+
     This metric is sensitive to large scale changes and image noise but
     insensitive to small rendering differences.
     """
-
     ms = 0
-
     for i in range(3):
         fr1 = np.fft.fft2(a1[:, :, i])
         fr2 = np.fft.fft2(a2[:, :, i])
@@ -50,8 +44,8 @@ def fft_proj_rms(a1, a2):
         p2 = np.arctan2(fr2.imag, fr2.real)
 
         theta = p2 - p1
-        l = ps2 * np.cos(theta)
-        ms += ((l - ps1) ** 2).sum() / float(ps1.size)
+        adjusted_ps2 = ps2 * np.cos(theta)
+        ms += ((adjusted_ps2 - ps1) ** 2).sum() / float(ps1.size)
 
     rms = np.sqrt(ms)
 
@@ -59,9 +53,7 @@ def fft_proj_rms(a1, a2):
 
 
 def fft_metric(data1, data2, max_value=0.1):
-    """Execute FFT metric
-    """
-
+    """Execute FFT metric."""
     rms = fft_proj_rms(data1, data2)
     return rms <= max_value
 
@@ -73,6 +65,7 @@ p_file_coasts = 'test_coasts_p_mode.png'
 
 
 class TestPycoast(unittest.TestCase):
+    """Base class for test classes that need example images."""
 
     def setUp(self):
         img = Image.new('RGB', (640, 480))
@@ -88,6 +81,7 @@ class TestPycoast(unittest.TestCase):
 
 
 class TestPIL(TestPycoast):
+    """Test PIL-based contour writer."""
 
     def test_europe(self):
         from pycoast import ContourWriterPIL
@@ -342,11 +336,11 @@ class TestPIL(TestPycoast):
                 (-39, 63.5), (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
                 (-76, 76), (-75, 78), (-60, 82), (0, 90),
                 (30, 82), (0, 82), (0, 73), (-20, 73), (-20, 70)),
-            'REYKJAVIK_ATC':   (
+            'REYKJAVIK_ATC': (
                 (0.0, 73.0), (0.0, 61.0), (-30.0, 61.0), (-39, 63.5),
                 (-55 + 4 / 6.0, 63.5), (-57 + 45 / 60.0, 65),
                 (-76, 76), (-75, 78), (-60, 82), (0, 90), (30, 82), (0, 82)),
-            'ICELAND_BOX':     ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
+            'ICELAND_BOX': ((-25, 62.5), (-25, 67), (-13, 67), (-13, 62.5))
         }
 
         cw.add_polygon(img, area_def, polygons['REYKJAVIK_ATC'], outline='red')
@@ -482,6 +476,7 @@ class TestPIL(TestPycoast):
 
 
 class TestPILAGG(TestPycoast):
+    """Test AGG contour writer."""
 
     def test_europe_agg(self):
         from pycoast import ContourWriterAGG
@@ -971,17 +966,3 @@ class TestFromConfig(TestPycoast):
         self.assertEqual(get_resolution_from_area(area_def), 'l')
         area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
         self.assertEqual(get_resolution_from_area(area_def), 'h')
-
-
-def suite():
-    loader = unittest.TestLoader()
-    mysuite = unittest.TestSuite()
-    mysuite.addTest(loader.loadTestsFromTestCase(TestPIL))
-    mysuite.addTest(loader.loadTestsFromTestCase(TestPILAGG))
-    mysuite.addTest(loader.loadTestsFromTestCase(TestFromConfig))
-
-    return mysuite
-
-
-if __name__ == "__main__":
-    suite()

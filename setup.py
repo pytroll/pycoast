@@ -18,9 +18,12 @@
 from setuptools import setup
 import versioneer
 
-requires = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow', 'six']
-tests_require = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow', 'six',
-                 'pyresample']
+requires = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow']
+
+extras_require = {
+    "docs": ["sphinx", 'pyresample', 'pytest'],
+    "tests": ['pyresample', 'pytest', 'pytest-cov', 'coverage', 'coveralls'],
+}
 
 with open('README', 'r') as readme_file:
     long_description = readme_file.read()
@@ -34,8 +37,8 @@ setup(name='pycoast',
       author_email='esn@dmi.dk',
       packages=['pycoast', 'pycoast.tests'],
       install_requires=requires,
-      tests_require=tests_require,
-      test_suite='pycoast.tests.test_pycoast.suite',
+      extras_require=extras_require,
+      python_requires='>3.7',
       zip_safe=False,
       classifiers=[
           'Development Status :: 5 - Production/Stable',
