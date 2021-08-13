@@ -953,8 +953,8 @@ class TestFromConfig:
         cw.add_overlay_from_dict(overlays, area_def)
         os.remove(cache_filename)
 
-    def test_caching_with_fonts(self, tmpdir):
-        """Testing caching when fonts are in the parameters."""
+    def test_caching_with_param_changes(self, tmpdir):
+        """Testing caching when changing parameters."""
         from pycoast import ContourWriterPIL
 
         # img = Image.new('RGB', (640, 480))
@@ -979,6 +979,8 @@ class TestFromConfig:
 
         # Reuse the generated cache file
         cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
         assert os.path.isfile(cache_filename)
         assert os.path.getmtime(cache_filename) == mtime
 
@@ -986,8 +988,23 @@ class TestFromConfig:
         # font is not considered when caching
         del overlays['grid']['font']
         cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
         assert os.path.isfile(cache_filename)
         assert os.path.getmtime(cache_filename) == mtime
+
+        # Changing a parameter should create a new cache file
+        overlays = {'cache': {'file': os.path.join(tmpdir, 'pycoast_cache')},
+                    'grid': {'width': 2.0}}
+        cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 2
+        assert os.path.isfile(cache_filename)
+        new_cache_filename = cache_glob[0] if cache_glob[0] != cache_filename else cache_glob[1]
+        # original cache file should be unchanged
+        assert os.path.getmtime(cache_filename) == mtime
+        # new cache file should be...new
+        assert os.path.getmtime(new_cache_filename) != mtime
 
     def test_get_resolution(self):
         """Get the automagical resolution computation."""
