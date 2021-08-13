@@ -1,0 +1,14 @@
+name: test-environment
+channels:
+  - conda-forge
+dependencies:
+  - sphinx
+  - pillow
+  - pyproj
+  - coveralls
+  - coverage
+  - aggdraw
+  - pyshp
+  - pyresample
+  - pytest
+  - pytest-cov

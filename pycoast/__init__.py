@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Pycoast package for adding geographic-based decorations to images."""
 from .cw_pil import ContourWriterPIL
-from .cw_agg import ContourWriterAGG
-from pycoast.cw_base import get_resolution_from_area
+from .cw_agg import ContourWriterAGG  # noqa
+from pycoast.cw_base import get_resolution_from_area  # noqa
 from .version import get_versions
 __version__ = get_versions()['version']
 del get_versions
