@@ -61,7 +61,7 @@ def get_resolution_from_area(area_def):
 
 
 def hash_dict(dict_to_hash: dict) -> str:
-    dhash = hashlib.sha1()
+    dhash = hashlib.sha256()
     encoded = json.dumps(dict_to_hash, sort_keys=True).encode()
     dhash.update(encoded)
     return dhash.hexdigest()
