@@ -719,6 +719,15 @@ class ContourWriterBase(object):
     def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
         """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
 
+        Optionally caches overlay results for faster rendering of images with
+        the same provided AreaDefinition and parameters. Cached results are
+        identified by hashing the AreaDefinition and the overlays dictionary.
+
+        .. warning::
+
+            Font objects are ignored in parameter hashing as they can't be easily hashed.
+            Therefore font changes will not trigger a new rendering for the cache.
+
         :Parameters:
             overlays : dict
                 overlays configuration
@@ -750,14 +759,6 @@ class ContourWriterBase(object):
                   /var/run/black_coasts_red_borders)
             - `regenerate`: True or False (default) to force the overwriting
                   of an already cached file.
-
-            Cached results are identified by hashing the provided
-            AreaDefinition and the overlay dictionary.
-
-            .. warning::
-
-                Font objects are ignored in parameter hashing as they can't be easily hashed.
-                Therefore font changes will not trigger a new rendering for the cache.
 
         """
         # Cache management
