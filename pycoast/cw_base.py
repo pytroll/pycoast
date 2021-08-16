@@ -19,6 +19,8 @@
 """Base class for contour writers."""
 
 import os
+import hashlib
+import json
 import shapefile
 import numpy as np
 from PIL import Image
@@ -56,6 +58,14 @@ def get_resolution_from_area(area_def):
         return "h"
     else:
         return "f"
+
+
+def hash_dict(dict_to_hash: dict) -> str:
+    """Hash dict object by serializing with json."""
+    dhash = hashlib.sha256()
+    encoded = json.dumps(dict_to_hash, sort_keys=True).encode()
+    dhash.update(encoded)
+    return dhash.hexdigest()
 
 
 class Proj(pyproj.Proj):
@@ -709,6 +719,15 @@ class ContourWriterBase(object):
     def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
         """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
 
+        Optionally caches overlay results for faster rendering of images with
+        the same provided AreaDefinition and parameters. Cached results are
+        identified by hashing the AreaDefinition and the overlays dictionary.
+
+        .. warning::
+
+            Font objects are ignored in parameter hashing as they can't be easily hashed.
+            Therefore font changes will not trigger a new rendering for the cache.
+
         :Parameters:
             overlays : dict
                 overlays configuration
@@ -745,24 +764,15 @@ class ContourWriterBase(object):
         # Cache management
         cache_file = None
         if 'cache' in overlays:
-            cache_file = overlays['cache']['file'] + '_' + area_def.area_id + '.png'
-
-            try:
-                config_time = cache_epoch or 0
-                cache_time = os.path.getmtime(cache_file)
-                # Cache file will be used only if it's newer than config file
-                cache_is_recent = config_time is not None and config_time < cache_time
-                should_regen = overlays['cache'].get('regenerate', False)
-                if cache_is_recent and not should_regen:
-                    foreground = Image.open(cache_file)
-                    logger.info('Using image in cache %s', cache_file)
-                    if background is not None:
-                        background.paste(foreground, mask=foreground.split()[-1])
-                    return foreground
-                else:
-                    logger.info("Regenerating cache file.")
-            except OSError:
-                logger.info("No overlay image found, new overlay image will be saved in cache.")
+            cache_file = self._generate_cache_filename(
+                overlays['cache']['file'],
+                area_def,
+                overlays,
+            )
+            regenerate = overlays['cache'].get('regenerate', False)
+            foreground = self._apply_cached_image(cache_file, cache_epoch, background, regenerate=regenerate)
+            if foreground is not None:
+                return foreground
 
         x_size = area_def.width
         y_size = area_def.height
@@ -787,24 +797,22 @@ class ContourWriterBase(object):
                    'resolution': default_resolution}
 
         for section, fun in zip(['coasts', 'rivers', 'borders'],
-                                [self.add_coastlines,
-                                 self.add_rivers,
-                                 self.add_borders]):
-            if section in overlays:
+                                [self.add_coastlines, self.add_rivers, self.add_borders]):
+            if section not in overlays:
+                continue
+            params = DEFAULT.copy()
+            params.update(overlays[section])
 
-                params = DEFAULT.copy()
-                params.update(overlays[section])
+            if section != "coasts":
+                params.pop('fill_opacity', None)
+                params.pop('fill', None)
 
-                if section != "coasts":
-                    params.pop('fill_opacity', None)
-                    params.pop('fill', None)
+            if not is_agg:
+                for key in ['width', 'outline_opacity', 'fill_opacity']:
+                    params.pop(key, None)
 
-                if not is_agg:
-                    for key in ['width', 'outline_opacity', 'fill_opacity']:
-                        params.pop(key, None)
-
-                fun(foreground, area_def, **params)
-                logger.info("%s added", section.capitalize())
+            fun(foreground, area_def, **params)
+            logger.info("%s added", section.capitalize())
 
         # Cities management
         if 'cities' in overlays:
@@ -855,6 +863,10 @@ class ContourWriterBase(object):
             lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
+            grid_kwargs = {}
+            if is_agg:
+                width = float(overlays['grid'].get('width', 1.0))
+                grid_kwargs["width"] = width
 
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
@@ -881,16 +893,59 @@ class ContourWriterBase(object):
                           outline=outline, minor_outline=minor_outline,
                           minor_is_tick=minor_is_tick,
                           lon_placement=lon_placement,
-                          lat_placement=lat_placement)
+                          lat_placement=lat_placement,
+                          **grid_kwargs)
 
         if cache_file is not None:
-            try:
-                foreground.save(cache_file)
-            except IOError as e:
-                logger.error("Can't save cache: %s", str(e))
-            if background is not None:
-                background.paste(foreground, mask=foreground.split()[-1])
+            self._write_and_apply_new_cached_image(cache_file, foreground, background)
         return foreground
+
+    @staticmethod
+    def _apply_cached_image(cache_file, cache_epoch, background, regenerate=False):
+        try:
+            config_time = cache_epoch or 0
+            cache_time = os.path.getmtime(cache_file)
+            # Cache file will be used only if it's newer than config file
+            if config_time is not None and config_time < cache_time and not regenerate:
+                foreground = Image.open(cache_file)
+                logger.info('Using image in cache %s', cache_file)
+                if background is not None:
+                    background.paste(foreground, mask=foreground.split()[-1])
+                return foreground
+            logger.info("Regenerating cache file.")
+        except OSError:
+            logger.info("No overlay image found, new overlay image will be saved in cache.")
+        return None
+
+    @staticmethod
+    def _write_and_apply_new_cached_image(cache_file, foreground, background):
+        try:
+            foreground.save(cache_file)
+        except IOError as e:
+            logger.error("Can't save cache: %s", str(e))
+        if background is not None:
+            background.paste(foreground, mask=foreground.split()[-1])
+
+    def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
+        area_hash = hash(area_def)
+        base_dir, file_prefix = os.path.split(cache_prefix)
+        params_to_hash = self._prepare_hashable_dict(overlays_dict)
+        param_hash = hash_dict(params_to_hash)
+        return os.path.join(base_dir, f"{file_prefix}_{area_hash}_{param_hash}.png")
+
+    @staticmethod
+    def _prepare_hashable_dict(nonhashable_dict):
+        params_to_hash = {}
+        # avoid wasteful deep copy by only doing two levels of copying
+        for overlay_name, overlay_dict in nonhashable_dict.items():
+            if overlay_name == 'cache':
+                continue
+            params_to_hash[overlay_name] = overlay_dict.copy()
+        # font objects are not hashable
+        for font_cat in ('cities', 'points', 'grid'):
+            if font_cat in params_to_hash:
+                params_to_hash[font_cat].pop('font', None)
+        return params_to_hash
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
         """Create and return a transparent image adding all the overlays contained in a configuration file.

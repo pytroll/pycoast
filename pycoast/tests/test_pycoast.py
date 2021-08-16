@@ -20,6 +20,7 @@
 
 import os
 import unittest
+from glob import glob
 
 import numpy as np
 from PIL import Image, ImageFont
@@ -847,7 +848,7 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
 
 
-class FakeAreaDef():
+class FakeAreaDef:
     """A fake area definition object."""
 
     def __init__(self, proj4_string, area_extent, x_size, y_size):
@@ -858,7 +859,7 @@ class FakeAreaDef():
         self.area_id = 'fakearea'
 
 
-class TestFromConfig(TestPycoast):
+class TestFromConfig:
     """Test burning overlays from a config file."""
 
     def test_foreground(self):
@@ -878,8 +879,7 @@ class TestFromConfig(TestPycoast):
         img = cw.add_overlay_from_config(config_file, area_def)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
 
         overlays = {'coasts': {'level': [1, 2, 3, 4], 'resolution': 'l'},
                     'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
@@ -887,16 +887,70 @@ class TestFromConfig(TestPycoast):
 
         img = cw.add_overlay_from_dict(overlays, area_def)
         res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
 
-    def test_cache(self):
+    def test_cache(self, tmpdir):
         """Test generating a transparent foreground and cache it."""
         from pycoast import ContourWriterPIL
-        from tempfile import gettempdir
         euro_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'contours_europe_alpha.png'))
         euro_data = np.array(euro_img)
+
+        proj4_string = \
+            '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
+        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
+        area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        overlays = {'cache': {'file': os.path.join(tmpdir, 'pycoast_cache')},
+                    'coasts': {'level': 4, 'resolution': 'l'},
+                    'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
+                    'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
+
+        # Create the original cache file
+        img = cw.add_overlay_from_dict(overlays, area_def)
+        res = np.array(img)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
+        cache_filename = cache_glob[0]
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
+        assert os.path.isfile(cache_filename)
+        mtime = os.path.getmtime(cache_filename)
+
+        # Reuse the generated cache file
+        img = cw.add_overlay_from_dict(overlays, area_def)
+        res = np.array(img)
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
+        assert os.path.isfile(cache_filename)
+        assert os.path.getmtime(cache_filename) == mtime
+
+        # Regenerate cache file
+        current_time = time.time()
+        cw.add_overlay_from_dict(overlays, area_def, current_time)
+        mtime = os.path.getmtime(cache_filename)
+        assert mtime > current_time
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
+
+        cw.add_overlay_from_dict(overlays, area_def, current_time)
+        assert os.path.getmtime(cache_filename) == mtime
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
+        overlays['cache']['regenerate'] = True
+        cw.add_overlay_from_dict(overlays, area_def)
+
+        assert os.path.getmtime(cache_filename) != mtime
+        assert fft_metric(euro_data, res), 'Writing of contours failed'
+
+        overlays.pop('cache')
+        overlays['grid'] = {'outline': (255, 255, 255), 'outline_opacity': 175,
+                            'minor_outline': (200, 200, 200), 'minor_outline_opacity': 127,
+                            'width': 1.0, 'minor_width': 0.5, 'minor_is_tick': True,
+                            'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b'}
+        cw.add_overlay_from_dict(overlays, area_def)
+        os.remove(cache_filename)
+
+    def test_caching_with_param_changes(self, tmpdir):
+        """Testing caching when changing parameters."""
+        from pycoast import ContourWriterPIL
 
         # img = Image.new('RGB', (640, 480))
         proj4_string = \
@@ -905,56 +959,47 @@ class TestFromConfig(TestPycoast):
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        tmp = gettempdir()
-
-        overlays = {'cache': {'file': os.path.join(tmp, 'pycoast_cache')},
-                    'coasts': {'level': 4, 'resolution': 'l'},
-                    'borders': {'outline': (255, 0, 0), 'resolution': 'c'},
-                    'rivers': {'outline': 'blue', 'resolution': 'c', 'level': 5}}
+        font = ImageFont.truetype(os.path.join(
+            os.path.dirname(__file__), 'test_data', 'DejaVuSerif.ttf'))
+        overlays = {'cache': {'file': os.path.join(tmpdir, 'pycoast_cache')},
+                    'grid': {'font': font}}
 
         # Create the original cache file
-        cache_filename = os.path.join(tmp, 'pycoast_cache_fakearea.png')
-        img = cw.add_overlay_from_dict(overlays, area_def)
-        res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
-        self.assertTrue(os.path.isfile(cache_filename))
+        cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
+        cache_filename = cache_glob[0]
+        assert os.path.isfile(cache_filename)
         mtime = os.path.getmtime(cache_filename)
 
         # Reuse the generated cache file
-        img = cw.add_overlay_from_dict(overlays, area_def)
-        res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
-        self.assertTrue(os.path.isfile(cache_filename))
-        self.assertEqual(os.path.getmtime(cache_filename), mtime)
-
-        # Regenerate cache file
-        current_time = time.time()
-        cw.add_overlay_from_dict(overlays, area_def, current_time)
-        mtime = os.path.getmtime(cache_filename)
-        self.assertGreater(mtime, current_time)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
-
-        cw.add_overlay_from_dict(overlays, area_def, current_time)
-        self.assertEqual(os.path.getmtime(cache_filename), mtime)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
-        overlays['cache']['regenerate'] = True
         cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
+        assert os.path.isfile(cache_filename)
+        assert os.path.getmtime(cache_filename) == mtime
 
-        self.assertNotEqual(os.path.getmtime(cache_filename), mtime)
-        self.assertTrue(fft_metric(euro_data, res),
-                        'Writing of contours failed')
+        # Remove the font option, should produce the same result
+        # font is not considered when caching
+        del overlays['grid']['font']
+        cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 1
+        assert os.path.isfile(cache_filename)
+        assert os.path.getmtime(cache_filename) == mtime
 
-        overlays.pop('cache')
-        overlays['grid'] = {'outline': (255, 255, 255), 'outline_opacity': 175,
-                            'minor_outline': (200, 200, 200), 'minor_outline_opacity': 127,
-                            'width': 1.0, 'minor_width': 0.5, 'minor_is_tick': True,
-                            'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b'}
-        img = cw.add_overlay_from_dict(overlays, area_def)
-        os.remove(os.path.join(tmp, 'pycoast_cache_fakearea.png'))
+        # Changing a parameter should create a new cache file
+        overlays = {'cache': {'file': os.path.join(tmpdir, 'pycoast_cache')},
+                    'grid': {'width': 2.0}}
+        cw.add_overlay_from_dict(overlays, area_def)
+        cache_glob = glob(os.path.join(tmpdir, 'pycoast_cache_*.png'))
+        assert len(cache_glob) == 2
+        assert os.path.isfile(cache_filename)
+        new_cache_filename = cache_glob[0] if cache_glob[0] != cache_filename else cache_glob[1]
+        # original cache file should be unchanged
+        assert os.path.getmtime(cache_filename) == mtime
+        # new cache file should be...new
+        assert os.path.getmtime(new_cache_filename) != mtime
 
     def test_get_resolution(self):
         """Get the automagical resolution computation."""
@@ -963,6 +1008,6 @@ class TestFromConfig(TestPycoast):
             '+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84'
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
-        self.assertEqual(get_resolution_from_area(area_def), 'l')
+        assert get_resolution_from_area(area_def) == 'l'
         area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
-        self.assertEqual(get_resolution_from_area(area_def), 'h')
+        assert get_resolution_from_area(area_def) == 'h'
