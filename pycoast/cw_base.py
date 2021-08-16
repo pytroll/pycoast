@@ -752,8 +752,12 @@ class ContourWriterBase(object):
                   of an already cached file.
 
             Cached results are identified by hashing the provided
-            AreaDefinition and the overlay dictionary. Note that font objects
-            are ignored as part of this hashing as they can't be easily hashed.
+            AreaDefinition and the overlay dictionary.
+
+            .. warning::
+
+                Font objects are ignored in parameter hashing as they can't be easily hashed.
+                Therefore font changes will not trigger a new rendering for the cache.
 
         """
         # Cache management
