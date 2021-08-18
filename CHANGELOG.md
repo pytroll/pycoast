@@ -1,3 +1,22 @@
+## Version 1.5.0 (2021/08/18)
+
+### Issues Closed
+
+* [Issue 48](https://github.com/pytroll/pycoast/issues/48) - Raster images without map projection
+* [Issue 46](https://github.com/pytroll/pycoast/issues/46) - add_coastlines call is incorrect in documentation
+
+In this release 2 issues were closed.
+
+### Pull Requests Merged
+
+#### Features added
+
+* [PR 54](https://github.com/pytroll/pycoast/pull/54) - Add area and parameter hashing to overlay caching
+* [PR 53](https://github.com/pytroll/pycoast/pull/53) - Switch to GitHub Actions for CI
+
+In this release 2 pull requests were closed.
+
+
 ## Version 1.4.0 (2020/06/08)
 
 ### Issues Closed
