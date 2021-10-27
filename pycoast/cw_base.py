@@ -1095,8 +1095,10 @@ class ContourWriterBase(object):
                     x, y = area_def.get_xy_from_lonlat(lon, lat)
                 elif coord_type == 'pixel':
                     (x, y) = (int(lon), int(lat))
-                    if x < 0: x += area_def.width
-                    if y < 0: y += area_def.height
+                    if x < 0:
+                        x += area_def.width
+                    if y < 0:
+                        y += area_def.height
                     if x > area_def.width or y > area_def.height:
                         raise ValueError("pixel coords out of image bounds")
             except ValueError:
