@@ -833,14 +833,14 @@ class ContourWriterBase(object):
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
         # Points management
-        if 'points' in overlays:
+        for param_key in [k for k in ['points', 'text'] if k in overlays]:
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
             DEFAULT_OUTLINE = 'white'
             DEFAULT_FILL = None
 
-            params = overlays['points'].copy()
+            params = overlays[param_key].copy()
 
             points_list = list(params.pop('points_list'))
             font_file = params.pop('font')
@@ -1034,12 +1034,15 @@ class ContourWriterBase(object):
             points_list : list [((lon, lat), desc)]
               | a list of points defined with (lon, lat) in float and a desc in string
               | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
+              | or with coord_type: [((lon1, lat1), desc1, coord_type1) ]
               | lon : float
-              |    longitude of a point
+              |    longitude or pixel x of a point
               | lat : float
-              |    latitude of a point
+              |    latitude or pixel y of a point
               | desc : str
               |    description of a point
+              | coord_type : str (optional, default is lonlat)
+              |    lonlat or pixel
             font_file : str
                 Path to font file
             font_size : int
@@ -1082,9 +1085,20 @@ class ContourWriterBase(object):
 
         # Iterate through points list
         for point in points_list:
-            (lon, lat), desc = point
+            coord_type = 'lonlat'
             try:
-                x, y = area_def.get_xy_from_lonlat(lon, lat)
+                (lon, lat), desc = point
+            except (ValueError, TypeError):
+                (lon, lat), desc, coord_type = point
+            try:
+                if coord_type == 'lonlat':
+                    x, y = area_def.get_xy_from_lonlat(lon, lat)
+                elif coord_type == 'pixel':
+                    (x, y) = (int(lon), int(lat))
+                    if x < 0: x += area_def.width
+                    if y < 0: y += area_def.height
+                    if x > area_def.width or y > area_def.height:
+                        raise ValueError("pixel coords out of image bounds")
             except ValueError:
                 logger.info("Point %s is out of the area, it will not be added to the image.",
                             str((lon, lat)))
@@ -1114,7 +1128,7 @@ class ContourWriterBase(object):
                         self._draw_asterisk(draw, ptsize, (x, y),
                                             outline=outline, width=width,
                                             outline_opacity=outline_opacity)
-                    else:
+                    elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
 
                 elif desc is None:
