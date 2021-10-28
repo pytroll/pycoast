@@ -61,11 +61,15 @@ def get_resolution_from_area(area_def):
 
 
 def coord_to_pixels(x, y, coord_ref: str, area_def):
-    """Convert the given coordinate (x,y) in the given
-    coordinate reference system ('lonlat' or 'image'),
-    and raise ValueError if outwide the image bounds
+    """Convert lon,lat to image x,y coordinates.
+
+    Convert the coordinate (x,y) in the coordinates
+    reference system ('lonlat' or 'image') into an image
+    x,y coordinate.
+    Uses the area_def methods if coord_ref is 'lonlat'.
+    Raises ValueError if outwith the image bounds
     defined by area_def.width and area_def.height.
-    Uses the area_def methods if coord_ref is 'lonlat'."""
+    """
     if coord_ref == 'lonlat':
         x, y = area_def.get_xy_from_lonlat(x, y)
     elif coord_ref == 'image':
