@@ -60,6 +60,26 @@ def get_resolution_from_area(area_def):
         return "f"
 
 
+def coord_to_pixels(x, y, coord_ref: str, area_def):
+    """Convert the given coordinate (x,y) in the given
+    coordinate reference system ('lonlat' or 'image'),
+    and raise ValueError if outwide the image bounds
+    defined by area_def.width and area_def.height.
+    Uses the area_def methods if coord_ref is 'lonlat'."""
+    if coord_ref == 'lonlat':
+        x, y = area_def.get_xy_from_lonlat(lon, lat)
+    elif coord_ref == 'image':
+        (x, y) = (int(lon), int(lat))
+        if x < 0:
+            x += area_def.width
+        if y < 0:
+            y += area_def.height
+        if x < 0 or y < 0 or x > area_def.width or y > area_def.height:
+            raise ValueError("pixel coords out of image bounds")
+    else:
+        raise ValueError("coord_ref must be lonlat or image")
+
+
 def hash_dict(dict_to_hash: dict) -> str:
     """Hash dict object by serializing with json."""
     dhash = hashlib.sha256()
@@ -1093,16 +1113,7 @@ class ContourWriterBase(object):
             coord_ref = kwargs.get('coord_ref', 'lonlat')
             (lon, lat), desc = point
             try:
-                if coord_ref == 'lonlat':
-                    x, y = area_def.get_xy_from_lonlat(lon, lat)
-                elif coord_ref == 'image':
-                    (x, y) = (int(lon), int(lat))
-                    if x < 0:
-                        x += area_def.width
-                    if y < 0:
-                        y += area_def.height
-                    if x > area_def.width or y > area_def.height:
-                        raise ValueError("pixel coords out of image bounds")
+                x,y = coord_to_pixels(lon, lat, coord_ref, area_def)
             except ValueError:
                 logger.info("Point %s is out of the area, it will not be added to the image.",
                             str((lon, lat)))
