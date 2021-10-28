@@ -1050,7 +1050,8 @@ class ContourWriterBase(object):
         self._finalize(draw)
 
     def add_points(self, image, area_def, points_list, font_file, font_size=12,
-                   symbol='circle', ptsize=6, outline='black', fill='white', **kwargs):
+                   symbol='circle', ptsize=6, outline='black', fill='white',
+                   coord_ref='lonlat', **kwargs):
         """Add a symbol and/or text at the point(s) of interest to a PIL image object.
 
         :Parameters:
@@ -1114,7 +1115,6 @@ class ContourWriterBase(object):
 
         # Iterate through points list
         for point in points_list:
-            coord_ref = kwargs.get('coord_ref', 'lonlat')
             (lon, lat), desc = point
             try:
                 x, y = coord_to_pixels(lon, lat, coord_ref, area_def)
