@@ -1036,7 +1036,6 @@ class ContourWriterBase(object):
             points_list : list [((lon, lat), desc)]
               | a list of points defined with (lon, lat) in float and a desc in string
               | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
-              | or with coord_type: [((lon1, lat1), desc1, coord_type1) ]
               | lon : float
               |    longitude or pixel x of a point
               | lat : float
@@ -1050,16 +1049,20 @@ class ContourWriterBase(object):
             font_size : int
                 Size of font
             symbol : string
-                type of symbol, one of the elelment from the list
+                type of symbol, one of the elements from the list
                 ['circle', 'square', 'asterisk']
+                or None to prevent rendering
             ptsize : int
-                Size of the point.
+                Size of the point (should be zero if symbol:None).
             outline : str or (R, G, B), optional
                 Line color of the symbol
             fill : str or (R, G, B), optional
                 Filling color of the symbol
 
         :Optional keyword arguments:
+            coord_ref : string
+                'lonlat' (the default: degrees N,E)
+                or 'image' (pixels right,down)
             width : float
                 Line width of the symbol
             outline_opacity : int, optional {0; 255}
@@ -1087,15 +1090,12 @@ class ContourWriterBase(object):
 
         # Iterate through points list
         for point in points_list:
-            coord_type = 'lonlat'
+            coord_ref = kwargs.get('coord_ref', 'lonlat')
+            (lon, lat), desc = point
             try:
-                (lon, lat), desc = point
-            except (ValueError, TypeError):
-                (lon, lat), desc, coord_type = point
-            try:
-                if coord_type == 'lonlat':
+                if coord_ref == 'lonlat':
                     x, y = area_def.get_xy_from_lonlat(lon, lat)
-                elif coord_type == 'pixel':
+                elif coord_ref == 'image':
                     (x, y) = (int(lon), int(lat))
                     if x < 0:
                         x += area_def.width
