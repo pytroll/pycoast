@@ -1061,14 +1061,13 @@ class ContourWriterBase(object):
             points_list : list [((lon, lat), desc)]
               | a list of points defined with (lon, lat) in float and a desc in string
               | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
+              | See coord_ref (below) for meaning of lon,lat
               | lon : float
               |    longitude or pixel x of a point
               | lat : float
               |    latitude or pixel y of a point
               | desc : str
               |    description of a point
-              | coord_type : str (optional, default is lonlat)
-              |    lonlat or pixel
             font_file : str
                 Path to font file
             font_size : int
