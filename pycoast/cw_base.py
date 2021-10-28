@@ -67,9 +67,9 @@ def coord_to_pixels(x, y, coord_ref: str, area_def):
     defined by area_def.width and area_def.height.
     Uses the area_def methods if coord_ref is 'lonlat'."""
     if coord_ref == 'lonlat':
-        x, y = area_def.get_xy_from_lonlat(lon, lat)
+        x, y = area_def.get_xy_from_lonlat(x, y)
     elif coord_ref == 'image':
-        (x, y) = (int(lon), int(lat))
+        (x, y) = (int(x), int(x))
         if x < 0:
             x += area_def.width
         if y < 0:
@@ -78,6 +78,7 @@ def coord_to_pixels(x, y, coord_ref: str, area_def):
             raise ValueError("pixel coords out of image bounds")
     else:
         raise ValueError("coord_ref must be lonlat or image")
+    return x, y
 
 
 def hash_dict(dict_to_hash: dict) -> str:
@@ -1111,9 +1112,11 @@ class ContourWriterBase(object):
         # Iterate through points list
         for point in points_list:
             coord_ref = kwargs.get('coord_ref', 'lonlat')
+            print('coord_ref %s' % coord_ref)
+            print('point %s' % str(point))
             (lon, lat), desc = point
             try:
-                x,y = coord_to_pixels(lon, lat, coord_ref, area_def)
+                x, y = coord_to_pixels(lon, lat, coord_ref, area_def)
             except ValueError:
                 logger.info("Point %s is out of the area, it will not be added to the image.",
                             str((lon, lat)))
