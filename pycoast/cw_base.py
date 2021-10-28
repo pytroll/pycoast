@@ -1116,8 +1116,6 @@ class ContourWriterBase(object):
         # Iterate through points list
         for point in points_list:
             coord_ref = kwargs.get('coord_ref', 'lonlat')
-            print('coord_ref %s' % coord_ref)
-            print('point %s' % str(point))
             (lon, lat), desc = point
             try:
                 x, y = coord_to_pixels(lon, lat, coord_ref, area_def)
