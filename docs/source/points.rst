@@ -92,8 +92,9 @@ with their own rendering styles. Setting `symbol:None` and `ptsize:0` will rende
 just text without a symbol, but this is not automatically implied by the use of `text`.
 
 The coordinates of the point are specified in geographic degrees longitude (N), latitude (E)
-by default but can be changed to projected image coordinates in pixels right, down.
+by default but can be changed to projected image coordinates in pixels (right, down).
 Use the `coord_ref` key in your `points` dict and with a value `'lonlat'` or `'image'`.
+Negative image coordinates will go left/up from the opposite side of the image.
 
 Thus the dict `overlays = { 'text': { 'symbol':None, 'ptsize':0, 'coord_ref':'image'`
 can be used to plot text strings at fixed points on the image regardless of projection.
