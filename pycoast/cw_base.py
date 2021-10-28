@@ -833,7 +833,9 @@ class ContourWriterBase(object):
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
         # Points management
-        for param_key in [k for k in ['points', 'text'] if k in overlays]:
+        for param_key in ['points', 'text']:
+            if param_key not in overlays:
+                continue
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
