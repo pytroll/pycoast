@@ -1059,13 +1059,13 @@ class ContourWriterBase(object):
                 PIL image object
             area_def : object
                 Area Definition of the provided image
-            points_list : list [((lon, lat), desc)]
-              | a list of points defined with (lon, lat) in float and a desc in string
-              | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
-              | See coord_ref (below) for meaning of lon,lat
-              | lon : float
+            points_list : list [((x, y), desc)]
+              | a list of points defined with (x, y) in float and a desc in string
+              | [((x1, y1), desc1), ((x2, y2), desc2)]
+              | See coord_ref (below) for the meaning of x, y.
+              | x : float
               |    longitude or pixel x of a point
-              | lat : float
+              | y : float
               |    latitude or pixel y of a point
               | desc : str
               |    description of a point
@@ -1086,8 +1086,9 @@ class ContourWriterBase(object):
 
         :Optional keyword arguments:
             coord_ref : string
-                'lonlat' (the default: degrees N,E)
-                or 'image' (pixels right,down)
+                The interpretation of x,y in points_list:
+                'lonlat' (the default: x is degrees E, y is degrees N),
+                or 'image' (x is pixels right, y is pixels down)
             width : float
                 Line width of the symbol
             outline_opacity : int, optional {0; 255}
@@ -1115,12 +1116,12 @@ class ContourWriterBase(object):
 
         # Iterate through points list
         for point in points_list:
-            (lon, lat), desc = point
+            (x, y), desc = point
             try:
-                x, y = coord_to_pixels(lon, lat, coord_ref, area_def)
+                x, y = coord_to_pixels(x, y, coord_ref, area_def)
             except ValueError:
                 logger.info("Point %s is out of the area, it will not be added to the image.",
-                            str((lon, lat)))
+                            str((x, y)))
             else:
                 if ptsize != 0:
                     half_ptsize = int(round(ptsize / 2.))
@@ -1166,7 +1167,7 @@ class ContourWriterBase(object):
                     self._draw_text_box(draw, text_position, desc, font, outline,
                                         box_outline, box_opacity, **new_kwargs)
 
-            logger.debug("Point %s has been added to the image", str((lon, lat)))
+            logger.debug("Point %s has been added to the image", str((x, y)))
 
         self._finalize(draw)
 
