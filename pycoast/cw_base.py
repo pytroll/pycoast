@@ -73,7 +73,7 @@ def coord_to_pixels(x, y, coord_ref: str, area_def):
     if coord_ref == 'lonlat':
         x, y = area_def.get_xy_from_lonlat(x, y)
     elif coord_ref == 'image':
-        (x, y) = (int(x), int(x))
+        (x, y) = (int(x), int(y))
         if x < 0:
             x += area_def.width
         if y < 0:
