@@ -1194,14 +1194,14 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     elif round(angle_sum) == 0:
         # Covers no poles
         if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1 and \
-            lons_s1[lons_s1 < 0].min() * lons_s1[lons_s1 > 0].max() < -25000:
+                lons_s1[lons_s1 < 0].min() * lons_s1[lons_s1 > 0].max() < -25000:
             # End points of left side on different side of dateline
             lon_min = lons_s1[lons_s1 > 0].min()
         else:
             lon_min = lons_s1.min()
 
         if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1 and \
-            lons_s3[lons_s3 < 0].min() * lons_s3[lons_s3 > 0].max() < -25000:
+                lons_s3[lons_s3 < 0].min() * lons_s3[lons_s3 > 0].max() < -25000:
             # End points of right side on different side of dateline
             lon_max = lons_s3[lons_s3 < 0].max()
         else:
