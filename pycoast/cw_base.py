@@ -857,17 +857,10 @@ class ContourWriterBase(object):
 
         # Grids overlay
         if 'grid' in overlays:
-            lon_major = float(overlays['grid'].get('lon_major', 10.0))
-            lat_major = float(overlays['grid'].get('lat_major', 10.0))
-            lon_minor = float(overlays['grid'].get('lon_minor', 2.0))
-            lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
+            major_lon, major_lat = overlays['grid'].get('major_lonlat', (10, 10))
+            minor_lon, minor_lat = overlays['grid'].get('minor_lonlat', ( 2,  2))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
-            grid_kwargs = {}
-            if is_agg:
-                width = float(overlays['grid'].get('width', 1.0))
-                grid_kwargs["width"] = width
-
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
                 write_text = write_text.lower() in ['true', 'yes', '1', 'on']
@@ -887,8 +880,19 @@ class ContourWriterBase(object):
             lon_placement = overlays['grid'].get('lon_placement', 'tb')
             lat_placement = overlays['grid'].get('lat_placement', 'lr')
 
-            self.add_grid(foreground, area_def, (lon_major, lat_major),
-                          (lon_minor, lat_minor),
+            grid_kwargs = {}
+            if is_agg:
+                width = float(overlays['grid'].get('width', 1.5))
+                minor_width = float(overlays['grid'].get('minor_width', 1.0))
+                outline_opacity = overlays['grid'].get('outline_opacity', 255)
+                minor_outline_opacity = overlays['grid'].get('minor_outline_opacity', 127)
+                grid_kwargs['width'] = width
+                grid_kwargs['minor_width'] = minor_width
+                grid_kwargs['outline_opacity'] = outline_opacity
+                grid_kwargs['minor_outline_opacity'] = minor_outline_opacity
+
+            self.add_grid(foreground, area_def, (float(major_lon), float(major_lat)),
+                          (float(minor_lon), float(minor_lat)),
                           font=font, write_text=write_text, fill=fill,
                           outline=outline, minor_outline=minor_outline,
                           minor_is_tick=minor_is_tick,

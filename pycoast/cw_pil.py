@@ -253,7 +253,7 @@ class ContourWriterPIL(ContourWriterBase):
             font: PIL ImageFont object, optional
                 Font for major line markings
             write_text : boolean, optional
-                Deterine if line markings are enabled
+                Determine if line markings are enabled
             fill : str or (R, G, B), optional
                 Text color
             outline : str or (R, G, B), optional
@@ -289,7 +289,7 @@ class ContourWriterPIL(ContourWriterBase):
             font: PIL ImageFont object, optional
                 Font for major line markings
             write_text : boolean, optional
-                Deterine if line markings are enabled
+                Determine if line markings are enabled
             fill : str or (R, G, B), optional
                 Text color
             outline : str or (R, G, B), optional
@@ -428,7 +428,7 @@ class ContourWriterPIL(ContourWriterBase):
                          y_offset=y_offset)
         image.save(filename)
 
-    def add_rivers(self, image, area_def, resolution='c', level=1,
+    def add_rivers(self, image, area_def, resolution='c', level=2,
                    outline='white', x_offset=0, y_offset=0):
         """Add rivers to a PIL image object.
 
