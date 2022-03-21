@@ -858,7 +858,7 @@ class ContourWriterBase(object):
         # Grids overlay
         if 'grid' in overlays:
             major_lon, major_lat = overlays['grid'].get('major_lonlat', (10, 10))
-            minor_lon, minor_lat = overlays['grid'].get('minor_lonlat', ( 2,  2))
+            minor_lon, minor_lat = overlays['grid'].get('minor_lonlat', (2, 2))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
             write_text = overlays['grid'].get('write_text', True)
