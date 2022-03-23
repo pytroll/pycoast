@@ -857,8 +857,14 @@ class ContourWriterBase(object):
 
         # Grids overlay
         if 'grid' in overlays:
-            major_lon, major_lat = overlays['grid'].get('major_lonlat', (10, 10))
-            minor_lon, minor_lat = overlays['grid'].get('minor_lonlat', (2, 2))
+            if 'major_lonlat' in overlays['grid'] or 'minor_lonlat' in overlays['grid']:
+                Dlon, Dlat = overlays['grid'].get('major_lonlat', (10, 10))
+                dlon, dlat = overlays['grid'].get('minor_lonlat', (2, 2))
+                Dlonlat = (float(Dlon), float(Dlat))
+                dlonlat = (float(dlon), float(dlat))
+            else:
+                Dlonlat = (overlays['grid'].get('Dlon', 10.0), overlays['grid'].get('Dlat', 10.0))
+                dlonlat = (overlays['grid'].get('dlon', 2.0), overlays['grid'].get('dlat', 2.0))
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
             write_text = overlays['grid'].get('write_text', True)
@@ -891,8 +897,7 @@ class ContourWriterBase(object):
                 grid_kwargs['outline_opacity'] = outline_opacity
                 grid_kwargs['minor_outline_opacity'] = minor_outline_opacity
 
-            self.add_grid(foreground, area_def, (float(major_lon), float(major_lat)),
-                          (float(minor_lon), float(minor_lat)),
+            self.add_grid(foreground, area_def, Dlonlat, dlonlat,
                           font=font, write_text=write_text, fill=fill,
                           outline=outline, minor_outline=minor_outline,
                           minor_is_tick=minor_is_tick,
