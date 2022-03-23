@@ -858,10 +858,8 @@ class ContourWriterBase(object):
         # Grids overlay
         if 'grid' in overlays:
             if 'major_lonlat' in overlays['grid'] or 'minor_lonlat' in overlays['grid']:
-                Dlon, Dlat = overlays['grid'].get('major_lonlat', (10, 10))
-                dlon, dlat = overlays['grid'].get('minor_lonlat', (2, 2))
-                Dlonlat = (float(Dlon), float(Dlat))
-                dlonlat = (float(dlon), float(dlat))
+                Dlonlat = overlays['grid'].get('major_lonlat', (10.0, 10.0))
+                dlonlat = overlays['grid'].get('minor_lonlat', (2.0, 2.0))
             else:
                 Dlonlat = (overlays['grid'].get('Dlon', 10.0), overlays['grid'].get('Dlat', 10.0))
                 dlonlat = (overlays['grid'].get('dlon', 2.0), overlays['grid'].get('dlat', 2.0))
