@@ -703,7 +703,7 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'points', 'grid']
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'grid', 'cities', 'points']
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -746,7 +746,7 @@ class ContourWriterBase(object):
 
 
             The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, cities, points, grid
+            cache, coasts, rivers, borders, grid, cities, points
 
             For all of them except `cache`, the items are the same as the
             corresponding functions in pycoast, so refer to the docstrings of
@@ -814,48 +814,7 @@ class ContourWriterBase(object):
             fun(foreground, area_def, **params)
             logger.info("%s added", section.capitalize())
 
-        # Cities management
-        if 'cities' in overlays:
-            DEFAULT_FONT_SIZE = 12
-            DEFAULT_OUTLINE = "yellow"
-
-            citylist = [s.lstrip()
-                        for s in overlays['cities']['list'].split(',')]
-            font_file = overlays['cities']['font']
-            font_size = int(overlays['cities'].get('font_size',
-                                                   DEFAULT_FONT_SIZE))
-            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
-            pt_size = int(overlays['cities'].get('pt_size', None))
-            box_outline = overlays['cities'].get('box_outline', None)
-            box_opacity = int(overlays['cities'].get('box_opacity', 255))
-
-            self.add_cities(foreground, area_def, citylist, font_file,
-                            font_size, pt_size, outline, box_outline,
-                            box_opacity)
-        # Points management
-        if 'points' in overlays:
-            DEFAULT_FONTSIZE = 12
-            DEFAULT_SYMBOL = 'circle'
-            DEFAULT_PTSIZE = 6
-            DEFAULT_OUTLINE = 'white'
-            DEFAULT_FILL = None
-
-            params = overlays['points'].copy()
-
-            points_list = list(params.pop('points_list'))
-            font_file = params.pop('font')
-            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
-
-            symbol = params.pop('symbol', DEFAULT_SYMBOL)
-            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
-
-            outline = params.pop('outline', DEFAULT_OUTLINE)
-            fill = params.pop('fill', DEFAULT_FILL)
-
-            self.add_points(foreground, area_def, points_list, font_file, font_size,
-                            symbol, ptsize, outline, fill, **params)
-
-        # Grids overlay
+        # Grid overlay
         if 'grid' in overlays:
             lon_major = float(overlays['grid'].get('lon_major', 10.0))
             lat_major = float(overlays['grid'].get('lat_major', 10.0))
@@ -895,6 +854,52 @@ class ContourWriterBase(object):
                           lon_placement=lon_placement,
                           lat_placement=lat_placement,
                           **grid_kwargs)
+
+        # Cities management
+        if 'cities' in overlays:
+            DEFAULT_FONTSIZE = 12
+            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_PTSIZE = 6
+            DEFAULT_OUTLINE = 'white'
+            DEFAULT_FILL = None
+
+            params = overlays['cities'].copy()
+
+            cities_list = params.pop('cities_list')
+            font_file = params.pop('font')
+            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+
+            symbol = params.pop('symbol', DEFAULT_SYMBOL)
+            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+
+            outline = params.pop('outline', DEFAULT_OUTLINE)
+            fill = params.pop('fill', DEFAULT_FILL)
+
+            self.add_cities(foreground, area_def, cities_list, font_file, font_size,
+                            symbol, ptsize, outline, fill, **params)
+
+        # Points management
+        if 'points' in overlays:
+            DEFAULT_FONTSIZE = 12
+            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_PTSIZE = 6
+            DEFAULT_OUTLINE = 'white'
+            DEFAULT_FILL = None
+
+            params = overlays['points'].copy()
+
+            points_list = list(params.pop('points_list'))
+            font_file = params.pop('font')
+            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+
+            symbol = params.pop('symbol', DEFAULT_SYMBOL)
+            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+
+            outline = params.pop('outline', DEFAULT_OUTLINE)
+            fill = params.pop('fill', DEFAULT_FILL)
+
+            self.add_points(foreground, area_def, points_list, font_file, font_size,
+                            symbol, ptsize, outline, fill, **params)
 
         if cache_file is not None:
             self._write_and_apply_new_cached_image(cache_file, foreground, background)
@@ -961,65 +966,139 @@ class ContourWriterBase(object):
         return self.add_overlay_from_dict(overlays, area_def,
                                           os.path.getmtime(config_file), background)
 
-    def add_cities(self, image, area_def, citylist, font_file, font_size,
-                   ptsize, outline, box_outline, box_opacity, db_root_path=None):
-        """Add cities (point and name) to a PIL image object."""
+    def add_cities(self, image,  area_def, cities_list, font_file, font_size=12,
+                   symbol='circle', ptsize=6, outline='black', fill='white', db_root_path=None, **kwargs):
+        """Add cities (symbol and UTF-8 names as description) to a PIL image object.
+        :Parameters:
+            image : object
+                PIL image object
+            area_def : object
+                Area Definition of the provided image
+            cities_list : list of city names ['City1', 'City2', City3, ..., 'CityN']
+              | a list of UTF-8 or ASCII strings. If either of these strings is found
+              | in db_root_path/CITIES/cities5000.txt, longitude and latitude is read
+              | and the city is added like a point with its UTF-8 name as description
+              | e.g. cities_list = ['Zurich', 'Oslo'] will add cities 'Zürich', 'Oslo'
+              | (cities5000.txt can be downloaded from http://download.geonames.org)
+            font_file : str
+                Path to font file
+            font_size : int
+                Size of font
+            symbol : string
+                type of symbol, one of the elelment from the list
+                ['circle', 'square', 'asterisk']
+            ptsize : int
+                Size of the point.
+            outline : str or (R, G, B), optional
+                Line color of the symbol
+            fill : str or (R, G, B), optional
+                Filling color of the symbol
+
+        :Optional keyword arguments:
+            width : float
+                Line width of the symbol
+            outline_opacity : int, optional {0; 255}
+                Opacity of the line of the symbol.
+            fill_opacity : int, optional {0; 255}
+                Opacity of the filling of the symbol
+            box_outline : str or (R, G, B), optional
+                Line color of the textbox borders.
+            box_linewidth : float
+                Line width of the the borders of the textbox
+            box_fill : str or (R, G, B), optional
+                Filling color of the background of the textbox.
+            box_opacity : int, optional {0; 255}
+                Opacity of the background filling of the textbox.
+        """
+
         if db_root_path is None:
             db_root_path = self.db_root_path
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
 
+        try:
+            from pyresample.geometry import AreaDefinition
+        except ImportError:
+            raise ImportError("Missing required 'pyresample' module, please install it.")
+
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
+
         draw = self._get_canvas(image)
 
-        # read shape file with points
-        # Sc-Kh shapefilename = os.path.join(self.db_root_path,
-        # "cities_15000_alternativ.shp")
-        shapefilename = os.path.join(
-            db_root_path, os.path.join("CITIES",
-                                       "cities_15000_alternativ.shp"))
+        # cities15000.txt as downloaded from http://download.geonames.org
+        # '1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
+        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000.txt"))
         try:
-            s = shapefile.Reader(shapefilename)
-            shapes = s.shapes()
-        except AttributeError:
-            raise ValueError('Could not find shapefile %s'
-                             % shapefilename)
+            f = open(textfilename,'r')
+        except FileNotFoundError:
+            raise FileNotFoundError('Could not find file %s' % textfilename)
+        try:
+            s = f.readline()
+        except IOError:
+            raise IOError('Could not read file %s' % textfilename)
 
-        font = self._get_font(outline, font_file, font_size)
-
-        # Iterate through shapes
-        for i, shape in enumerate(shapes):
-            # Select cities with name
-            record = s.record(i)
-            if record[3] in citylist:
-
-                city_name = record[3]
-
-                # use only parts of _get_pixel_index
-                # Get shape data as array and reproject
-                shape_data = np.array(shape.points)
-                lons = shape_data[:, 0][0]
-                lats = shape_data[:, 1][0]
-
+        # Iterate through lines
+        while s != '':
+            l = s.split('\t')
+            if l[1] in cities_list or l[2] in cities_list:
+                city_name, lon, lat = l[1], float(l[5]), float(l[4])
                 try:
-                    (x, y) = area_def.get_xy_from_lonlat(lons, lats)
-                except ValueError as exc:
-                    logger.debug("Point not added (%s)", str(exc))
+                    (x, y) = area_def.get_xy_from_lonlat(lon, lat)
+                except ValueError:
+                    logger.info("City %s is out of the area, it will not be added to the image.",
+                                city_name + ' ' + str((lon, lat)))
                 else:
                     # add_dot
-                    if ptsize is not None:
-                        dot_box = [x - ptsize, y - ptsize,
-                                   x + ptsize, y + ptsize]
-                        self._draw_ellipse(
-                            draw, dot_box, fill=outline, outline=outline)
-                        text_position = [x + 9, y - 5]  # FIXME
+                    if ptsize != 0:
+
+                        half_ptsize = int(round(ptsize / 2.))
+                        dot_box = [x - half_ptsize, y - half_ptsize,
+                                   x + half_ptsize, y + half_ptsize]
+
+                        width = kwargs.get('width', 1.)
+                        outline_opacity = kwargs.get('outline_opacity', 255)
+                        fill_opacity = kwargs.get('fill_opacity', 0)
+
+                        # draw the symbol at the (x, y) position
+                        if symbol == 'circle':  # a 'circle' or a 'dot' i.e circle with fill
+                            self._draw_ellipse(draw, dot_box,
+                                               outline=outline, width=width,
+                                               outline_opacity=outline_opacity,
+                                               fill=fill, fill_opacity=fill_opacity)
+                        elif symbol == 'square':
+                            self._draw_rectangle(draw, dot_box,
+                                                 outline=outline, width=width,
+                                                 outline_opacity=outline_opacity,
+                                                 fill=fill, fill_opacity=fill_opacity)
+                        elif symbol == 'asterisk':  # an '*' sign
+                            self._draw_asterisk(draw, ptsize, (x, y),
+                                                outline=outline, width=width,
+                                                outline_opacity=outline_opacity)
+                        else:
+                            raise ValueError("Unsupported symbol type: " + str(symbol))
+
+
+                        text_position = [x + ptsize, y]
                     else:
                         text_position = [x, y]
 
-                # add text_box
-                    self._draw_text_box(draw, text_position, city_name, font, outline,
-                                        box_outline, box_opacity)
-                    logger.info("%s added", str(city_name))
+                    font = self._get_font(outline, font_file, font_size)
 
+                    new_kwargs = kwargs.copy()
+
+                    box_outline = new_kwargs.pop('box_outline', 'white')
+                    box_opacity = new_kwargs.pop('box_opacity', 0)
+
+                    # add text_box
+                    self._draw_text_box(draw, text_position, city_name, font, outline,
+                                        box_outline, box_opacity, **new_kwargs)
+                    logger.info("%s added", city_name + ' ' + str((lon, lat)))
+
+            # Read next line
+            s = f.readline()
+
+        f.close()
         self._finalize(draw)
 
     def add_points(self, image, area_def, points_list, font_file, font_size=12,
@@ -1136,7 +1215,6 @@ class ContourWriterBase(object):
             logger.debug("Point %s has been added to the image", str((lon, lat)))
 
         self._finalize(draw)
-
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values."""
