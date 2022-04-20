@@ -475,7 +475,7 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh points failed')
 
-    def test_add_cities_pil():
+    def test_add_cities_pil(self):
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
 
@@ -511,7 +511,7 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_pil failed')
 
-    def test_add_cities_cfg_pil():
+    def test_add_cities_cfg_pil(self):
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
 
@@ -538,6 +538,7 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_cfg_pil failed')
+
 
 class TestPILAGG(TestPycoast):
     """Test AGG contour writer."""
@@ -910,7 +911,7 @@ class TestPILAGG(TestPycoast):
 
         self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
 
-    def test_add_cities_agg():
+    def test_add_cities_agg(self):
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
 
@@ -947,7 +948,7 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_agg failed')
 
-    def test_add_cities_cfg_agg():
+    def test_add_cities_cfg_agg(self):
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
 
@@ -974,6 +975,7 @@ class TestPILAGG(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_cfg_agg failed')
+
 
 class FakeAreaDef:
     """A fake area definition object."""

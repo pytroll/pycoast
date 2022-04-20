@@ -966,9 +966,10 @@ class ContourWriterBase(object):
         return self.add_overlay_from_dict(overlays, area_def,
                                           os.path.getmtime(config_file), background)
 
-    def add_cities(self, image,  area_def, cities_list, font_file, font_size=12,
+    def add_cities(self, image, area_def, cities_list, font_file, font_size=12,
                    symbol='circle', ptsize=6, outline='black', fill='white', db_root_path=None, **kwargs):
         """Add cities (symbol and UTF-8 names as description) to a PIL image object.
+
         :Parameters:
             image : object
                 PIL image object
@@ -1010,7 +1011,6 @@ class ContourWriterBase(object):
             box_opacity : int, optional {0; 255}
                 Opacity of the background filling of the textbox.
         """
-
         if db_root_path is None:
             db_root_path = self.db_root_path
         if db_root_path is None:
@@ -1030,7 +1030,7 @@ class ContourWriterBase(object):
         # '1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
         textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000.txt"))
         try:
-            f = open(textfilename,'r')
+            f = open(textfilename, 'r')
         except FileNotFoundError:
             raise FileNotFoundError('Could not find file %s' % textfilename)
         try:
@@ -1040,9 +1040,9 @@ class ContourWriterBase(object):
 
         # Iterate through lines
         while s != '':
-            l = s.split('\t')
-            if l[1] in cities_list or l[2] in cities_list:
-                city_name, lon, lat = l[1], float(l[5]), float(l[4])
+            t = s.split('\t')
+            if t[1] in cities_list or t[2] in cities_list:
+                city_name, lon, lat = t[1], float(t[5]), float(t[4])
                 try:
                     (x, y) = area_def.get_xy_from_lonlat(lon, lat)
                 except ValueError:
@@ -1077,7 +1077,6 @@ class ContourWriterBase(object):
                                                 outline_opacity=outline_opacity)
                         else:
                             raise ValueError("Unsupported symbol type: " + str(symbol))
-
 
                         text_position = [x + ptsize, y]
                     else:
@@ -1215,6 +1214,7 @@ class ContourWriterBase(object):
             logger.debug("Point %s has been added to the image", str((lon, lat)))
 
         self._finalize(draw)
+
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values."""
