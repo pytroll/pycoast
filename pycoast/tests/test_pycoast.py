@@ -475,6 +475,69 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh points failed')
 
+    def test_add_cities_pil():
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_cities_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, outline='black', resolution='l',
+                          level=4)
+        cw.add_borders(img, area_def, outline='black', level=1,
+                       resolution='c')
+
+        cities_list = ['Zurich', 'Oslo', 'Reykjavik', 'Fairbanks', 'Toronto']
+        cw.add_cities(img, area_def, cities_list=cities_list, font_file=font_file, font_size=20,
+                      symbol='square', ptsize=16,
+                      outline='black', width=3,
+                      fill='blue', fill_opacity=128,
+                      box_outline='blue', box_linewidth=0.5,
+                      box_fill='yellow', box_opacity=200)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh cities_pil failed')
+
+    def test_add_cities_cfg_pil():
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        config_file = os.path.join(os.path.dirname(__file__),
+                                   'nh_cities_pil.ini')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_cities_cfg_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_overlay_from_config(config_file, area_def, img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh cities_cfg_pil failed')
 
 class TestPILAGG(TestPycoast):
     """Test AGG contour writer."""
@@ -847,6 +910,70 @@ class TestPILAGG(TestPycoast):
 
         self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
 
+    def test_add_cities_agg():
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_cities_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, outline='black', resolution='l',
+                          level=4)
+        cw.add_borders(img, area_def, outline='black', width=3, level=1,
+                       resolution='c')
+
+        cities_list = ['Zurich', 'Oslo', 'Reykjavik', 'Fairbanks', 'Toronto']
+        cw.add_cities(img, area_def, cities_list=cities_list, font_file=font_file, font_size=20,
+                      symbol='square', ptsize=16,
+                      outline='black', width=1,
+                      fill='blue', fill_opacity=128,
+                      box_outline='blue', box_linewidth=0.5,
+                      box_fill='yellow', box_opacity=200)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh cities_agg failed')
+
+    def test_add_cities_cfg_agg():
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        config_file = os.path.join(os.path.dirname(__file__),
+                                   'nh_cities_agg.ini')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'nh_cities_cfg_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625,
+                       5326849.0625, 5326849.0625)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  1024, 1024, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_overlay_from_config(config_file, area_def, img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res),
+                        'Writing of nh cities_cfg_agg failed')
 
 class FakeAreaDef:
     """A fake area definition object."""
