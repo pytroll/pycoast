@@ -1026,8 +1026,8 @@ class ContourWriterBase(object):
 
         draw = self._get_canvas(image)
 
-        # cities15000.txt as downloaded from http://download.geonames.org
-        # '1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
+        # cities5000.txt as downloaded from http://download.geonames.org
+        # 1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
         textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000.txt"))
         try:
             f = open(textfilename, 'r')
