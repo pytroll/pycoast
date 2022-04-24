@@ -967,7 +967,7 @@ class ContourWriterBase(object):
         return self.add_overlay_from_dict(overlays, area_def,
                                           os.path.getmtime(config_file), background)
 
-    def get_xy(self, symbol, x, y, ptsize):
+    def draw_star(self, draw, symbol, x, y, ptsize, **kwargs):
         # 5 <= n <= 8, symbol = string in ['star8', 'star7', 'star6', 'star5']
         n = int(symbol[4])
         alpha2 = math.pi / n
@@ -985,7 +985,30 @@ class ContourWriterBase(object):
                 xy.append(x + r2 * math.sin(alpha))
                 xy.append(y - r2 * math.cos(alpha))
             alpha += alpha2
-        return xy
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def draw_hexagon(self, draw, x, y, ptsize, **kwargs):
+        xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
+              x + 0.50 * ptsize, y,
+              x + 0.25 * ptsize, y + 0.4330127 * ptsize,
+              x - 0.25 * ptsize, y + 0.4330127 * ptsize,
+              x - 0.50 * ptsize, y,
+              x - 0.25 * ptsize, y - 0.4330127 * ptsize]
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def draw_pentagon(self, draw, x, y, ptsize, **kwargs):
+        xy = [x, y - 0.5 * ptsize,
+              x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
+              x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+              x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+              x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def draw_triangle(self, draw, x, y, ptsize, **kwargs):
+        xy = [x, y - 0.5 * ptsize,
+              x + 0.4330127 * ptsize, y + 0.25 * ptsize,
+              x - 0.4330127 * ptsize, y + 0.25 * ptsize]
+        self._draw_polygon(draw, xy, **kwargs)
 
     def add_cities(self, image, area_def, cities_list, font_file, font_size=12,
                    symbol='circle', ptsize=6, outline='black', fill='white', db_root_path=None, **kwargs):
@@ -1090,23 +1113,12 @@ class ContourWriterBase(object):
                                                fill=fill, fill_opacity=fill_opacity)
                         # All regular polygons are drawn horizontally based
                         elif symbol == 'hexagon':
-                            xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
-                                  x + 0.50 * ptsize, y,
-                                  x + 0.25 * ptsize, y + 0.4330127 * ptsize,
-                                  x - 0.25 * ptsize, y + 0.4330127 * ptsize,
-                                  x - 0.50 * ptsize, y,
-                                  x - 0.25 * ptsize, y - 0.4330127 * ptsize]
-                            self._draw_polygon(draw, xy,
-                                               outline=outline, width=width,
-                                               outline_opacity=outline_opacity,
-                                               fill=fill, fill_opacity=fill_opacity)
+                            self.draw_hexagon(draw, x, y, ptsize,
+                                              outline=outline, width=width,
+                                              outline_opacity=outline_opacity,
+                                              fill=fill, fill_opacity=fill_opacity)
                         elif symbol == 'pentagon':
-                            xy = [x, y - 0.5 * ptsize,
-                                  x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
-                                  x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
-                                  x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
-                                  x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
-                            self._draw_polygon(draw, xy,
+                            self.draw_pentagon(draw, x, y, ptsize,
                                                outline=outline, width=width,
                                                outline_opacity=outline_opacity,
                                                fill=fill, fill_opacity=fill_opacity)
@@ -1116,20 +1128,16 @@ class ContourWriterBase(object):
                                                  outline_opacity=outline_opacity,
                                                  fill=fill, fill_opacity=fill_opacity)
                         elif symbol == 'triangle':
-                            xy = [x, y - 0.5 * ptsize,
-                                  x + 0.4330127 * ptsize, y + 0.25 * ptsize,
-                                  x - 0.4330127 * ptsize, y + 0.25 * ptsize]
-                            self._draw_polygon(draw, xy,
+                            self.draw_triangle(draw, x, y, ptsize,
                                                outline=outline, width=width,
                                                outline_opacity=outline_opacity,
                                                fill=fill, fill_opacity=fill_opacity)
                         # All stars are drawn with one vertical ray on top
                         elif symbol in ['star8', 'star7', 'star6', 'star5']:
-                            xy = self.get_xy(symbol, x, y, ptsize)
-                            self._draw_polygon(draw, xy,
-                                               outline=outline, width=width,
-                                               outline_opacity=outline_opacity,
-                                               fill=fill, fill_opacity=fill_opacity)
+                            self.draw_star(draw, symbol, x, y, ptsize,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
                         elif symbol == 'asterisk':  # an '*' sign
                             self._draw_asterisk(draw, ptsize, (x, y),
                                                 outline=outline, width=width,
@@ -1246,23 +1254,12 @@ class ContourWriterBase(object):
                                            fill=fill, fill_opacity=fill_opacity)
                     # All regular polygons are drawn horizontally based
                     elif symbol == 'hexagon':
-                        xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
-                              x + 0.50 * ptsize, y,
-                              x + 0.25 * ptsize, y + 0.4330127 * ptsize,
-                              x - 0.25 * ptsize, y + 0.4330127 * ptsize,
-                              x - 0.50 * ptsize, y,
-                              x - 0.25 * ptsize, y - 0.4330127 * ptsize]
-                        self._draw_polygon(draw, xy,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
+                        self.draw_hexagon(draw, x, y, ptsize,
+                                          outline=outline, width=width,
+                                          outline_opacity=outline_opacity,
+                                          fill=fill, fill_opacity=fill_opacity)
                     elif symbol == 'pentagon':
-                        xy = [x, y - 0.5 * ptsize,
-                              x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
-                              x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
-                              x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
-                              x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
-                        self._draw_polygon(draw, xy,
+                        self.draw_pentagon(draw, x, y, ptsize,
                                            outline=outline, width=width,
                                            outline_opacity=outline_opacity,
                                            fill=fill, fill_opacity=fill_opacity)
@@ -1272,20 +1269,16 @@ class ContourWriterBase(object):
                                              outline_opacity=outline_opacity,
                                              fill=fill, fill_opacity=fill_opacity)
                     elif symbol == 'triangle':
-                        xy = [x, y - 0.5 * ptsize,
-                              x + 0.4330127 * ptsize, y + 0.25 * ptsize,
-                              x - 0.4330127 * ptsize, y + 0.25 * ptsize]
-                        self._draw_polygon(draw, xy,
+                        self.draw_triangle(draw, x, y, ptsize,
                                            outline=outline, width=width,
                                            outline_opacity=outline_opacity,
                                            fill=fill, fill_opacity=fill_opacity)
                     # All stars are drawn with one vertical ray on top
                     elif symbol in ['star8', 'star7', 'star6', 'star5']:
-                        xy = self.get_xy(symbol, x, y, ptsize)
-                        self._draw_polygon(draw, xy,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
+                        self.draw_star(draw, symbol, x, y, ptsize,
+                                       outline=outline, width=width,
+                                       outline_opacity=outline_opacity,
+                                       fill=fill, fill_opacity=fill_opacity)
                     elif symbol == 'asterisk':  # an '*' sign
                         self._draw_asterisk(draw, ptsize, (x, y),
                                             outline=outline, width=width,
