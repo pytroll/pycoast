@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2020 PyCoast Developers
+# Copyright (C) 2011-2022 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from PIL import Image
 import pyproj
 import logging
 import ast
+import math
 
 import configparser
 
@@ -966,6 +967,26 @@ class ContourWriterBase(object):
         return self.add_overlay_from_dict(overlays, area_def,
                                           os.path.getmtime(config_file), background)
 
+    def get_xy(self, symbol, x, y, ptsize):
+        # 5 <= n <= 8, symbol = string in ['star8', 'star7', 'star6', 'star5']
+        n = int(symbol[4])
+        alpha2 = math.pi / n
+        # r1 = outer radius (defaults to 0.5 * ptsize), r1 > r2 = inner radius
+        r1 = 0.5 * ptsize
+        r2 = r1 / (math.cos(alpha2) + math.sin(alpha2) * math.tan(2.0 * alpha2))
+        xy = []
+        alpha = 0.0
+        # Walk from star top ray CW around the symbol
+        for i in range(2 * n):
+            if (i % 2) == 0:
+                xy.append(x + r1 * math.sin(alpha))
+                xy.append(y - r1 * math.cos(alpha))
+            else:
+                xy.append(x + r2 * math.sin(alpha))
+                xy.append(y - r2 * math.cos(alpha))
+            alpha += alpha2
+        return xy
+
     def add_cities(self, image, area_def, cities_list, font_file, font_size=12,
                    symbol='circle', ptsize=6, outline='black', fill='white', db_root_path=None, **kwargs):
         """Add cities (symbol and UTF-8 names as description) to a PIL image object.
@@ -986,8 +1007,9 @@ class ContourWriterBase(object):
             font_size : int
                 Size of font
             symbol : string
-                type of symbol, one of the elelment from the list
-                ['circle', 'square', 'asterisk']
+                type of symbol, one of the elelments from the list
+                ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
+                 'star8', 'star7', 'star6', 'star5', 'asterisk']
             ptsize : int
                 Size of the point.
             outline : str or (R, G, B), optional
@@ -1049,7 +1071,7 @@ class ContourWriterBase(object):
                     logger.info("City %s is out of the area, it will not be added to the image.",
                                 city_name + ' ' + str((lon, lat)))
                 else:
-                    # add_dot
+                    # add symbol
                     if ptsize != 0:
 
                         half_ptsize = int(round(ptsize / 2.))
@@ -1061,8 +1083,30 @@ class ContourWriterBase(object):
                         fill_opacity = kwargs.get('fill_opacity', 0)
 
                         # draw the symbol at the (x, y) position
-                        if symbol == 'circle':  # a 'circle' or a 'dot' i.e circle with fill
+                        if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
                             self._draw_ellipse(draw, dot_box,
+                                               outline=outline, width=width,
+                                               outline_opacity=outline_opacity,
+                                               fill=fill, fill_opacity=fill_opacity)
+                        # All regular polygons are drawn horizontally based
+                        elif symbol == 'hexagon':
+                            xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
+                                  x + 0.50 * ptsize, y,
+                                  x + 0.25 * ptsize, y + 0.4330127 * ptsize,
+                                  x - 0.25 * ptsize, y + 0.4330127 * ptsize,
+                                  x - 0.50 * ptsize, y,
+                                  x - 0.25 * ptsize, y - 0.4330127 * ptsize]
+                            self._draw_polygon(draw, xy,
+                                               outline=outline, width=width,
+                                               outline_opacity=outline_opacity,
+                                               fill=fill, fill_opacity=fill_opacity)
+                        elif symbol == 'pentagon':
+                            xy = [x, y - 0.5 * ptsize,
+                                  x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
+                                  x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+                                  x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+                                  x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
+                            self._draw_polygon(draw, xy,
                                                outline=outline, width=width,
                                                outline_opacity=outline_opacity,
                                                fill=fill, fill_opacity=fill_opacity)
@@ -1071,6 +1115,21 @@ class ContourWriterBase(object):
                                                  outline=outline, width=width,
                                                  outline_opacity=outline_opacity,
                                                  fill=fill, fill_opacity=fill_opacity)
+                        elif symbol == 'triangle':
+                            xy = [x, y - 0.5 * ptsize,
+                                  x + 0.4330127 * ptsize, y + 0.25 * ptsize,
+                                  x - 0.4330127 * ptsize, y + 0.25 * ptsize]
+                            self._draw_polygon(draw, xy,
+                                               outline=outline, width=width,
+                                               outline_opacity=outline_opacity,
+                                               fill=fill, fill_opacity=fill_opacity)
+                        # All stars are drawn with one vertical ray on top
+                        elif symbol in ['star8', 'star7', 'star6', 'star5']:
+                            xy = self.get_xy(symbol, x, y, ptsize)
+                            self._draw_polygon(draw, xy,
+                                               outline=outline, width=width,
+                                               outline_opacity=outline_opacity,
+                                               fill=fill, fill_opacity=fill_opacity)
                         elif symbol == 'asterisk':  # an '*' sign
                             self._draw_asterisk(draw, ptsize, (x, y),
                                                 outline=outline, width=width,
@@ -1123,8 +1182,9 @@ class ContourWriterBase(object):
             font_size : int
                 Size of font
             symbol : string
-                type of symbol, one of the elelment from the list
-                ['circle', 'square', 'asterisk']
+                type of symbol, one of the elelments from the list
+                ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
+                 'star8', 'star7', 'star6', 'star5, 'asterisk']
             ptsize : int
                 Size of the point.
             outline : str or (R, G, B), optional
@@ -1167,6 +1227,7 @@ class ContourWriterBase(object):
                 logger.info("Point %s is out of the area, it will not be added to the image.",
                             str((lon, lat)))
             else:
+                # add symbol
                 if ptsize != 0:
                     half_ptsize = int(round(ptsize / 2.))
 
@@ -1178,8 +1239,30 @@ class ContourWriterBase(object):
                     fill_opacity = kwargs.get('fill_opacity', 0)
 
                     # draw the symbol at the (x, y) position
-                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e circle with fill
+                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
                         self._draw_ellipse(draw, dot_box,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    # All regular polygons are drawn horizontally based
+                    elif symbol == 'hexagon':
+                        xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
+                              x + 0.50 * ptsize, y,
+                              x + 0.25 * ptsize, y + 0.4330127 * ptsize,
+                              x - 0.25 * ptsize, y + 0.4330127 * ptsize,
+                              x - 0.50 * ptsize, y,
+                              x - 0.25 * ptsize, y - 0.4330127 * ptsize]
+                        self._draw_polygon(draw, xy,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'pentagon':
+                        xy = [x, y - 0.5 * ptsize,
+                              x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
+                              x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+                              x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+                              x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
+                        self._draw_polygon(draw, xy,
                                            outline=outline, width=width,
                                            outline_opacity=outline_opacity,
                                            fill=fill, fill_opacity=fill_opacity)
@@ -1188,6 +1271,21 @@ class ContourWriterBase(object):
                                              outline=outline, width=width,
                                              outline_opacity=outline_opacity,
                                              fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'triangle':
+                        xy = [x, y - 0.5 * ptsize,
+                              x + 0.4330127 * ptsize, y + 0.25 * ptsize,
+                              x - 0.4330127 * ptsize, y + 0.25 * ptsize]
+                        self._draw_polygon(draw, xy,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    # All stars are drawn with one vertical ray on top
+                    elif symbol in ['star8', 'star7', 'star6', 'star5']:
+                        xy = self.get_xy(symbol, x, y, ptsize)
+                        self._draw_polygon(draw, xy,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
                     elif symbol == 'asterisk':  # an '*' sign
                         self._draw_asterisk(draw, ptsize, (x, y),
                                             outline=outline, width=width,
