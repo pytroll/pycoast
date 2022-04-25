@@ -1032,7 +1032,7 @@ class ContourWriterBase(object):
             symbol : string
                 type of symbol, one of the elelments from the list
                 ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
-                 'star8', 'star7', 'star6', 'star5', 'asterisk']
+                'star8', 'star7', 'star6', 'star5', 'asterisk']
             ptsize : int
                 Size of the point.
             outline : str or (R, G, B), optional
@@ -1075,7 +1075,7 @@ class ContourWriterBase(object):
         # 1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
         textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000.txt"))
         try:
-            f = open(textfilename, 'r')
+            f = open(textfilename, mode='r', encoding='utf-8')
         except FileNotFoundError:
             raise FileNotFoundError('Could not find file %s' % textfilename)
         try:
@@ -1192,7 +1192,7 @@ class ContourWriterBase(object):
             symbol : string
                 type of symbol, one of the elelments from the list
                 ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
-                 'star8', 'star7', 'star6', 'star5, 'asterisk']
+                'star8', 'star7', 'star6', 'star5, 'asterisk']
             ptsize : int
                 Size of the point.
             outline : str or (R, G, B), optional
