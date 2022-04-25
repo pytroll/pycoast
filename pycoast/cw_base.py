@@ -1089,7 +1089,7 @@ class ContourWriterBase(object):
             if t[1] in cities_list or t[2] in cities_list:
                 city_name, lon, lat = t[1], float(t[5]), float(t[4])
                 try:
-                    (x, y) = area_def.get_xy_from_lonlat(lon, lat)
+                    x, y = area_def.get_array_indices_from_lonlat(lon, lat)
                 except ValueError:
                     logger.info("City %s is out of the area, it will not be added to the image.",
                                 city_name + ' ' + str((lon, lat)))
@@ -1230,7 +1230,7 @@ class ContourWriterBase(object):
         for point in points_list:
             (lon, lat), desc = point
             try:
-                x, y = area_def.get_xy_from_lonlat(lon, lat)
+                x, y = area_def.get_array_indices_from_lonlat(lon, lat)
             except ValueError:
                 logger.info("Point %s is out of the area, it will not be added to the image.",
                             str((lon, lat)))
