@@ -857,14 +857,16 @@ class ContourWriterBase(object):
                           **grid_kwargs)
 
         # Cities management
-        if 'cities' in overlays:
+        for param_key in ['cities', 'cities1', 'cities2', 'cities3']:
+            if param_key not in overlays:
+                continue
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
-            DEFAULT_OUTLINE = 'white'
-            DEFAULT_FILL = None
+            DEFAULT_OUTLINE = 'black'
+            DEFAULT_FILL = 'white'
 
-            params = overlays['cities'].copy()
+            params = overlays[param_key].copy()
 
             cities_list = params.pop('cities_list')
             font_file = params.pop('font')
@@ -880,14 +882,16 @@ class ContourWriterBase(object):
                             symbol, ptsize, outline, fill, **params)
 
         # Points management
-        if 'points' in overlays:
+        for param_key in ['points', 'points1', 'points2', 'points3']:
+            if param_key not in overlays:
+                continue
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
-            DEFAULT_OUTLINE = 'white'
-            DEFAULT_FILL = None
+            DEFAULT_OUTLINE = 'black'
+            DEFAULT_FILL = 'white'
 
-            params = overlays['points'].copy()
+            params = overlays[param_key].copy()
 
             points_list = list(params.pop('points_list'))
             font_file = params.pop('font')
@@ -1142,7 +1146,7 @@ class ContourWriterBase(object):
                             self._draw_asterisk(draw, ptsize, (x, y),
                                                 outline=outline, width=width,
                                                 outline_opacity=outline_opacity)
-                        else:
+                        elif symbol:
                             raise ValueError("Unsupported symbol type: " + str(symbol))
 
                         text_position = [x + ptsize, y]
@@ -1283,7 +1287,7 @@ class ContourWriterBase(object):
                         self._draw_asterisk(draw, ptsize, (x, y),
                                             outline=outline, width=width,
                                             outline_opacity=outline_opacity)
-                    else:
+                    elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
 
                 elif desc is None:
