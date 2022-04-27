@@ -511,12 +511,41 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_pil failed')
 
-    def test_add_cities_cfg_pil(self):
+#    def test_add_cities_cfg_pil(self):
+#        from pycoast import ContourWriterPIL
+#        from pyresample.geometry import AreaDefinition
+#
+#        config_file = os.path.join(os.path.dirname(__file__),
+#                                   'nh_cities_pil.ini')
+#
+#        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+#                                           'nh_cities_cfg_pil.png'))
+#        grid_data = np.array(grid_img)
+#
+#        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+#
+#        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+#        area_extent = (-5326849.0625, -5326849.0625,
+#                       5326849.0625, 5326849.0625)
+#
+#        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+#                                  1024, 1024, area_extent)
+#
+#        cw = ContourWriterPIL(gshhs_root_dir)
+#
+#        cw.add_overlay_from_config(config_file, area_def, img)
+#
+#        res = np.array(img)
+#        self.assertTrue(fft_metric(grid_data, res),
+#                        'Writing of nh cities_cfg_pil failed')
+
+    def test_add_cities_from_dict_pil():
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
 
-        config_file = os.path.join(os.path.dirname(__file__),
-                                   'nh_cities_pil.ini')
+        # overlays['cities'] is now a list of 'cities' dicts, the *.ini parser gives up
+        # config_file = os.path.join(os.path.dirname(__file__), 'nh_cities_pil.ini')
+        # This should give the same result using *_from_dict() as before *_from_config()
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'nh_cities_cfg_pil.png'))
@@ -531,13 +560,20 @@ class TestPIL(TestPycoast):
         area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
                                   1024, 1024, area_extent)
 
+        overlays={}
+        overlays['coasts'] = {'level': 4, 'resolution': 'l', 'outline': 'black'}
+        overlays['borders'] = {'level': 1, 'outline': 'black', 'width': 3, 'resolution': 'c'}
+        overlays['cities'] = [{'cities_list': ('Toronto', 'Bad Schwalbach', 'Copenhagen', 'Whitehorse', 'Reykjavik', 'Belp'),
+                              'font': 'pycoast/tests/test_data/DejaVuSerif.ttf', 'font_size': 20, 'symbol': 'circle',
+                              'ptsize': 16, 'outline': 'blue', 'fill': 'yellow', 'box_outline': 'black'}]
+
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        cw.add_overlay_from_config(config_file, area_def, img)
+        img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh cities_cfg_pil failed')
+        assertTrue(fft_metric(grid_data, res),
+                   'Writing of nh cities_from_dict_pil failed')
 
 
 class TestPILAGG(TestPycoast):
@@ -948,12 +984,41 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_agg failed')
 
-    def test_add_cities_cfg_agg(self):
+#    def test_add_cities_cfg_agg(self):
+#        from pycoast import ContourWriterAGG
+#        from pyresample.geometry import AreaDefinition
+#
+#        config_file = os.path.join(os.path.dirname(__file__),
+#                                   'nh_cities_agg.ini')
+#
+#        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+#                                           'nh_cities_cfg_agg.png'))
+#        grid_data = np.array(grid_img)
+#
+#        img = Image.new('RGB', (1024, 1024), (255, 255, 255))
+#
+#        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+#        area_extent = (-5326849.0625, -5326849.0625,
+#                       5326849.0625, 5326849.0625)
+#
+#        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+#                                  1024, 1024, area_extent)
+#
+#        cw = ContourWriterAGG(gshhs_root_dir)
+#
+#        cw.add_overlay_from_config(config_file, area_def, img)
+#
+#        res = np.array(img)
+#        self.assertTrue(fft_metric(grid_data, res),
+#                        'Writing of nh cities_cfg_agg failed')
+
+    def test_add_cities_from_dict_agg():
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
 
-        config_file = os.path.join(os.path.dirname(__file__),
-                                   'nh_cities_agg.ini')
+        # overlays['cities'] is now a list of 'cities' dicts, the *.ini parser gives up
+        # config_file = os.path.join(os.path.dirname(__file__), 'nh_cities_agg.ini')
+        # This should give the same result using *_from_dict() as before *_from_config()
 
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
                                            'nh_cities_cfg_agg.png'))
@@ -968,13 +1033,21 @@ class TestPILAGG(TestPycoast):
         area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
                                   1024, 1024, area_extent)
 
+        overlays={}
+        overlays['coasts'] = {'level': 4, 'resolution': 'l', 'outline': 'black'}
+        overlays['borders'] = {'level': 1, 'outline': 'black', 'width': 3, 'resolution': 'c'}
+        overlays['cities'] = [{'cities_list': ['Toronto', 'Bad Schwalbach', 'Copenhagen', 'Whitehorse', 'Reykjavik', 'Belp'],
+                              'font': 'pycoast/tests/test_data/DejaVuSerif.ttf', 'font_size': 20, 'symbol': 'circle',
+                              'ptsize': 16, 'outline': 'blue', 'width': 2, 'fill': 'yellow', 'fill_opacity': 128,
+                              'box_outline': 'black', 'box_linewidth': 0.5, 'box_fill': 'cyan', 'box_opacity': 50}]
+
         cw = ContourWriterAGG(gshhs_root_dir)
 
-        cw.add_overlay_from_config(config_file, area_def, img)
+        img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res),
-                        'Writing of nh cities_cfg_agg failed')
+        assertTrue(fft_metric(grid_data, res),
+                   'Writing of nh cities_from_dict_agg failed')
 
 
 class FakeAreaDef:

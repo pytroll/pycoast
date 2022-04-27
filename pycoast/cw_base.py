@@ -856,33 +856,31 @@ class ContourWriterBase(object):
                           lat_placement=lat_placement,
                           **grid_kwargs)
 
-        # Cities management
-        for param_key in ['cities', 'cities1', 'cities2', 'cities3']:
-            if param_key not in overlays:
-                continue
+        # Cities management (PR #60)
+        if 'cities' in overlays:
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
             DEFAULT_OUTLINE = 'black'
             DEFAULT_FILL = 'white'
 
-            params = overlays[param_key].copy()
+            for params in overlays['cities'].copy():
 
-            cities_list = params.pop('cities_list')
-            font_file = params.pop('font')
-            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+                cities_list = params.pop('cities_list')
+                font_file = params.pop('font')
+                font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
 
-            symbol = params.pop('symbol', DEFAULT_SYMBOL)
-            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+                symbol = params.pop('symbol', DEFAULT_SYMBOL)
+                ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
 
-            outline = params.pop('outline', DEFAULT_OUTLINE)
-            fill = params.pop('fill', DEFAULT_FILL)
+                outline = params.pop('outline', DEFAULT_OUTLINE)
+                fill = params.pop('fill', DEFAULT_FILL)
 
-            self.add_cities(foreground, area_def, cities_list, font_file, font_size,
-                            symbol, ptsize, outline, fill, **params)
+                self.add_cities(foreground, area_def, cities_list, font_file, font_size,
+                                symbol, ptsize, outline, fill, **params)
 
-        # Points management
-        for param_key in ['points', 'points1', 'points2', 'points3']:
+        # Points management (PR #56)
+        for param_key in ['points', 'text']:
             if param_key not in overlays:
                 continue
             DEFAULT_FONTSIZE = 12
