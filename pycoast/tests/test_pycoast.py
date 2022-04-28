@@ -475,6 +475,36 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh points failed')
 
+    def test_add_shapefiles_from_dict_pil(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'two_shapefiles_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  425, 425, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        overlays={}
+        overlays['coasts'] = {'level': 4, 'resolution': 'l'}
+        overlays['shapefiles'] = [{'filename': os.path.join(os.path.dirname(__file__),
+                                  'test_data/shapes/Metareas.shp'),
+                                  'outline': 'magenta', 'width': 2.5},
+                                  {'filename': os.path.join(os.path.dirname(__file__),
+                                  'test_data/shapes/divisao_politica/BR_Regioes.shp'),
+                                  'outline': 'red', 'fill': 'yellow', 'fill_opacity': 50}]
+
+        img = cw.add_overlay_from_dict(overlays, area_def, background=img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of two shapefiles from dict pil failed')
+
 
 class TestPILAGG(TestPycoast):
     """Test AGG contour writer."""
@@ -846,6 +876,36 @@ class TestPILAGG(TestPycoast):
         img.close()
 
         self.assertTrue(image_mode == 'RGBA', 'Conversion to RGBA failed.')
+
+    def test_add_shapefiles_from_dict_agg(self):
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'two_shapefiles_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  425, 425, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        overlays={}
+        overlays['coasts'] = {'level': 4, 'resolution': 'l'}
+        overlays['shapefiles'] = [{'filename': os.path.join(os.path.dirname(__file__),
+                                  'test_data/shapes/Metareas.shp'),
+                                  'outline': 'magenta', 'width': 2.5},
+                                  {'filename': os.path.join(os.path.dirname(__file__),
+                                  'test_data/shapes/divisao_politica/BR_Regioes.shp'),
+                                  'outline': 'red', 'fill': 'yellow', 'fill_opacity': 50}]
+
+        img = cw.add_overlay_from_dict(overlays, area_def, background=img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing two shapefiles from dict agg failed')
 
 
 class FakeAreaDef:
