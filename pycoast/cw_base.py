@@ -856,7 +856,7 @@ class ContourWriterBase(object):
                           lat_placement=lat_placement,
                           **grid_kwargs)
 
-        # Cities management (PR #60)
+        # Cities management (PR #61)
         if 'cities' in overlays:
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
