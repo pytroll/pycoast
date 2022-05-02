@@ -490,7 +490,8 @@ class TestPIL(TestPycoast):
 
         cw.add_coastlines(img, area_def, resolution='l', level=2)
         font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
-                                                   'test_data', 'DejaVuSerif.ttf'), 16)
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  16)
 
         cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
                     font=font, fill='yellow', write_text=True,
@@ -515,7 +516,8 @@ class TestPIL(TestPycoast):
 
         cw.add_coastlines(img, area_def, resolution='l', level=2)
         font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
-                                                   'test_data', 'DejaVuSerif.ttf'), 20)
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  20)
 
         cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
                     font=font, fill='yellow', write_text=True,
@@ -561,7 +563,7 @@ class TestPIL(TestPycoast):
         grid_data = np.array(grid_img)
         img = Image.new('RGB', (888, 705))
         proj4_string = '+proj=tmerc +ellps=WGS84 +lon_0=-155.0'
-        area_extent = [-3503550.0,  -556597.5, 3503550.0, 5009377.3]
+        area_extent = [-3503550.0, -556597.5, 3503550.0, 5009377.3]
 
         area_def = (proj4_string, area_extent)
 
@@ -1049,7 +1051,7 @@ class TestPILAGG(TestPycoast):
         grid_data = np.array(grid_img)
         img = Image.new('RGB', (888, 705))
         proj4_string = '+proj=tmerc +ellps=WGS84 +lon_0=-155.0'
-        area_extent = [-3503550.0,  -556597.5, 3503550.0, 5009377.3]
+        area_extent = [-3503550.0, -556597.5, 3503550.0, 5009377.3]
 
         area_def = (proj4_string, area_extent)
 
