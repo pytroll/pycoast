@@ -593,9 +593,14 @@ class ContourWriterBase(object):
 
             # Check if polygon is possibly relevant
             s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
-            shape_is_outside_lon = lon_max < s_lon_ll or lon_min > s_lon_ur
+            if lon_min <= lon_max:
+                # Area_extent west or east of dateline
+                shape_is_outside_lon = lon_max < s_lon_ll or lon_min > s_lon_ur
+            else:
+                # Area_extent spans over dateline
+                shape_is_outside_lon = lon_max < s_lon_ll and lon_min > s_lon_ur
             shape_is_outside_lat = lat_max < s_lat_ll or lat_min > s_lat_ur
-            if lon_min <= lon_max and (shape_is_outside_lon or shape_is_outside_lat):
+            if shape_is_outside_lon or shape_is_outside_lat:
                 # Polygon is irrelevant
                 continue
 
@@ -1188,13 +1193,15 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lon_max = 180
     elif round(angle_sum) == 0:
         # Covers no poles
-        if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1:
+        if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1 and \
+                lons_s1.min() * lons_s1.max() < -25000:
             # End points of left side on different side of dateline
             lon_min = lons_s1[lons_s1 > 0].min()
         else:
             lon_min = lons_s1.min()
 
-        if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1:
+        if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1 and \
+                lons_s3.min() * lons_s3.max() < -25000:
             # End points of right side on different side of dateline
             lon_max = lons_s3[lons_s3 < 0].max()
         else:
