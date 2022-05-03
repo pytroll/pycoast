@@ -863,20 +863,22 @@ class ContourWriterBase(object):
             else:
                 Dlonlat = (overlays['grid'].get('Dlon', 10.0), overlays['grid'].get('Dlat', 10.0))
                 dlonlat = (overlays['grid'].get('dlon', 2.0), overlays['grid'].get('dlat', 2.0))
-            font = overlays['grid'].get('font', None)
-            font_size = int(overlays['grid'].get('font_size', 10))
+            outline = overlays['grid'].get('outline', 'white')
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
                 write_text = write_text.lower() in ['true', 'yes', '1', 'on']
-            outline = overlays['grid'].get('outline', 'white')
+            # This should close PyCoast issue #52
+            font = overlays['grid'].get('font', None)
+            font_size = int(overlays['grid'].get('font_size', 10))
+            fill = overlays['grid'].get('fill', 'white')
+            fill_opacity = overlays['grid'].get('fill_opacity', 255)
             if isinstance(font, str):
                 if is_agg:
                     from aggdraw import Font
-                    font = Font(outline, font, size=font_size)
+                    font = Font(fill, font, opacity=fill_opacity, size=font_size)
                 else:
                     from PIL.ImageFont import truetype
                     font = truetype(font, font_size)
-            fill = overlays['grid'].get('fill', None)
             minor_outline = overlays['grid'].get('minor_outline', 'white')
             minor_is_tick = overlays['grid'].get('minor_is_tick', True)
             if isinstance(minor_is_tick, str):
