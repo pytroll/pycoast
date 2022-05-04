@@ -76,6 +76,7 @@ class _CoordConverter:
     defined by area_def.width and area_def.height.
 
     """
+
     def __init__(self, coord_ref: str, area_def: AreaDefinition):
         self._area_def = self._check_area_def(area_def)
         convert_methods = {
