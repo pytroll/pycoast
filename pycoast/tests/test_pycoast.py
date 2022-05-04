@@ -495,15 +495,15 @@ class TestPIL(TestPycoast):
         font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
                                                'test_data', 'DejaVuSerif.ttf'), 40)
 
-        overlays={}
+        overlays = {}
         overlays['coasts'] = {'width': 3.0, 'level': 4, 'resolution': 'l'}
         overlays['grid'] = {'major_lonlat': (5, 5), 'minor_lonlat': (1, 1),
-                            'outline': (255, 0, 0) , 'outline_opacity': 127,
-                            'minor_outline': (0, 0, 255),'minor_outline_opacity': 127,
+                            'outline': (255, 0, 0), 'outline_opacity': 127,
+                            'minor_outline': (0, 0, 255), 'minor_outline_opacity': 127,
                             'width': 10.5, 'minor_width': 5.5, 'minor_is_tick': False,
                             'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b',
-                            'font': font, 'fill': 'yellow'} # Fill is pil text color!
-                            # Pil Font can be None, then a of default font is choosen
+                            'font': font, 'fill': 'yellow'}
+        # Fill is pil text color! Pil Font can be None, then a of default font is choosen
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
@@ -1012,15 +1012,15 @@ class TestPILAGG(TestPycoast):
                                                    'test_data', 'DejaVuSerif.ttf'),
                             fill_opacity=255, size=40)
 
-        overlays={}
+        overlays = {}
         overlays['coasts'] = {'width': 3.0, 'level': 4, 'resolution': 'l'}
         overlays['grid'] = {'major_lonlat': (5, 5), 'minor_lonlat': (1, 1),
-                            'outline': (255, 0, 0) , 'outline_opacity': 127,
-                            'minor_outline': (0, 0, 255),'minor_outline_opacity': 127,
+                            'outline': (255, 0, 0), 'outline_opacity': 127,
+                            'minor_outline': (0, 0, 255), 'minor_outline_opacity': 127,
                             'width': 10.5, 'minor_width': 5.5, 'minor_is_tick': False,
                             'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b',
-                            'font': font, 'fill': 'red'} # Fill has no agg effect, issue #52
-                            # Agg Font can be None if and only if write_text is set to False
+                            'font': font, 'fill': 'red'} 
+        # Fill has no agg effect! Agg Font can be None if and only if write_text is set to False
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
