@@ -1019,7 +1019,7 @@ class TestPILAGG(TestPycoast):
                             'minor_outline': (0, 0, 255), 'minor_outline_opacity': 127,
                             'width': 10.5, 'minor_width': 5.5, 'minor_is_tick': False,
                             'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b',
-                            'font': font, 'fill': 'red'} 
+                            'font': font, 'fill': 'red'}
         # Fill has no agg effect! Agg Font can be None if and only if write_text is set to False
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
