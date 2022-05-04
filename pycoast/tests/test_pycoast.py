@@ -491,19 +491,127 @@ class TestPIL(TestPycoast):
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        overlays={}
+        overlays = {}
         overlays['coasts'] = {'level': 4, 'resolution': 'l'}
         overlays['shapefiles'] = [{'filename': os.path.join(os.path.dirname(__file__),
-                                  'test_data/shapes/Metareas.shp'),
-                                  'outline': 'magenta', 'width': 2.5},
+                                                            'test_data/shapes/Metareas.shp'),
+                                   'outline': 'magenta', 'width': 2.5},
                                   {'filename': os.path.join(os.path.dirname(__file__),
-                                  'test_data/shapes/divisao_politica/BR_Regioes.shp'),
-                                  'outline': 'red', 'fill': 'yellow', 'fill_opacity': 50}]
+                                                            'test_data/shapes/divisao_politica/BR_Regioes.shp'),
+                                   'outline': 'red', 'fill': 'yellow', 'fill_opacity': 50}]
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of two shapefiles from dict pil failed')
+
+    def test_western_shapes_pil(self):
+        from pycoast import ContourWriterPIL
+        result_file = os.path.join(os.path.dirname(__file__), 'western_shapes_pil.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (1000, 560))
+        proj4_string = '+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=50.0'
+        area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  16)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, fill='yellow', write_text=True,
+                    outline='red', minor_outline='red',
+                    lon_placement='lbr', lat_placement='')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of western shapes pil failed')
+
+    def test_eastern_shapes_pil(self):
+        from pycoast import ContourWriterPIL
+        result_file = os.path.join(os.path.dirname(__file__), 'eastern_shapes_pil.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (1000, 560))
+        proj4_string = '+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=-50.0'
+        area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'),
+                                  20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, fill='yellow', write_text=True,
+                    outline='red', minor_outline='red',
+                    lon_placement='lbr', lat_placement='')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of eastern shapes pil failed')
+
+    def test_no_h_scratch_pil(self):
+        # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
+        from pycoast import ContourWriterPIL
+        result_file = os.path.join(os.path.dirname(__file__), 'no_h_scratch_pil.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (888, 781))
+        proj4_string = '+proj=merc +ellps=WGS84 +lon_0=170.0'
+        area_extent = [-3899875.0, 1795000.0, 5014125.0, 9600000.0]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'), 20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, fill='yellow', write_text=True,
+                    outline='orange', minor_outline='orange',
+                    lon_placement='bt', lat_placement='lr')
+        cw.add_rivers(img, area_def, level=5, outline='blue')
+        cw.add_borders(img, area_def, outline='red')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of no_h_scratch_pil failed')
+
+    def test_no_v_scratch_pil(self):
+        # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
+        from pycoast import ContourWriterPIL
+        result_file = os.path.join(os.path.dirname(__file__), 'no_v_scratch_pil.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (888, 705))
+        proj4_string = '+proj=tmerc +ellps=WGS84 +lon_0=-155.0'
+        area_extent = [-3503550.0, -556597.5, 3503550.0, 5009377.3]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'), 20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, fill='yellow', write_text=True,
+                    outline='orange', minor_outline='orange',
+                    lon_placement='bt', lat_placement='lr')
+        cw.add_rivers(img, area_def, level=5, outline='blue')
+        cw.add_borders(img, area_def, outline='red')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of no_v_scratch_pil failed')
 
 
 class TestPILAGG(TestPycoast):
@@ -893,19 +1001,137 @@ class TestPILAGG(TestPycoast):
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
-        overlays={}
+        overlays = {}
         overlays['coasts'] = {'level': 4, 'resolution': 'l'}
         overlays['shapefiles'] = [{'filename': os.path.join(os.path.dirname(__file__),
-                                  'test_data/shapes/Metareas.shp'),
-                                  'outline': 'magenta', 'width': 2.5},
+                                                            'test_data/shapes/Metareas.shp'),
+                                   'outline': 'magenta', 'width': 2.5},
                                   {'filename': os.path.join(os.path.dirname(__file__),
-                                  'test_data/shapes/divisao_politica/BR_Regioes.shp'),
-                                  'outline': 'red', 'fill': 'yellow', 'fill_opacity': 50}]
+                                                            'test_data/shapes/divisao_politica/BR_Regioes.shp'),
+                                   'outline': 'red', 'fill': 'yellow', 'fill_opacity': 50}]
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing two shapefiles from dict agg failed')
+
+    def test_western_shapes_agg(self):
+        from pycoast import ContourWriterAGG
+        import aggdraw
+        result_file = os.path.join(os.path.dirname(__file__), 'western_shapes_agg.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (1000, 560))
+        proj4_string = '+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=50.0'
+        area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = aggdraw.Font('orange', os.path.join(os.path.dirname(__file__),
+                                                   'test_data',
+                                                   'DejaVuSerif.ttf'), size=20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, write_text=True,
+                    outline='blue', width=5.0, outline_opacity=100,
+                    minor_outline='blue', minor_width=5.0, minor_outline_opacity=200,
+                    lon_placement='lbr', lat_placement='')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of western shapes agg failed')
+
+    def test_eastern_shapes_agg(self):
+        from pycoast import ContourWriterAGG
+        import aggdraw
+        result_file = os.path.join(os.path.dirname(__file__), 'eastern_shapes_agg.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (1000, 560))
+        proj4_string = '+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=-50.0'
+        area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = aggdraw.Font('orange', os.path.join(os.path.dirname(__file__),
+                                                   'test_data',
+                                                   'DejaVuSerif.ttf'), size=20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, write_text=True,
+                    outline='blue', width=5.0, outline_opacity=100,
+                    minor_outline='blue', minor_width=5.0, minor_outline_opacity=200,
+                    lon_placement='lbr', lat_placement='')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of eastern shapes agg failed')
+
+    def test_no_h_scratch_agg(self):
+        # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
+        from pycoast import ContourWriterAGG
+        import aggdraw
+        result_file = os.path.join(os.path.dirname(__file__), 'no_h_scratch_agg.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (888, 781))
+        proj4_string = '+proj=merc +ellps=WGS84 +lon_0=170.0'
+        area_extent = [-3899875.0, 1795000.0, 5014125.0, 9600000.0]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = aggdraw.Font('yellow', os.path.join(os.path.dirname(__file__),
+                                                   'test_data', 'DejaVuSerif.ttf'),
+                            opacity=255, size=20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, write_text=True,
+                    outline='green', width=5.0, outline_opacity=100,
+                    minor_outline='green', minor_width=5.0, minor_outline_opacity=200,
+                    lon_placement='bt', lat_placement='lr')
+        cw.add_rivers(img, area_def, level=5, outline='blue')
+        cw.add_borders(img, area_def, outline='red')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of no_h_scratch_agg failed')
+
+    def test_no_v_scratch_agg(self):
+        # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
+        from pycoast import ContourWriterAGG
+        import aggdraw
+        result_file = os.path.join(os.path.dirname(__file__), 'no_v_scratch_agg.png')
+        grid_img = Image.open(result_file)
+        grid_data = np.array(grid_img)
+        img = Image.new('RGB', (888, 705))
+        proj4_string = '+proj=tmerc +ellps=WGS84 +lon_0=-155.0'
+        area_extent = [-3503550.0, -556597.5, 3503550.0, 5009377.3]
+
+        area_def = (proj4_string, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_coastlines(img, area_def, resolution='l', level=2)
+        font = aggdraw.Font('yellow', os.path.join(os.path.dirname(__file__),
+                                                   'test_data', 'DejaVuSerif.ttf'),
+                            opacity=255, size=20)
+
+        cw.add_grid(img, area_def, (10.0, 10.0), (5.0, 5.0),
+                    font=font, write_text=True,
+                    outline='green', width=5.0, outline_opacity=100,
+                    minor_outline='green', minor_width=5.0, minor_outline_opacity=200,
+                    lon_placement='bt', lat_placement='lr')
+        cw.add_rivers(img, area_def, level=5, outline='blue')
+        cw.add_borders(img, area_def, outline='red')
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of no_v_scratch_agg failed')
 
 
 class FakeAreaDef:
