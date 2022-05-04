@@ -30,6 +30,11 @@ import ast
 
 import configparser
 
+try:
+    from pyresample import AreaDefinition
+except ImportError:
+    AreaDefinition = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,8 +65,8 @@ def get_resolution_from_area(area_def):
         return "f"
 
 
-def coord_to_pixels(x, y, coord_ref: str, area_def):
-    """Convert lon,lat to image x,y coordinates.
+class _CoordConverter:
+    """Convert coordinates from one space to in-bound image pixel column and row.
 
     Convert the coordinate (x,y) in the coordinates
     reference system ('lonlat' or 'image') into an image
@@ -69,11 +74,37 @@ def coord_to_pixels(x, y, coord_ref: str, area_def):
     Uses the area_def methods if coord_ref is 'lonlat'.
     Raises ValueError if pixel coordinates are outside the image bounds
     defined by area_def.width and area_def.height.
+
     """
-    if coord_ref == 'lonlat':
-        x, y = area_def.get_array_indices_from_lonlat(x, y)
-    elif coord_ref == 'image':
-        (x, y) = (int(x), int(y))
+    def __init__(self, coord_ref: str, area_def: AreaDefinition):
+        self._area_def = self._check_area_def(area_def)
+        convert_methods = {
+            "lonlat": self._lonlat_to_pixels,
+            "image": self._image_to_pixels,
+        }
+        if coord_ref not in convert_methods:
+            pretty_coord_refs = [f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())]
+            raise ValueError(f"'coord_ref' must be one of {pretty_coord_refs}.")
+        self._convert_method = convert_methods[coord_ref]
+
+    def _check_area_def(self, area_def):
+        if AreaDefinition is None:
+            raise ImportError("Missing required 'pyresample' module, please "
+                              "install it with 'pip install pyresample' or "
+                              "'conda install pyresample'.")
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("'area_def' must be an instance of AreaDefinition")
+        return area_def
+
+    def __call__(self, x, y):
+        return self._convert_method(x, y)
+
+    def _lonlat_to_pixels(self, x, y):
+        return self._area_def.get_array_indices_from_lonlat(x, y)
+
+    def _image_to_pixels(self, x, y):
+        area_def = self._area_def
+        x, y = (int(x), int(y))
         if x < 0:
             x += area_def.width
         if y < 0:
@@ -81,9 +112,7 @@ def coord_to_pixels(x, y, coord_ref: str, area_def):
         if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
             raise ValueError("Image pixel coords out of image bounds "
                              f"(width={area_def.width}, height={area_def.height}).")
-    else:
-        raise ValueError("'coord_ref' must be 'lonlat' or 'image'.")
-    return x, y
+        return x, y
 
 
 def hash_dict(dict_to_hash: dict) -> str:
@@ -1113,27 +1142,16 @@ class ContourWriterBase(object):
             box_opacity : int, optional {0; 255}
                 Opacity of the background filling of the textbox.
         """
-        try:
-            from pyresample.geometry import AreaDefinition
-        except ImportError:
-            raise ImportError("Missing required 'pyresample' module, please "
-                              "install it with 'pip install pyresample' or "
-                              "'conda install pyresample'.")
-
-        if not isinstance(area_def, AreaDefinition):
-            raise ValueError("'area_def' must be an instance of AreaDefinition")
-
+        coord_converter = _CoordConverter(coord_ref, area_def)
         draw = self._get_canvas(image)
 
         # Iterate through points list
         for point in points_list:
             (x, y), desc = point
             try:
-                x, y = coord_to_pixels(x, y, coord_ref, area_def)
-            except ValueError as err:
-                if "coord_ref" in str(err):
-                    raise
-                logger.info(f"Point ({x}, {y}) is out of the area, it will not be added to the image.")
+                x, y = coord_converter(x, y)
+            except ValueError:
+                logger.info(f"Point ({x}, {y}) is out of the image area, it will not be added to the image.")
             else:
                 if ptsize != 0:
                     half_ptsize = int(round(ptsize / 2.))
@@ -1162,7 +1180,6 @@ class ContourWriterBase(object):
                                             outline_opacity=outline_opacity)
                     elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
-
                 elif desc is None:
                     logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
 
