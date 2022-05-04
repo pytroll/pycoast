@@ -1010,7 +1010,7 @@ class TestPILAGG(TestPycoast):
 
         font = aggdraw.Font('yellow', os.path.join(os.path.dirname(__file__),
                                                    'test_data', 'DejaVuSerif.ttf'),
-                            fill_opacity=255, size=40)
+                            opacity=255, size=40)
 
         overlays = {}
         overlays['coasts'] = {'width': 3.0, 'level': 4, 'resolution': 'l'}
