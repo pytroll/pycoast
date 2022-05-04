@@ -67,21 +67,22 @@ def coord_to_pixels(x, y, coord_ref: str, area_def):
     reference system ('lonlat' or 'image') into an image
     x,y coordinate.
     Uses the area_def methods if coord_ref is 'lonlat'.
-    Raises ValueError if outwith the image bounds
+    Raises ValueError if pixel coordinates are outside the image bounds
     defined by area_def.width and area_def.height.
     """
     if coord_ref == 'lonlat':
-        x, y = area_def.get_xy_from_lonlat(x, y)
+        x, y = area_def.get_array_indices_from_lonlat(x, y)
     elif coord_ref == 'image':
         (x, y) = (int(x), int(y))
         if x < 0:
             x += area_def.width
         if y < 0:
             y += area_def.height
-        if x < 0 or y < 0 or x > area_def.width or y > area_def.height:
-            raise ValueError("pixel coords out of image bounds")
+        if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
+            raise ValueError("Image pixel coords out of image bounds "
+                             f"(width={area_def.width}, height={area_def.height}).")
     else:
-        raise ValueError("coord_ref must be lonlat or image")
+        raise ValueError("'coord_ref' must be 'lonlat' or 'image'.")
     return x, y
 
 
@@ -1093,7 +1094,10 @@ class ContourWriterBase(object):
             coord_ref : string
                 The interpretation of x,y in points_list:
                 'lonlat' (the default: x is degrees E, y is degrees N),
-                or 'image' (x is pixels right, y is pixels down)
+                or 'image' (x is pixels right, y is pixels down).
+                If image coordinates are negative they are interpreted
+                relative to the end of the dimension like standard Python
+                indexing.
             width : float
                 Line width of the symbol
             outline_opacity : int, optional {0; 255}
@@ -1112,10 +1116,12 @@ class ContourWriterBase(object):
         try:
             from pyresample.geometry import AreaDefinition
         except ImportError:
-            raise ImportError("Missing required 'pyresample' module, please install it.")
+            raise ImportError("Missing required 'pyresample' module, please "
+                              "install it with 'pip install pyresample' or "
+                              "'conda install pyresample'.")
 
         if not isinstance(area_def, AreaDefinition):
-            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
+            raise ValueError("'area_def' must be an instance of AreaDefinition")
 
         draw = self._get_canvas(image)
 
@@ -1124,9 +1130,10 @@ class ContourWriterBase(object):
             (x, y), desc = point
             try:
                 x, y = coord_to_pixels(x, y, coord_ref, area_def)
-            except ValueError:
-                logger.info("Point %s is out of the area, it will not be added to the image.",
-                            str((x, y)))
+            except ValueError as err:
+                if "coord_ref" in str(err):
+                    raise
+                logger.info(f"Point ({x}, {y}) is out of the area, it will not be added to the image.")
             else:
                 if ptsize != 0:
                     half_ptsize = int(round(ptsize / 2.))
