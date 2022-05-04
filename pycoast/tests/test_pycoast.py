@@ -511,7 +511,7 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_pil failed')
 
-    def test_add_cities_from_dict_pil():
+    def test_add_cities_from_dict_pil(self):
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
 
@@ -532,20 +532,20 @@ class TestPIL(TestPycoast):
         area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
                                   1024, 1024, area_extent)
 
-        overlays={}
+        overlays = {}
         overlays['coasts'] = {'level': 4, 'resolution': 'l', 'outline': 'black'}
         overlays['borders'] = {'level': 1, 'outline': 'black', 'width': 3, 'resolution': 'c'}
-        overlays['cities'] = [{'cities_list': ('Toronto', 'Bad Schwalbach', 'Copenhagen', 'Whitehorse', 'Reykjavik', 'Belp'),
-                              'font': 'pycoast/tests/test_data/DejaVuSerif.ttf', 'font_size': 20, 'symbol': 'circle',
-                              'ptsize': 16, 'outline': 'blue', 'fill': 'yellow', 'box_outline': 'black'}]
+        overlays['cities'] = [{'cities_list': ('Toronto', 'Bad Schwalbach', 'Copenhagen',
+                                               'Whitehorse', 'Reykjavik', 'Belp'),
+                               'font': 'pycoast/tests/test_data/DejaVuSerif.ttf', 'font_size': 20, 'symbol': 'circle',
+                               'ptsize': 16, 'outline': 'blue', 'fill': 'yellow', 'box_outline': 'black'}]
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        assertTrue(fft_metric(grid_data, res),
-                   'Writing of nh cities_from_dict_pil failed')
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of nh cities_from_dict_pil failed')
 
     def test_western_shapes_pil(self):
         from pycoast import ContourWriterPIL
@@ -1064,7 +1064,7 @@ class TestPILAGG(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh cities_agg failed')
 
-    def test_add_cities_from_dict_agg():
+    def test_add_cities_from_dict_agg(self):
         from pycoast import ContourWriterAGG
         from pyresample.geometry import AreaDefinition
 
@@ -1085,21 +1085,21 @@ class TestPILAGG(TestPycoast):
         area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
                                   1024, 1024, area_extent)
 
-        overlays={}
+        overlays = {}
         overlays['coasts'] = {'level': 4, 'resolution': 'l', 'outline': 'black'}
         overlays['borders'] = {'level': 1, 'outline': 'black', 'width': 3, 'resolution': 'c'}
-        overlays['cities'] = [{'cities_list': ['Toronto', 'Bad Schwalbach', 'Copenhagen', 'Whitehorse', 'Reykjavik', 'Belp'],
-                              'font': 'pycoast/tests/test_data/DejaVuSerif.ttf', 'font_size': 20, 'symbol': 'circle',
-                              'ptsize': 16, 'outline': 'blue', 'width': 2, 'fill': 'yellow', 'fill_opacity': 128,
-                              'box_outline': 'black', 'box_linewidth': 0.5, 'box_fill': 'cyan', 'box_opacity': 50}]
+        overlays['cities'] = [{'cities_list': ['Toronto', 'Bad Schwalbach', 'Copenhagen',
+                               'Whitehorse', 'Reykjavik', 'Belp'],
+                               'font': 'pycoast/tests/test_data/DejaVuSerif.ttf', 'font_size': 20, 'symbol': 'circle',
+                               'ptsize': 16, 'outline': 'blue', 'width': 2, 'fill': 'yellow', 'fill_opacity': 128,
+                               'box_outline': 'black', 'box_linewidth': 0.5, 'box_fill': 'cyan', 'box_opacity': 50}]
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        assertTrue(fft_metric(grid_data, res),
-                   'Writing of nh cities_from_dict_agg failed')
+        self.assertTrue(fft_metric(grid_data, res), 'Writing of nh cities_from_dict_agg failed')
 
     def test_western_shapes_agg(self):
         from pycoast import ContourWriterAGG
