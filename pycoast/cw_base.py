@@ -691,6 +691,8 @@ class ContourWriterBase(object):
     def _config_to_dict(self, config_file):
         """Convert a config file to a dict."""
         config = configparser.ConfigParser()
+        # Parse keys case sensitive
+        config.optionxform = str
         try:
             with open(config_file, 'r'):
                 logger.info("Overlays config file %s found", str(config_file))
@@ -888,10 +890,10 @@ class ContourWriterBase(object):
 
             grid_kwargs = {}
             if is_agg:
-                width = float(overlays['grid'].get('width', 1.5))
-                minor_width = float(overlays['grid'].get('minor_width', 1.0))
+                width = float(overlays['grid'].get('width', 1.0))
+                minor_width = float(overlays['grid'].get('minor_width', 0.5))
                 outline_opacity = overlays['grid'].get('outline_opacity', 255)
-                minor_outline_opacity = overlays['grid'].get('minor_outline_opacity', 127)
+                minor_outline_opacity = overlays['grid'].get('minor_outline_opacity', 255)
                 grid_kwargs['width'] = width
                 grid_kwargs['minor_width'] = minor_width
                 grid_kwargs['outline_opacity'] = outline_opacity

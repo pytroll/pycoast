@@ -315,8 +315,8 @@ class ContourWriterAGG(ContourWriterBase):
 
     def add_grid(self, image, area_def, Dlonlat, dlonlat,
                  font=None, write_text=True, fill=None, fill_opacity=255,
-                 outline='white', width=1.5, outline_opacity=255,
-                 minor_outline='white', minor_width=1.0,
+                 outline='white', width=1.0, outline_opacity=255,
+                 minor_outline='white', minor_width=0.5,
                  minor_outline_opacity=255, minor_is_tick=True,
                  lon_placement='tb', lat_placement='lr'):
         """Add a lon-lat grid to a PIL image object.
