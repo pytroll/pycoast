@@ -65,7 +65,7 @@ grid_file = 'test_grid.png'
 p_file_coasts = 'test_coasts_p_mode.png'
 
 
-class TestPycoast(unittest.TestCase):
+class _ContourWriterTestBase(unittest.TestCase):
     """Base class for test classes that need example images."""
 
     def setUp(self):
@@ -81,7 +81,7 @@ class TestPycoast(unittest.TestCase):
         os.remove(p_file_coasts)
 
 
-class TestPIL(TestPycoast):
+class ContourWriterTestPIL(_ContourWriterTestBase):
     """Test PIL-based contour writer."""
 
     def test_europe(self):
@@ -584,7 +584,7 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res), 'Writing of no_v_scratch_pil failed')
 
 
-class TestPILAGG(TestPycoast):
+class ContourWriterTestPILAGG(_ContourWriterTestBase):
     """Test AGG contour writer."""
 
     def test_europe_agg(self):
