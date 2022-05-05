@@ -1110,7 +1110,7 @@ class ContourWriterBase(object):
 
                         width = kwargs.get('width', 1.)
                         outline_opacity = kwargs.get('outline_opacity', 255)
-                        fill_opacity = kwargs.get('fill_opacity', 0)
+                        fill_opacity = kwargs.get('fill_opacity', 255)
 
                         # draw the symbol at the (x, y) position
                         if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
