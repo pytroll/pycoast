@@ -31,6 +31,11 @@ import math
 
 import configparser
 
+try:
+    from pyresample import AreaDefinition
+except ImportError:
+    AreaDefinition = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,6 +64,57 @@ def get_resolution_from_area(area_def):
         return "h"
     else:
         return "f"
+
+
+class _CoordConverter:
+    """Convert coordinates from one space to in-bound image pixel column and row.
+
+    Convert the coordinate (x,y) in the coordinates
+    reference system ('lonlat' or 'image') into an image
+    x,y coordinate.
+    Uses the area_def methods if coord_ref is 'lonlat'.
+    Raises ValueError if pixel coordinates are outside the image bounds
+    defined by area_def.width and area_def.height.
+
+    """
+
+    def __init__(self, coord_ref: str, area_def: AreaDefinition):
+        self._area_def = self._check_area_def(area_def)
+        convert_methods = {
+            "lonlat": self._lonlat_to_pixels,
+            "image": self._image_to_pixels,
+        }
+        if coord_ref not in convert_methods:
+            pretty_coord_refs = [f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())]
+            raise ValueError(f"'coord_ref' must be one of {pretty_coord_refs}.")
+        self._convert_method = convert_methods[coord_ref]
+
+    def _check_area_def(self, area_def):
+        if AreaDefinition is None:
+            raise ImportError("Missing required 'pyresample' module, please "
+                              "install it with 'pip install pyresample' or "
+                              "'conda install pyresample'.")
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("'area_def' must be an instance of AreaDefinition")
+        return area_def
+
+    def __call__(self, x, y):
+        return self._convert_method(x, y)
+
+    def _lonlat_to_pixels(self, x, y):
+        return self._area_def.get_array_indices_from_lonlat(x, y)
+
+    def _image_to_pixels(self, x, y):
+        area_def = self._area_def
+        x, y = (int(x), int(y))
+        if x < 0:
+            x += area_def.width
+        if y < 0:
+            y += area_def.height
+        if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
+            raise ValueError("Image pixel coords out of image bounds "
+                             f"(width={area_def.width}, height={area_def.height}).")
+        return x, y
 
 
 def hash_dict(dict_to_hash: dict) -> str:
@@ -123,7 +179,7 @@ class ContourWriterBase(object):
         """Draw text with default PIL module."""
         if font is None:
             # NOTE: Default font does not use font size in PIL writer
-            font = self._get_font(kwargs.get('outline', 'black'), font, 12)
+            font = self._get_font(kwargs.get('fill', 'black'), font, 12)
         placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
@@ -822,29 +878,27 @@ class ContourWriterBase(object):
 
         # Grid overlay
         if 'grid' in overlays:
-            lon_major = float(overlays['grid'].get('lon_major', 10.0))
-            lat_major = float(overlays['grid'].get('lat_major', 10.0))
-            lon_minor = float(overlays['grid'].get('lon_minor', 2.0))
-            lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
-            font = overlays['grid'].get('font', None)
-            font_size = int(overlays['grid'].get('font_size', 10))
-            grid_kwargs = {}
-            if is_agg:
-                width = float(overlays['grid'].get('width', 1.0))
-                grid_kwargs["width"] = width
-
+            if 'major_lonlat' in overlays['grid'] or 'minor_lonlat' in overlays['grid']:
+                Dlonlat = overlays['grid'].get('major_lonlat', (10.0, 10.0))
+                dlonlat = overlays['grid'].get('minor_lonlat', (2.0, 2.0))
+            else:
+                Dlonlat = (overlays['grid'].get('lon_major', 10.0), overlays['grid'].get('lat_major', 10.0))
+                dlonlat = (overlays['grid'].get('lon_minor', 2.0), overlays['grid'].get('lat_minor', 2.0))
+            outline = overlays['grid'].get('outline', 'white')
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
                 write_text = write_text.lower() in ['true', 'yes', '1', 'on']
-            outline = overlays['grid'].get('outline', 'white')
+            font = overlays['grid'].get('font', None)
+            font_size = int(overlays['grid'].get('font_size', 10))
+            fill = overlays['grid'].get('fill', outline)
+            fill_opacity = overlays['grid'].get('fill_opacity', 255)
             if isinstance(font, str):
                 if is_agg:
                     from aggdraw import Font
-                    font = Font(outline, font, size=font_size)
+                    font = Font(fill, font, opacity=fill_opacity, size=font_size)
                 else:
                     from PIL.ImageFont import truetype
                     font = truetype(font, font_size)
-            fill = overlays['grid'].get('fill', None)
             minor_outline = overlays['grid'].get('minor_outline', 'white')
             minor_is_tick = overlays['grid'].get('minor_is_tick', True)
             if isinstance(minor_is_tick, str):
@@ -852,8 +906,18 @@ class ContourWriterBase(object):
             lon_placement = overlays['grid'].get('lon_placement', 'tb')
             lat_placement = overlays['grid'].get('lat_placement', 'lr')
 
-            self.add_grid(foreground, area_def, (lon_major, lat_major),
-                          (lon_minor, lat_minor),
+            grid_kwargs = {}
+            if is_agg:
+                width = float(overlays['grid'].get('width', 1.0))
+                minor_width = float(overlays['grid'].get('minor_width', 0.5))
+                outline_opacity = overlays['grid'].get('outline_opacity', 255)
+                minor_outline_opacity = overlays['grid'].get('minor_outline_opacity', 255)
+                grid_kwargs['width'] = width
+                grid_kwargs['minor_width'] = minor_width
+                grid_kwargs['outline_opacity'] = outline_opacity
+                grid_kwargs['minor_outline_opacity'] = minor_outline_opacity
+
+            self.add_grid(foreground, area_def, Dlonlat, dlonlat,
                           font=font, write_text=write_text, fill=fill,
                           outline=outline, minor_outline=minor_outline,
                           minor_is_tick=minor_is_tick,
@@ -861,7 +925,7 @@ class ContourWriterBase(object):
                           lat_placement=lat_placement,
                           **grid_kwargs)
 
-        # Cities management (PR #61)
+        # Cities management
         if 'cities' in overlays:
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
@@ -884,7 +948,7 @@ class ContourWriterBase(object):
                 self.add_cities(foreground, area_def, cities_list, font_file, font_size,
                                 symbol, ptsize, outline, fill, **params)
 
-        # Points management (PR #56)
+        # Points management
         for param_key in ['points', 'text']:
             if param_key not in overlays:
                 continue
@@ -1028,10 +1092,12 @@ class ContourWriterBase(object):
                 Area Definition of the provided image
             cities_list : list of city names ['City1', 'City2', City3, ..., 'CityN']
               | a list of UTF-8 or ASCII strings. If either of these strings is found
-              | in db_root_path/CITIES/cities5000.txt, longitude and latitude is read
-              | and the city is added like a point with its UTF-8 name as description
-              | e.g. cities_list = ['Zurich', 'Oslo'] will add cities 'Zürich', 'Oslo'
-              | (cities5000.txt can be downloaded from http://download.geonames.org)
+              | in db_root_path/CITIES/cities5000_reduced.txt, longitude and latitude is
+              | read and the city is added like a point with its UTF-8 name as description
+              | e.g. cities_list = ['Zurich', 'Oslo'] will add cities 'Zürich', 'Oslo'.
+              | The file cities5000.txt can be downloaded from http://download.geonames.org.
+              | It has been reduced in size with a simple python script to a bare minimum
+              | version cities5000_reduced.txt. The size went down from 10 to 2 MegaBytes.
             font_file : str
                 Path to font file
             font_size : int
@@ -1078,9 +1144,10 @@ class ContourWriterBase(object):
 
         draw = self._get_canvas(image)
 
-        # cities5000.txt as downloaded from http://download.geonames.org
-        # 1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
-        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000.txt"))
+        # cities5000.txt has been downloaded from http://download.geonames.org and reduced
+        # while original had 1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
+        # we have rearranged 0=Name (UTF-8), 1=NameASCII, 2=longitude [°E], 3=latitude [°N]
+        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000_reduced.txt"))
         try:
             f = open(textfilename, mode='r', encoding='utf-8')
         except FileNotFoundError:
@@ -1093,8 +1160,8 @@ class ContourWriterBase(object):
         # Iterate through lines
         while s != '':
             t = s.split('\t')
-            if t[1] in cities_list or t[2] in cities_list:
-                city_name, lon, lat = t[1], float(t[5]), float(t[4])
+            if t[0] in cities_list or t[1] in cities_list:
+                city_name, lon, lat = t[0], float(t[2]), float(t[3])
                 try:
                     x, y = area_def.get_array_indices_from_lonlat(lon, lat)
                 except ValueError:
@@ -1175,7 +1242,8 @@ class ContourWriterBase(object):
         self._finalize(draw)
 
     def add_points(self, image, area_def, points_list, font_file, font_size=12,
-                   symbol='circle', ptsize=6, outline='black', fill='white', **kwargs):
+                   symbol='circle', ptsize=6, outline='black', fill='white',
+                   coord_ref='lonlat', **kwargs):
         """Add a symbol and/or text at the point(s) of interest to a PIL image object.
 
         :Parameters:
@@ -1183,13 +1251,14 @@ class ContourWriterBase(object):
                 PIL image object
             area_def : object
                 Area Definition of the provided image
-            points_list : list [((lon, lat), desc)]
-              | a list of points defined with (lon, lat) in float and a desc in string
-              | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
-              | lon : float
-              |    longitude of a point
-              | lat : float
-              |    latitude of a point
+            points_list : list [((x, y), desc)]
+              | a list of points defined with (x, y) in float and a desc in string
+              | [((x1, y1), desc1), ((x2, y2), desc2)]
+              | See coord_ref (below) for the meaning of x, y.
+              | x : float
+              |    longitude or pixel x of a point
+              | y : float
+              |    latitude or pixel y of a point
               | desc : str
               |    description of a point
             font_file : str
@@ -1201,13 +1270,20 @@ class ContourWriterBase(object):
                 ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
                 'star8', 'star7', 'star6', 'star5, 'asterisk']
             ptsize : int
-                Size of the point.
+                Size of the point (should be zero if symbol:None).
             outline : str or (R, G, B), optional
                 Line color of the symbol
             fill : str or (R, G, B), optional
                 Filling color of the symbol
 
         :Optional keyword arguments:
+            coord_ref : string
+                The interpretation of x,y in points_list:
+                'lonlat' (the default: x is degrees E, y is degrees N),
+                or 'image' (x is pixels right, y is pixels down).
+                If image coordinates are negative they are interpreted
+                relative to the end of the dimension like standard Python
+                indexing.
             width : float
                 Line width of the symbol
             outline_opacity : int, optional {0; 255}
@@ -1223,24 +1299,16 @@ class ContourWriterBase(object):
             box_opacity : int, optional {0; 255}
                 Opacity of the background filling of the textbox.
         """
-        try:
-            from pyresample.geometry import AreaDefinition
-        except ImportError:
-            raise ImportError("Missing required 'pyresample' module, please install it.")
-
-        if not isinstance(area_def, AreaDefinition):
-            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
-
+        coord_converter = _CoordConverter(coord_ref, area_def)
         draw = self._get_canvas(image)
 
         # Iterate through points list
         for point in points_list:
-            (lon, lat), desc = point
+            (x, y), desc = point
             try:
-                x, y = area_def.get_array_indices_from_lonlat(lon, lat)
+                x, y = coord_converter(x, y)
             except ValueError:
-                logger.info("Point %s is out of the area, it will not be added to the image.",
-                            str((lon, lat)))
+                logger.info(f"Point ({x}, {y}) is out of the image area, it will not be added to the image.")
             else:
                 # add symbol
                 if ptsize != 0:
@@ -1292,7 +1360,6 @@ class ContourWriterBase(object):
                                             outline_opacity=outline_opacity)
                     elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
-
                 elif desc is None:
                     logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
 
@@ -1309,7 +1376,7 @@ class ContourWriterBase(object):
                     self._draw_text_box(draw, text_position, desc, font, outline,
                                         box_outline, box_opacity, **new_kwargs)
 
-            logger.debug("Point %s has been added to the image", str((lon, lat)))
+            logger.debug("Point %s has been added to the image", str((x, y)))
 
         self._finalize(draw)
 
