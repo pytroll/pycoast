@@ -122,7 +122,7 @@ class ContourWriterBase(object):
         """Draw text with default PIL module."""
         if font is None:
             # NOTE: Default font does not use font size in PIL writer
-            font = self._get_font(kwargs.get('outline', 'black'), font, 12)
+            font = self._get_font(kwargs.get('fill', 'black'), font, 12)
         placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
@@ -696,8 +696,6 @@ class ContourWriterBase(object):
     def _config_to_dict(self, config_file):
         """Convert a config file to a dict."""
         config = configparser.ConfigParser()
-        # Parse keys case sensitive
-        config.optionxform = str
         try:
             with open(config_file, 'r'):
                 logger.info("Overlays config file %s found", str(config_file))
@@ -868,16 +866,15 @@ class ContourWriterBase(object):
                 Dlonlat = overlays['grid'].get('major_lonlat', (10.0, 10.0))
                 dlonlat = overlays['grid'].get('minor_lonlat', (2.0, 2.0))
             else:
-                Dlonlat = (overlays['grid'].get('Dlon', 10.0), overlays['grid'].get('Dlat', 10.0))
-                dlonlat = (overlays['grid'].get('dlon', 2.0), overlays['grid'].get('dlat', 2.0))
+                Dlonlat = (overlays['grid'].get('lon_major', 10.0), overlays['grid'].get('lat_major', 10.0))
+                dlonlat = (overlays['grid'].get('lon_minor', 2.0), overlays['grid'].get('lat_minor', 2.0))
             outline = overlays['grid'].get('outline', 'white')
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
                 write_text = write_text.lower() in ['true', 'yes', '1', 'on']
-            # This should close PyCoast issue #52
             font = overlays['grid'].get('font', None)
             font_size = int(overlays['grid'].get('font_size', 10))
-            fill = overlays['grid'].get('fill', 'white')
+            fill = overlays['grid'].get('fill', outline)
             fill_opacity = overlays['grid'].get('fill_opacity', 255)
             if isinstance(font, str):
                 if is_agg:
