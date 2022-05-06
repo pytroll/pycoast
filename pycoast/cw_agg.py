@@ -315,7 +315,7 @@ class ContourWriterAGG(ContourWriterBase):
 
     def add_grid(self, image, area_def, Dlonlat, dlonlat,
                  font=None, write_text=True, fill=None, fill_opacity=255,
-                 outline='white', width=1, outline_opacity=255,
+                 outline='white', width=1.0, outline_opacity=255,
                  minor_outline='white', minor_width=0.5,
                  minor_outline_opacity=255, minor_is_tick=True,
                  lon_placement='tb', lat_placement='lr'):
@@ -333,7 +333,7 @@ class ContourWriterAGG(ContourWriterBase):
             font: Aggdraw Font object, optional
                 Font for major line markings
             write_text : boolean, optional
-                Deterine if line markings are enabled
+                Determine if line markings are enabled
             fill_opacity : int, optional {0; 255}
                 Opacity of text
             outline : str or (R, G, B), optional
@@ -385,7 +385,7 @@ class ContourWriterAGG(ContourWriterBase):
             font: Aggdraw Font object, optional
                 Font for major line markings
             write_text : boolean, optional
-                Deterine if line markings are enabled
+                Determine if line markings are enabled
             fill_opacity : int, optional {0; 255}
                 Opacity of text
             outline : str or (R, G, B), optional

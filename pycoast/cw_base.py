@@ -122,7 +122,7 @@ class ContourWriterBase(object):
         """Draw text with default PIL module."""
         if font is None:
             # NOTE: Default font does not use font size in PIL writer
-            font = self._get_font(kwargs.get('outline', 'black'), font, 12)
+            font = self._get_font(kwargs.get('fill', 'black'), font, 12)
         placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
@@ -862,29 +862,27 @@ class ContourWriterBase(object):
 
         # Grids overlay
         if 'grid' in overlays:
-            lon_major = float(overlays['grid'].get('lon_major', 10.0))
-            lat_major = float(overlays['grid'].get('lat_major', 10.0))
-            lon_minor = float(overlays['grid'].get('lon_minor', 2.0))
-            lat_minor = float(overlays['grid'].get('lat_minor', 2.0))
-            font = overlays['grid'].get('font', None)
-            font_size = int(overlays['grid'].get('font_size', 10))
-            grid_kwargs = {}
-            if is_agg:
-                width = float(overlays['grid'].get('width', 1.0))
-                grid_kwargs["width"] = width
-
+            if 'major_lonlat' in overlays['grid'] or 'minor_lonlat' in overlays['grid']:
+                Dlonlat = overlays['grid'].get('major_lonlat', (10.0, 10.0))
+                dlonlat = overlays['grid'].get('minor_lonlat', (2.0, 2.0))
+            else:
+                Dlonlat = (overlays['grid'].get('lon_major', 10.0), overlays['grid'].get('lat_major', 10.0))
+                dlonlat = (overlays['grid'].get('lon_minor', 2.0), overlays['grid'].get('lat_minor', 2.0))
+            outline = overlays['grid'].get('outline', 'white')
             write_text = overlays['grid'].get('write_text', True)
             if isinstance(write_text, str):
                 write_text = write_text.lower() in ['true', 'yes', '1', 'on']
-            outline = overlays['grid'].get('outline', 'white')
+            font = overlays['grid'].get('font', None)
+            font_size = int(overlays['grid'].get('font_size', 10))
+            fill = overlays['grid'].get('fill', outline)
+            fill_opacity = overlays['grid'].get('fill_opacity', 255)
             if isinstance(font, str):
                 if is_agg:
                     from aggdraw import Font
-                    font = Font(outline, font, size=font_size)
+                    font = Font(fill, font, opacity=fill_opacity, size=font_size)
                 else:
                     from PIL.ImageFont import truetype
                     font = truetype(font, font_size)
-            fill = overlays['grid'].get('fill', None)
             minor_outline = overlays['grid'].get('minor_outline', 'white')
             minor_is_tick = overlays['grid'].get('minor_is_tick', True)
             if isinstance(minor_is_tick, str):
@@ -892,8 +890,18 @@ class ContourWriterBase(object):
             lon_placement = overlays['grid'].get('lon_placement', 'tb')
             lat_placement = overlays['grid'].get('lat_placement', 'lr')
 
-            self.add_grid(foreground, area_def, (lon_major, lat_major),
-                          (lon_minor, lat_minor),
+            grid_kwargs = {}
+            if is_agg:
+                width = float(overlays['grid'].get('width', 1.0))
+                minor_width = float(overlays['grid'].get('minor_width', 0.5))
+                outline_opacity = overlays['grid'].get('outline_opacity', 255)
+                minor_outline_opacity = overlays['grid'].get('minor_outline_opacity', 255)
+                grid_kwargs['width'] = width
+                grid_kwargs['minor_width'] = minor_width
+                grid_kwargs['outline_opacity'] = outline_opacity
+                grid_kwargs['minor_outline_opacity'] = minor_outline_opacity
+
+            self.add_grid(foreground, area_def, Dlonlat, dlonlat,
                           font=font, write_text=write_text, fill=fill,
                           outline=outline, minor_outline=minor_outline,
                           minor_is_tick=minor_is_tick,
