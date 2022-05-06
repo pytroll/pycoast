@@ -30,6 +30,11 @@ import ast
 
 import configparser
 
+try:
+    from pyresample import AreaDefinition
+except ImportError:
+    AreaDefinition = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,6 +63,57 @@ def get_resolution_from_area(area_def):
         return "h"
     else:
         return "f"
+
+
+class _CoordConverter:
+    """Convert coordinates from one space to in-bound image pixel column and row.
+
+    Convert the coordinate (x,y) in the coordinates
+    reference system ('lonlat' or 'image') into an image
+    x,y coordinate.
+    Uses the area_def methods if coord_ref is 'lonlat'.
+    Raises ValueError if pixel coordinates are outside the image bounds
+    defined by area_def.width and area_def.height.
+
+    """
+
+    def __init__(self, coord_ref: str, area_def: AreaDefinition):
+        self._area_def = self._check_area_def(area_def)
+        convert_methods = {
+            "lonlat": self._lonlat_to_pixels,
+            "image": self._image_to_pixels,
+        }
+        if coord_ref not in convert_methods:
+            pretty_coord_refs = [f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())]
+            raise ValueError(f"'coord_ref' must be one of {pretty_coord_refs}.")
+        self._convert_method = convert_methods[coord_ref]
+
+    def _check_area_def(self, area_def):
+        if AreaDefinition is None:
+            raise ImportError("Missing required 'pyresample' module, please "
+                              "install it with 'pip install pyresample' or "
+                              "'conda install pyresample'.")
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("'area_def' must be an instance of AreaDefinition")
+        return area_def
+
+    def __call__(self, x, y):
+        return self._convert_method(x, y)
+
+    def _lonlat_to_pixels(self, x, y):
+        return self._area_def.get_array_indices_from_lonlat(x, y)
+
+    def _image_to_pixels(self, x, y):
+        area_def = self._area_def
+        x, y = (int(x), int(y))
+        if x < 0:
+            x += area_def.width
+        if y < 0:
+            y += area_def.height
+        if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
+            raise ValueError("Image pixel coords out of image bounds "
+                             f"(width={area_def.width}, height={area_def.height}).")
+        return x, y
 
 
 def hash_dict(dict_to_hash: dict) -> str:
@@ -838,14 +894,16 @@ class ContourWriterBase(object):
                             font_size, pt_size, outline, box_outline,
                             box_opacity)
         # Points management
-        if 'points' in overlays:
+        for param_key in ['points', 'text']:
+            if param_key not in overlays:
+                continue
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
             DEFAULT_OUTLINE = 'white'
             DEFAULT_FILL = None
 
-            params = overlays['points'].copy()
+            params = overlays[param_key].copy()
 
             points_list = list(params.pop('points_list'))
             font_file = params.pop('font')
@@ -1036,7 +1094,8 @@ class ContourWriterBase(object):
         self._finalize(draw)
 
     def add_points(self, image, area_def, points_list, font_file, font_size=12,
-                   symbol='circle', ptsize=6, outline='black', fill='white', **kwargs):
+                   symbol='circle', ptsize=6, outline='black', fill='white',
+                   coord_ref='lonlat', **kwargs):
         """Add a symbol and/or text at the point(s) of interest to a PIL image object.
 
         :Parameters:
@@ -1044,13 +1103,14 @@ class ContourWriterBase(object):
                 PIL image object
             area_def : object
                 Area Definition of the provided image
-            points_list : list [((lon, lat), desc)]
-              | a list of points defined with (lon, lat) in float and a desc in string
-              | [((lon1, lat1), desc1), ((lon2, lat2), desc2)]
-              | lon : float
-              |    longitude of a point
-              | lat : float
-              |    latitude of a point
+            points_list : list [((x, y), desc)]
+              | a list of points defined with (x, y) in float and a desc in string
+              | [((x1, y1), desc1), ((x2, y2), desc2)]
+              | See coord_ref (below) for the meaning of x, y.
+              | x : float
+              |    longitude or pixel x of a point
+              | y : float
+              |    latitude or pixel y of a point
               | desc : str
               |    description of a point
             font_file : str
@@ -1058,16 +1118,24 @@ class ContourWriterBase(object):
             font_size : int
                 Size of font
             symbol : string
-                type of symbol, one of the elelment from the list
+                type of symbol, one of the elements from the list
                 ['circle', 'square', 'asterisk']
+                or None to prevent rendering
             ptsize : int
-                Size of the point.
+                Size of the point (should be zero if symbol:None).
             outline : str or (R, G, B), optional
                 Line color of the symbol
             fill : str or (R, G, B), optional
                 Filling color of the symbol
 
         :Optional keyword arguments:
+            coord_ref : string
+                The interpretation of x,y in points_list:
+                'lonlat' (the default: x is degrees E, y is degrees N),
+                or 'image' (x is pixels right, y is pixels down).
+                If image coordinates are negative they are interpreted
+                relative to the end of the dimension like standard Python
+                indexing.
             width : float
                 Line width of the symbol
             outline_opacity : int, optional {0; 255}
@@ -1083,24 +1151,16 @@ class ContourWriterBase(object):
             box_opacity : int, optional {0; 255}
                 Opacity of the background filling of the textbox.
         """
-        try:
-            from pyresample.geometry import AreaDefinition
-        except ImportError:
-            raise ImportError("Missing required 'pyresample' module, please install it.")
-
-        if not isinstance(area_def, AreaDefinition):
-            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
-
+        coord_converter = _CoordConverter(coord_ref, area_def)
         draw = self._get_canvas(image)
 
         # Iterate through points list
         for point in points_list:
-            (lon, lat), desc = point
+            (x, y), desc = point
             try:
-                x, y = area_def.get_xy_from_lonlat(lon, lat)
+                x, y = coord_converter(x, y)
             except ValueError:
-                logger.info("Point %s is out of the area, it will not be added to the image.",
-                            str((lon, lat)))
+                logger.info(f"Point ({x}, {y}) is out of the image area, it will not be added to the image.")
             else:
                 if ptsize != 0:
                     half_ptsize = int(round(ptsize / 2.))
@@ -1127,9 +1187,8 @@ class ContourWriterBase(object):
                         self._draw_asterisk(draw, ptsize, (x, y),
                                             outline=outline, width=width,
                                             outline_opacity=outline_opacity)
-                    else:
+                    elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
-
                 elif desc is None:
                     logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
 
@@ -1146,7 +1205,7 @@ class ContourWriterBase(object):
                     self._draw_text_box(draw, text_position, desc, font, outline,
                                         box_outline, box_opacity, **new_kwargs)
 
-            logger.debug("Point %s has been added to the image", str((lon, lat)))
+            logger.debug("Point %s has been added to the image", str((x, y)))
 
         self._finalize(draw)
 
