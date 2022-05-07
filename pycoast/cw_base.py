@@ -807,13 +807,13 @@ class ContourWriterBase(object):
 
 
             The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, cities, points, grid
+            cache, coasts, rivers, borders, shapefiles, grid, cities, points
 
             For all of them except `cache`, the items are the same as the
             corresponding functions in pycoast, so refer to the docstrings of
             these functions (add_coastlines, add_rivers, add_borders,
-            add_grid, add_cities, add_points). For cache, two parameters are
-            configurable:
+            add_shapefile_shapes, add_grid, add_cities, add_points).
+            For cache, two parameters are configurable:
 
             - `file`: specify the directory and the prefix
                   of the file to save the caches decoration to (for example
@@ -875,50 +875,24 @@ class ContourWriterBase(object):
             fun(foreground, area_def, **params)
             logger.info("%s added", section.capitalize())
 
-        # Cities management
-        if 'cities' in overlays:
-            DEFAULT_FONT_SIZE = 12
-            DEFAULT_OUTLINE = "yellow"
-
-            citylist = [s.lstrip()
-                        for s in overlays['cities']['list'].split(',')]
-            font_file = overlays['cities']['font']
-            font_size = int(overlays['cities'].get('font_size',
-                                                   DEFAULT_FONT_SIZE))
-            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
-            pt_size = int(overlays['cities'].get('pt_size', None))
-            box_outline = overlays['cities'].get('box_outline', None)
-            box_opacity = int(overlays['cities'].get('box_opacity', 255))
-
-            self.add_cities(foreground, area_def, citylist, font_file,
-                            font_size, pt_size, outline, box_outline,
-                            box_opacity)
-        # Points management
-        for param_key in ['points', 'text']:
-            if param_key not in overlays:
-                continue
-            DEFAULT_FONTSIZE = 12
-            DEFAULT_SYMBOL = 'circle'
-            DEFAULT_PTSIZE = 6
+        # Shapefiles management
+        if 'shapefiles' in overlays:
+            DEFAULT_FILENAME = None
             DEFAULT_OUTLINE = 'white'
             DEFAULT_FILL = None
 
-            params = overlays[param_key].copy()
+            for params in overlays['shapefiles'].copy():
+                filename = params.pop('filename', DEFAULT_FILENAME)
+                outline = params.pop('outline', DEFAULT_OUTLINE)
+                fill = params.pop('fill', DEFAULT_FILL)
+                if not is_agg:
+                    for key in ['width', 'outline_opacity', 'fill_opacity']:
+                        params.pop(key, None)
+                self.add_shapefile_shapes(foreground, area_def, filename=filename,
+                                          feature_type=None, outline=outline, fill=fill,
+                                          x_offset=0, y_offset=0, **params)
 
-            points_list = list(params.pop('points_list'))
-            font_file = params.pop('font')
-            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
-
-            symbol = params.pop('symbol', DEFAULT_SYMBOL)
-            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
-
-            outline = params.pop('outline', DEFAULT_OUTLINE)
-            fill = params.pop('fill', DEFAULT_FILL)
-
-            self.add_points(foreground, area_def, points_list, font_file, font_size,
-                            symbol, ptsize, outline, fill, **params)
-
-        # Grids overlay
+        # Grid overlay
         if 'grid' in overlays:
             if 'major_lonlat' in overlays['grid'] or 'minor_lonlat' in overlays['grid']:
                 Dlonlat = overlays['grid'].get('major_lonlat', (10.0, 10.0))
@@ -966,6 +940,50 @@ class ContourWriterBase(object):
                           lon_placement=lon_placement,
                           lat_placement=lat_placement,
                           **grid_kwargs)
+
+        # Cities management
+        if 'cities' in overlays:
+            DEFAULT_FONT_SIZE = 12
+            DEFAULT_OUTLINE = "yellow"
+
+            citylist = [s.lstrip()
+                        for s in overlays['cities']['list'].split(',')]
+            font_file = overlays['cities']['font']
+            font_size = int(overlays['cities'].get('font_size',
+                                                   DEFAULT_FONT_SIZE))
+            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
+            pt_size = int(overlays['cities'].get('pt_size', None))
+            box_outline = overlays['cities'].get('box_outline', None)
+            box_opacity = int(overlays['cities'].get('box_opacity', 255))
+
+            self.add_cities(foreground, area_def, citylist, font_file,
+                            font_size, pt_size, outline, box_outline,
+                            box_opacity)
+
+        # Points management
+        for param_key in ['points', 'text']:
+            if param_key not in overlays:
+                continue
+            DEFAULT_FONTSIZE = 12
+            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_PTSIZE = 6
+            DEFAULT_OUTLINE = 'white'
+            DEFAULT_FILL = None
+
+            params = overlays[param_key].copy()
+
+            points_list = list(params.pop('points_list'))
+            font_file = params.pop('font')
+            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+
+            symbol = params.pop('symbol', DEFAULT_SYMBOL)
+            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+
+            outline = params.pop('outline', DEFAULT_OUTLINE)
+            fill = params.pop('fill', DEFAULT_FILL)
+
+            self.add_points(foreground, area_def, points_list, font_file, font_size,
+                            symbol, ptsize, outline, fill, **params)
 
         if cache_file is not None:
             self._write_and_apply_new_cached_image(cache_file, foreground, background)
