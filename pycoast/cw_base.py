@@ -808,13 +808,13 @@ class ContourWriterBase(object):
 
 
             The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, grid, cities, points
+            cache, coasts, rivers, borders, shapefiles, grid, cities, points
 
             For all of them except `cache`, the items are the same as the
             corresponding functions in pycoast, so refer to the docstrings of
             these functions (add_coastlines, add_rivers, add_borders,
-            add_grid, add_cities, add_points). For cache, two parameters are
-            configurable:
+            add_shapefile_shapes, add_grid, add_cities, add_points).
+            For cache, two parameters are configurable:
 
             - `file`: specify the directory and the prefix
                   of the file to save the caches decoration to (for example
@@ -875,6 +875,23 @@ class ContourWriterBase(object):
 
             fun(foreground, area_def, **params)
             logger.info("%s added", section.capitalize())
+
+        # Shapefiles management
+        if 'shapefiles' in overlays:
+            DEFAULT_FILENAME = None
+            DEFAULT_OUTLINE = 'white'
+            DEFAULT_FILL = None
+
+            for params in overlays['shapefiles'].copy():
+                filename = params.pop('filename', DEFAULT_FILENAME)
+                outline = params.pop('outline', DEFAULT_OUTLINE)
+                fill = params.pop('fill', DEFAULT_FILL)
+                if not is_agg:
+                    for key in ['width', 'outline_opacity', 'fill_opacity']:
+                        params.pop(key, None)
+                self.add_shapefile_shapes(foreground, area_def, filename=filename,
+                                          feature_type=None, outline=outline, fill=fill,
+                                          x_offset=0, y_offset=0, **params)
 
         # Grid overlay
         if 'grid' in overlays:
@@ -956,7 +973,7 @@ class ContourWriterBase(object):
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
             DEFAULT_OUTLINE = 'black'
-            DEFAULT_FILL = 'white'
+            DEFAULT_FILL = None
 
             params = overlays[param_key].copy()
 
