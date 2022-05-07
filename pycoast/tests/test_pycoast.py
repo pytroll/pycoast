@@ -65,7 +65,7 @@ grid_file = 'test_grid.png'
 p_file_coasts = 'test_coasts_p_mode.png'
 
 
-class TestPycoast(unittest.TestCase):
+class _ContourWriterTestBase(unittest.TestCase):
     """Base class for test classes that need example images."""
 
     def setUp(self):
@@ -81,7 +81,7 @@ class TestPycoast(unittest.TestCase):
         os.remove(p_file_coasts)
 
 
-class TestPIL(TestPycoast):
+class ContourWriterTestPIL(_ContourWriterTestBase):
     """Test PIL-based contour writer."""
 
     def test_europe(self):
@@ -392,6 +392,77 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res),
                         'Writing of nh points failed')
 
+    def test_add_points_coordinate_conversion(self):
+        """Check that a point added with lonlat coordinates matches the same point in pixel coordinates."""
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+
+        shape = (512, 1024)
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string, shape[1], shape[0], area_extent)
+        lonlat_coords = (13.4050, 52.5200)
+        pixel_colrow = area_def.get_array_indices_from_lonlat(*lonlat_coords)
+        negative_pixel_colrow = (pixel_colrow[0] - shape[1], pixel_colrow[1] - shape[0])
+
+        img1 = Image.new('RGB', shape[::-1], (255, 255, 255))
+        cw = ContourWriterPIL(gshhs_root_dir)
+        points_list = [(lonlat_coords, 'Berlin')]
+        cw.add_points(img1, area_def, points_list=points_list, font_file=font_file,
+                      symbol='asterisk', ptsize=6, outline='red')
+        res1 = np.array(img1)
+        assert (res1[..., 0] == 255).all()  # everything is either white or red
+        assert (res1[..., 1] != 255).any()  # not a completely white/empty image
+        assert (res1[..., 2] != 255).any()  # not a completely white/empty image
+
+        for img_coords in (pixel_colrow, negative_pixel_colrow):
+            img2 = Image.new('RGB', shape[::-1], (255, 255, 255))
+            cw = ContourWriterPIL(gshhs_root_dir)
+            points_list = [(img_coords, 'Berlin')]
+            cw.add_points(img2, area_def, points_list=points_list, font_file=font_file,
+                          symbol='asterisk', ptsize=6, outline='red',
+                          coord_ref='image')
+            res2 = np.array(img2)
+            assert (res2 != 255).any()  # not a completely black/empty image
+            np.testing.assert_allclose(res1, res2)
+
+    def test_add_points_bad_image_coords(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+
+        shape = (512, 1024)
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string, shape[1], shape[0], area_extent)
+        for pixel_colrow in (shape[::-1], (-10000, -10000)):
+            img1 = Image.new('RGB', shape[::-1], (255, 255, 255))
+            cw = ContourWriterPIL(gshhs_root_dir)
+            points_list = [(pixel_colrow, 'Berlin')]
+            cw.add_points(img1, area_def, points_list=points_list, font_file=font_file,
+                          symbol='asterisk', ptsize=6, outline='red', coord_ref='image')
+            res1 = np.array(img1)
+            np.testing.assert_allclose(res1, 255)  # no added points
+
+    def test_add_points_bad_coord_ref(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+        font_file = os.path.join(os.path.dirname(__file__), 'test_data',
+                                 'DejaVuSerif.ttf')
+
+        shape = (512, 1024)
+        proj4_string = '+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m'
+        area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string, shape[1], shape[0], area_extent)
+        img1 = Image.new('RGB', shape[::-1], (255, 255, 255))
+        cw = ContourWriterPIL(gshhs_root_dir)
+        points_list = [((0, 0), 'Berlin')]
+        self.assertRaises(ValueError, cw.add_points, img1, area_def, points_list=points_list, font_file=font_file,
+                          symbol='asterisk', ptsize=6, outline='red', coord_ref='fake')
+
     def test_add_shapefile_shapes(self):
         from pycoast import ContourWriterPIL
         grid_img = Image.open(os.path.join(os.path.dirname(__file__),
@@ -505,6 +576,41 @@ class TestPIL(TestPycoast):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of two shapefiles from dict pil failed')
 
+    def test_add_grid_from_dict_pil(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'grid_from_dict_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (800, 800))
+        proj4_string = '+proj=stere +ellps=WGS84 +lon_0=-4.532 +lat_0=54.228'
+        area_extent = (-600000.0, -600000.0, 600000.0, 600000.0)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  800, 800, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),
+                                               'test_data', 'DejaVuSerif.ttf'), 40)
+
+        overlays = {}
+        overlays['coasts'] = {'width': 3.0, 'level': 4, 'resolution': 'l'}
+        overlays['grid'] = {'major_lonlat': (5, 5), 'minor_lonlat': (1, 1),
+                            'outline': (255, 0, 0), 'outline_opacity': 127,
+                            'minor_outline': (0, 0, 255), 'minor_outline_opacity': 127,
+                            'width': 10.5, 'minor_width': 5.5, 'minor_is_tick': False,
+                            'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b',
+                            'font': font, 'fill': 'yellow'}
+        # Fill is pil text color! Pil Font can be None, then a of default font is choosen
+
+        img = cw.add_overlay_from_dict(overlays, area_def, background=img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing grid from dict pil failed')
+
     def test_western_shapes_pil(self):
         from pycoast import ContourWriterPIL
         result_file = os.path.join(os.path.dirname(__file__), 'western_shapes_pil.png')
@@ -614,7 +720,7 @@ class TestPIL(TestPycoast):
         self.assertTrue(fft_metric(grid_data, res), 'Writing of no_v_scratch_pil failed')
 
 
-class TestPILAGG(TestPycoast):
+class ContourWriterTestPILAGG(_ContourWriterTestBase):
     """Test AGG contour writer."""
 
     def test_europe_agg(self):
@@ -1014,6 +1120,44 @@ class TestPILAGG(TestPycoast):
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing two shapefiles from dict agg failed')
+
+    def test_add_grid_from_dict_agg(self):
+        import aggdraw
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'grid_from_dict_agg.png'))
+
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (800, 800))
+        proj4_string = '+proj=stere +ellps=WGS84 +lon_0=-4.532 +lat_0=54.228'
+        area_extent = (-600000.0, -600000.0, 600000.0, 600000.0)
+
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  800, 800, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        font = aggdraw.Font('yellow', os.path.join(os.path.dirname(__file__),
+                                                   'test_data', 'DejaVuSerif.ttf'),
+                            opacity=255, size=40)
+
+        overlays = {}
+        overlays['coasts'] = {'width': 3.0, 'level': 4, 'resolution': 'l'}
+        overlays['grid'] = {'major_lonlat': (5, 5), 'minor_lonlat': (1, 1),
+                            'outline': (255, 0, 0), 'outline_opacity': 127,
+                            'minor_outline': (0, 0, 255), 'minor_outline_opacity': 127,
+                            'width': 10.5, 'minor_width': 5.5, 'minor_is_tick': False,
+                            'write_text': True, 'lat_placement': 'lr', 'lon_placement': 'b',
+                            'font': font, 'fill': 'red'}
+        # Fill has no agg effect! Agg Font can be None if and only if write_text is set to False
+
+        img = cw.add_overlay_from_dict(overlays, area_def, background=img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing grid from dict agg failed')
 
     def test_western_shapes_agg(self):
         from pycoast import ContourWriterAGG

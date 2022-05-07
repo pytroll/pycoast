@@ -85,4 +85,18 @@ to apply the overlays in one shot.
 
     >>> img.save('./add_overlays_from_dict.png')
 
+Here we have used the `points` key in the `overlays` dict to pass a list of points.
+We could also use the `text` key in the `overlays` dict, which is just an alias,
+they both behave the same. This allows for two different lists of points to be plotted
+with their own rendering styles. Setting `symbol:None` and `ptsize:0` will render
+just text without a symbol, but this is not automatically implied by the use of `text`.
+
+The coordinates of the point are specified in geographic degrees longitude (N), latitude (E)
+by default but can be changed to projected image coordinates in pixels (right, down).
+Use the `coord_ref` key in your `points` dict and with a value `'lonlat'` or `'image'`.
+Negative image coordinates will go left/up from the opposite side of the image.
+
+Thus the dict `overlays = { 'text': { 'symbol':None, 'ptsize':0, 'coord_ref':'image'`
+can be used to plot text strings at fixed points on the image regardless of projection.
+
 .. _PIL: http://www.pythonware.com/products/pil/
