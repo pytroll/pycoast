@@ -973,7 +973,7 @@ class ContourWriterBase(object):
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
             DEFAULT_OUTLINE = 'black'
-            DEFAULT_FILL = None
+            DEFAULT_FILL = 'white'
 
             params = overlays[param_key].copy()
 
@@ -1109,12 +1109,12 @@ class ContourWriterBase(object):
                 Area Definition of the provided image
             cities_list : list of city names ['City1', 'City2', City3, ..., 'CityN']
               | a list of UTF-8 or ASCII strings. If either of these strings is found
-              | in db_root_path/CITIES/cities5000_reduced.txt, longitude and latitude is
-              | read and the city is added like a point with its UTF-8 name as description
+              | in file db_root_path/CITIES/cities.txt, longitude and latitude is read
+              | and the city is added like a point with its UTF-8 name as description
               | e.g. cities_list = ['Zurich', 'Oslo'] will add cities 'Zürich', 'Oslo'.
-              | The file cities5000.txt can be downloaded from http://download.geonames.org.
-              | It has been reduced in size with a simple python script to a bare minimum
-              | version cities5000_reduced.txt. The size went down from 10 to 2 MegaBytes.
+              | The files cities5000.zip and cities15000.zip have been downloaded from
+              | http://download.geonames.org. They have been reduced to the bare minimum
+              | files cities5000r.txt, cities15000r.txt, capitals.txt and test_cities.txt.
             font_file : str
                 Path to font file
             font_size : int
@@ -1161,10 +1161,9 @@ class ContourWriterBase(object):
 
         draw = self._get_canvas(image)
 
-        # cities5000.txt has been downloaded from http://download.geonames.org and reduced
-        # while original had 1=Name (UTF-8), 2=NameASCII, 4=latitude [°N], 5=longitude [°E]
-        # we have rearranged 0=Name (UTF-8), 1=NameASCII, 2=longitude [°E], 3=latitude [°N]
-        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities5000_reduced.txt"))
+        # cities.txt is a reduced version of the files avalable at http://download.geonames.org
+        # Fields: 0=Name (UTF-8), 1=NameASCII, 2=longitude [°E], 3=latitude [°N], 4=CountryCode
+        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
         try:
             f = open(textfilename, mode='r', encoding='utf-8')
         except FileNotFoundError:
@@ -1336,7 +1335,7 @@ class ContourWriterBase(object):
 
                     width = kwargs.get('width', 1.)
                     outline_opacity = kwargs.get('outline_opacity', 255)
-                    fill_opacity = kwargs.get('fill_opacity', 0)
+                    fill_opacity = kwargs.get('fill_opacity', 255)
 
                     # draw the symbol at the (x, y) position
                     if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill

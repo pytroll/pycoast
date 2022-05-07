@@ -1,0 +1,241 @@
+Abu Dhabi	Abu Dhabi	54.39696	24.45118	AE
+Abuja	Abuja	7.49508	9.05785	NG
+Accra	Accra	-0.1969	5.55602	GH
+Adamstown	Adamstown	-130.10147	-25.06597	PN
+Addis Ababa	Addis Ababa	38.74689	9.02497	ET
+Algiers	Algiers	3.08746	36.73225	DZ
+Alofi	Alofi	-169.91768	-19.05451	NU
+Amman	Amman	35.94503	31.95522	JO
+Amsterdam	Amsterdam	4.88969	52.37403	NL
+Andorra la Vella	Andorra la Vella	1.52109	42.50779	AD
+Ankara	Ankara	32.85427	39.91987	TR
+Antananarivo	Antananarivo	47.53613	-18.91368	MG
+Apia	Apia	-171.76666	-13.83333	WS
+Ashgabat	Ashgabat	58.38333	37.95	TM
+Asmara	Asmara	38.93184	15.33805	ER
+Asunción	Asuncion	-57.647	-25.28646	PY
+Athens	Athens	23.72784	37.98376	GR
+Avarua	Avarua	-159.77545	-21.2075	CK
+Baghdad	Baghdad	44.40088	33.34058	IQ
+Baku	Baku	49.89201	40.37767	AZ
+Bamako	Bamako	-8	12.65	ML
+Bandar Seri Begawan	Bandar Seri Begawan	114.94006	4.89035	BN
+Bangkok	Bangkok	100.50144	13.75398	TH
+Bangui	Bangui	18.55496	4.36122	CF
+Banjul	Banjul	-16.57803	13.45274	GM
+Basse-Terre	Basse-Terre	-61.73214	15.99714	GP
+Basseterre	Basseterre	-62.72499	17.2955	KN
+Beijing	Beijing	116.39723	39.9075	CN
+Beirut	Beirut	35.50157	33.89332	LB
+Belgrade	Belgrade	20.46513	44.80401	RS
+Belmopan	Belmopan	-88.76667	17.25	BZ
+Berlin	Berlin	13.41053	52.52437	DE
+Bern	Bern	7.44744	46.94809	CH
+Bishkek	Bishkek	74.59	42.87	KG
+Bissau	Bissau	-15.59767	11.86357	GW
+Bogotá	Bogota	-74.08175	4.60971	CO
+Brasília	Brasilia	-47.92972	-15.77972	BR
+Bratislava	Bratislava	17.10674	48.14816	SK
+Brazzaville	Brazzaville	15.28318	-4.26613	CG
+Bridgetown	Bridgetown	-59.62021	13.10732	BB
+Brussels	Brussels	4.34878	50.85045	BE
+Bucharest	Bucharest	26.10626	44.43225	RO
+Budapest	Budapest	19.04045	47.49835	HU
+Buenos Aires	Buenos Aires	-58.37723	-34.61315	AR
+Cairo	Cairo	31.24967	30.06263	EG
+Canberra	Canberra	149.12807	-35.28346	AU
+Caracas	Caracas	-66.87919	10.48801	VE
+Castries	Castries	-61.00614	13.9957	LC
+Cayenne	Cayenne	-52.33333	4.93333	GF
+Charlotte Amalie	Charlotte Amalie	-64.9307	18.3419	VI
+Chisinau	Chisinau	28.8575	47.00556	MD
+Cockburn Town	Cockburn Town	-71.14188	21.46122	TC
+Colombo	Colombo	79.84868	6.93548	LK
+Conakry	Conakry	-13.67729	9.53795	GN
+Copenhagen	Copenhagen	12.56553	55.67594	DK
+Dakar	Dakar	-17.44406	14.6937	SN
+Damascus	Damascus	36.29128	33.5102	SY
+Dhaka	Dhaka	90.40744	23.7104	BD
+Dili	Dili	125.57361	-8.55861	TL
+Djibouti	Djibouti	43.14503	11.58901	DJ
+Dodoma	Dodoma	35.73947	-6.17221	TZ
+Doha	Doha	51.53096	25.28545	QA
+Douglas	Douglas	-4.48333	54.15	IM
+Dublin	Dublin	-6.24889	53.33306	IE
+Dushanbe	Dushanbe	68.77905	38.53575	TJ
+Flying Fish Cove	Flying Fish Cove	105.67912	-10.42172	CX
+Fort-de-France	Fort-de-France	-61.07418	14.60365	MQ
+Freetown	Freetown	-13.2356	8.48714	SL
+Funafuti	Funafuti	179.19417	-8.52425	TV
+Gaborone	Gaborone	25.90859	-24.65451	BW
+Georgetown	Georgetown	-58.15527	6.80448	GY
+George Town	George Town	-81.37436	19.2866	KY
+Gibraltar	Gibraltar	-5.35257	36.14474	GI
+Gitega	Gitega	29.92463	-3.42708	BI
+Grytviken	Grytviken	-36.5092	-54.28111	GS
+Guatemala City	Guatemala City	-90.51327	14.64072	GT
+Gustavia	Gustavia	-62.84978	17.89618	BL
+Hagåtña	Hagatna	144.74886	13.47567	GU
+Hamilton	Hamilton	-64.78303	32.2949	BM
+Hanoi	Hanoi	105.84117	21.0245	VN
+Harare	Harare	31.05337	-17.82772	ZW
+Havana	Havana	-82.38304	23.13302	CU
+Helsinki	Helsinki	24.93545	60.16952	FI
+Hong Kong	Hong Kong	114.17469	22.27832	HK
+Honiara	Honiara	159.95	-9.43333	SB
+Islamabad	Islamabad	73.04329	33.72148	PK
+Jakarta	Jakarta	106.84513	-6.21462	ID
+Jamestown	Jamestown	-5.71675	-15.93872	SH
+Juba	Juba	31.58247	4.85165	SS
+Kabul	Kabul	69.17233	34.52813	AF
+Kampala	Kampala	32.58219	0.31628	UG
+Kathmandu	Kathmandu	85.3206	27.70169	NP
+Khartoum	Khartoum	32.53241	15.55177	SD
+Kigali	Kigali	30.05885	-1.94995	RW
+Kingston	Kingston	167.96628	-29.05459	NF
+Kingston	Kingston	-76.79358	17.99702	JM
+Kingstown	Kingstown	-61.22742	13.15527	VC
+Kinshasa	Kinshasa	15.31357	-4.32758	CD
+Kralendijk	Kralendijk	-68.26667	12.15	BQ
+Kuala Lumpur	Kuala Lumpur	101.68653	3.1412	MY
+Kuwait City	Kuwait City	47.97833	29.36972	KW
+Kyiv	Kyiv	30.5238	50.45466	UA
+Libreville	Libreville	9.45356	0.39241	GA
+Lilongwe	Lilongwe	33.78725	-13.96692	MW
+Lima	Lima	-77.02824	-12.04318	PE
+Lisbon	Lisbon	-9.13333	38.71667	PT
+Ljubljana	Ljubljana	14.50513	46.05108	SI
+Lomé	Lome	1.22154	6.12874	TG
+London	London	-0.12574	51.50853	GB
+Longyearbyen	Longyearbyen	15.64689	78.22334	SJ
+Luanda	Luanda	13.23432	-8.83682	AO
+Lusaka	Lusaka	28.28713	-15.40669	ZM
+Luxembourg	Luxembourg	6.13	49.61167	LU
+Macau	Macau	113.54611	22.20056	MO
+Madrid	Madrid	-3.70256	40.4165	ES
+Majuro	Majuro	171.38027	7.08971	MH
+Malabo	Malabo	8.78166	3.75578	GQ
+Male	Male	73.50916	4.17521	MV
+Mamoudzou	Mamoudzou	45.22878	-12.78234	YT
+Managua	Managua	-86.2504	12.13282	NI
+Manama	Manama	50.58565	26.22787	BH
+Manila	Manila	120.9822	14.6042	PH
+Maputo	Maputo	32.58322	-25.96553	MZ
+Mariehamn	Mariehamn	19.93481	60.09726	AX
+Marigot	Marigot	-63.08302	18.06819	MF
+Maseru	Maseru	27.48333	-29.31667	LS
+Mata-Utu	Mata-Utu	-176.17453	-13.28163	WF
+Mbabane	Mbabane	31.13333	-26.31667	SZ
+Mexico City	Mexico City	-99.12766	19.42847	MX
+Minsk	Minsk	27.56667	53.9	BY
+Mogadishu	Mogadishu	45.34375	2.03711	SO
+Monaco	Monaco	7.41667	43.73333	MC
+Monrovia	Monrovia	-10.7969	6.30054	LR
+Montevideo	Montevideo	-56.18816	-34.90328	UY
+Moroni	Moroni	43.25506	-11.70216	KM
+Moscow	Moscow	37.61556	55.75222	RU
+Muscat	Muscat	58.40778	23.58413	OM
+Nairobi	Nairobi	36.81667	-1.28333	KE
+Nassau	Nassau	-77.34306	25.05823	BS
+Nay Pyi Taw	Nay Pyi Taw	96.12972	19.745	MM
+N'Djamena	N'Djamena	15.0444	12.10672	TD
+New Delhi	New Delhi	77.22445	28.63576	IN
+Ngerulmud	Ngerulmud	134.6238	7.50077	PW
+Niamey	Niamey	2.1098	13.51366	NE
+Nicosia	Nicosia	33.3642	35.17531	CY
+Nouakchott	Nouakchott	-15.9785	18.08581	MR
+Nouméa	Noumea	166.44884	-22.27407	NC
+Nuku‘alofa	Nuku'alofa	-175.2018	-21.13938	TO
+Nur-Sultan	Nur-Sultan	71.44598	51.1801	KZ
+Nuuk	Nuuk	-51.72157	64.18347	GL
+Oranjestad	Oranjestad	-70.02703	12.52398	AW
+Oslo	Oslo	10.74609	59.91273	NO
+Ottawa	Ottawa	-75.69812	45.41117	CA
+Ouagadougou	Ouagadougou	-1.53388	12.36566	BF
+Pago Pago	Pago Pago	-170.7025	-14.27806	AS
+Palikir - National Government Center	Palikir - National Government Center	158.16109	6.92477	FM
+Panamá	Panama	-79.51973	8.9936	PA
+Papeete	Papeete	-149.5665	-17.53733	PF
+Paramaribo	Paramaribo	-55.16682	5.86638	SR
+Paris	Paris	2.3488	48.85341	FR
+Philipsburg	Philipsburg	-63.04582	18.026	SX
+Phnom Penh	Phnom Penh	104.91601	11.56245	KH
+Plymouth	Plymouth	-62.21292	16.70555	MS
+Podgorica	Podgorica	19.26361	42.44111	ME
+Port-au-Prince	Port-au-Prince	-72.33881	18.54349	HT
+Port-aux-Français	Port-aux-Francais	70.21937	-49.34916	TF
+Port Louis	Port Louis	57.49889	-20.16194	MU
+Port Moresby	Port Moresby	147.15089	-9.47723	PG
+Port of Spain	Port of Spain	-61.51889	10.66668	TT
+Porto-Novo	Porto-Novo	2.60359	6.49646	BJ
+Port-Vila	Port-Vila	168.31366	-17.73648	VU
+Prague	Prague	14.42076	50.08804	CZ
+Praia	Praia	-23.51254	14.93152	CV
+Pretoria	Pretoria	28.18783	-25.74486	ZA
+Pristina	Pristina	21.16688	42.67272	XK
+Pyongyang	Pyongyang	125.75432	39.03385	KP
+Quito	Quito	-78.52495	-0.22985	EC
+Rabat	Rabat	-6.83255	34.01325	MA
+Reykjavík	Reykjavik	-21.89541	64.13548	IS
+Riga	Riga	24.10589	56.946	LV
+Riyadh	Riyadh	46.72185	24.68773	SA
+Road Town	Road Town	-64.62079	18.42693	VG
+Rome	Rome	12.51133	41.89193	IT
+Roseau	Roseau	-61.38808	15.30174	DM
+Saint-Denis	Saint-Denis	55.4504	-20.88231	RE
+Saint George's	Saint George's	-61.75226	12.05288	GD
+Saint Helier	Saint Helier	-2.10491	49.18804	JE
+Saint John’s	Saint John's	-61.84329	17.12096	AG
+Saint Peter Port	Saint Peter Port	-2.53527	49.45981	GG
+Saint-Pierre	Saint-Pierre	-56.1773	46.77914	PM
+Saipan	Saipan	145.7545	15.21233	MP
+Sanaa	Sanaa	44.20667	15.35472	YE
+San José	San Jose	-84.08333	9.93333	CR
+San Juan	San Juan	-66.10572	18.46633	PR
+San Marino	San Marino	12.44639	43.93667	SM
+San Salvador	San Salvador	-89.18718	13.68935	SV
+Santiago	Santiago	-70.64827	-33.45694	CL
+Santo Domingo	Santo Domingo	-69.89232	18.47186	DO
+São Tomé	Sao Tome	6.72732	0.33654	ST
+Sarajevo	Sarajevo	18.35644	43.84864	BA
+Seoul	Seoul	126.9784	37.566	KR
+Singapore	Singapore	103.85007	1.28967	SG
+Skopje	Skopje	21.43141	41.99646	MK
+Sofia	Sofia	23.32415	42.69751	BG
+Stanley	Stanley	-57.85701	-51.69382	FK
+Stockholm	Stockholm	18.06871	59.32938	SE
+Sucre	Sucre	-65.26274	-19.03332	BO
+Suva	Suva	178.44149	-18.14161	FJ
+Taipei	Taipei	121.53185	25.04776	TW
+Tallinn	Tallinn	24.75353	59.43696	EE
+Tarawa	Tarawa	172.97696	1.3278	KI
+Tashkent	Tashkent	69.21627	41.26465	UZ
+Tbilisi	Tbilisi	44.83368	41.69411	GE
+Tegucigalpa	Tegucigalpa	-87.20681	14.0818	HN
+Tehran	Tehran	51.42151	35.69439	IR
+The Valley	The Valley	-63.05783	18.21704	AI
+Thimphu	Thimphu	89.64191	27.46609	BT
+Tirana	Tirana	19.81889	41.3275	AL
+Tokyo	Tokyo	139.69171	35.6895	JP
+Tórshavn	Torshavn	-6.77164	62.00973	FO
+Tripoli	Tripoli	13.18733	32.88743	LY
+Tunis	Tunis	10.16579	36.81897	TN
+Ulan Bator	Ulan Bator	106.88324	47.90771	MN
+Vaduz	Vaduz	9.52154	47.14151	LI
+Valletta	Valletta	14.5148	35.89968	MT
+Vatican City	Vatican City	12.45414	41.90268	VA
+Victoria	Victoria	55.45501	-4.62001	SC
+Vienna	Vienna	16.37208	48.20849	AT
+Vientiane	Vientiane	102.6	17.96667	LA
+Vilnius	Vilnius	25.2798	54.68916	LT
+Warsaw	Warsaw	21.01178	52.22977	PL
+Washington	Washington	-77.03637	38.89511	US
+Wellington	Wellington	174.77557	-41.28664	NZ
+West Island	West Island	96.82251	-12.15681	CC
+Willemstad	Willemstad	-68.93354	12.1084	CW
+Windhoek	Windhoek	17.08323	-22.55941	NA
+Yamoussoukro	Yamoussoukro	-5.27674	6.82055	CI
+Yaoundé	Yaounde	11.51667	3.86667	CM
+Yaren	Yaren	166.9252	-0.55085	NR
+Yerevan	Yerevan	44.51361	40.18111	AM
+Zagreb	Zagreb	15.97798	45.81444	HR
