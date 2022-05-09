@@ -878,6 +878,13 @@ class ContourWriterBase(object):
 
         # Shapefiles management
         if 'shapefiles' in overlays:
+
+            # Backward compatibility and config
+            if type(overlays['shapefiles']) is dict:
+                temp = []
+                temp.append(overlays['shapefiles'])
+                overlays['shapefiles'] = temp
+
             DEFAULT_FILENAME = None
             DEFAULT_OUTLINE = 'white'
             DEFAULT_FILL = None
@@ -944,6 +951,13 @@ class ContourWriterBase(object):
 
         # Cities management
         if 'cities' in overlays:
+
+            # Backward compatibility and config
+            if type(overlays['cities']) is dict:
+                temp = []
+                temp.append(overlays['cities'])
+                overlays['cities'] = temp
+
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
