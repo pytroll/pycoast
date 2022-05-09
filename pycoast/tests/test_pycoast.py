@@ -678,6 +678,30 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing of two shapefiles from dict pil failed')
 
+    def test_add_one_shapefile_from_cfg_pil(self):
+        from pycoast import ContourWriterPIL
+        from pyresample.geometry import AreaDefinition
+
+        config_file = os.path.join(os.path.dirname(__file__),
+                                   'nh_one_shapefile.ini')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'one_shapefile_from_cfg_pil.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  425, 425, area_extent)
+
+        cw = ContourWriterPIL(gshhs_root_dir)
+
+        cw.add_overlay_from_config(config_file, area_def, img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing one shapefile from cfg pil failed')
+
     def test_add_grid_from_dict_pil(self):
         from pycoast import ContourWriterPIL
         from pyresample.geometry import AreaDefinition
@@ -1328,6 +1352,30 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing two shapefiles from dict agg failed')
+
+    def test_add_one_shapefile_from_cfg_agg(self):
+        from pycoast import ContourWriterAGG
+        from pyresample.geometry import AreaDefinition
+
+        config_file = os.path.join(os.path.dirname(__file__),
+                                   'nh_one_shapefile.ini')
+
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__),
+                                           'one_shapefile_from_cfg_agg.png'))
+        grid_data = np.array(grid_img)
+
+        img = Image.new('RGB', (425, 425))
+        proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
+        area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
+        area_def = AreaDefinition('nh', 'nh', 'nh', proj4_string,
+                                  425, 425, area_extent)
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        cw.add_overlay_from_config(config_file, area_def, img)
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(grid_data, res), 'Writing one shapefile from cfg agg failed')
 
     def test_add_grid_from_dict_agg(self):
         import aggdraw

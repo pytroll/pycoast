@@ -765,7 +765,7 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'grid', 'cities', 'points']
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'shapefiles', 'grid', 'cities', 'points']
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -879,11 +879,9 @@ class ContourWriterBase(object):
         # Shapefiles management
         if 'shapefiles' in overlays:
 
-            # Backward compatibility and config
-            if type(overlays['shapefiles']) is dict:
-                temp = []
-                temp.append(overlays['shapefiles'])
-                overlays['shapefiles'] = temp
+            # Backward compatibility and config.ini
+            if isinstance(overlays['shapefiles'], dict):
+                overlays['shapefiles'] = [overlays['shapefiles']]
 
             DEFAULT_FILENAME = None
             DEFAULT_OUTLINE = 'white'
@@ -952,11 +950,9 @@ class ContourWriterBase(object):
         # Cities management
         if 'cities' in overlays:
 
-            # Backward compatibility and config
-            if type(overlays['cities']) is dict:
-                temp = []
-                temp.append(overlays['cities'])
-                overlays['cities'] = temp
+            # Backward compatibility and config.ini
+            if isinstance(overlays['cities'], dict):
+                overlays['cities'] = [overlays['cities']]
 
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
