@@ -14,8 +14,7 @@ images using data from the GSHHS and WDBII datasets
 .. toctree::
    :maxdepth: 2
 
-   installation_shape_files
-   installation_city_names
+   installation
    usage
    high_quality_contours
    graticule

@@ -1171,7 +1171,7 @@ class ContourWriterBase(object):
 
         # cities.red is a reduced version of the files avalable at http://download.geonames.org
         # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
-        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.red"))
+        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
         try:
             f = open(textfilename, mode='r', encoding='utf-8')
         except FileNotFoundError:
