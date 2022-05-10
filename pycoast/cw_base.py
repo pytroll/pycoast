@@ -1119,12 +1119,10 @@ class ContourWriterBase(object):
                 Area Definition of the provided image
             cities_list : list of city names ['City1', 'City2', City3, ..., 'CityN']
               | a list of UTF-8 or ASCII strings. If either of these strings is found
-              | in file db_root_path/CITIES/cities.txt, longitude and latitude is read
+              | in file db_root_path/CITIES/cities.red, longitude and latitude is read
               | and the city is added like a point with its UTF-8 name as description
               | e.g. cities_list = ['Zurich', 'Oslo'] will add cities 'Zürich', 'Oslo'.
-              | The files cities5000.zip and cities15000.zip have been downloaded from
-              | http://download.geonames.org. They have been reduced to the bare minimum
-              | files cities5000r.txt, cities15000r.txt, capitals.txt and test_cities.txt.
+              | Check the README_PyCoast.txt in archive cities2022.zip for more details.
             font_file : str
                 Path to font file
             font_size : int
@@ -1171,9 +1169,9 @@ class ContourWriterBase(object):
 
         draw = self._get_canvas(image)
 
-        # cities.txt is a reduced version of the files avalable at http://download.geonames.org
-        # Fields: 0=Name (UTF-8), 1=NameASCII, 2=longitude [°E], 3=latitude [°N], 4=CountryCode
-        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
+        # cities.red is a reduced version of the files avalable at http://download.geonames.org
+        # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
+        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.red"))
         try:
             f = open(textfilename, mode='r', encoding='utf-8')
         except FileNotFoundError:
