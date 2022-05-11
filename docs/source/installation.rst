@@ -1,13 +1,45 @@
+Installation
+============
+
+The below sections describe how to install both the pycoast python library
+and additional data files that maybe required to use some features of pycoast.
+
+If you have any trouble with the installation of the package or the data files
+described below, please file a bug report on GitHub:
+
+https://github.com/pytroll/pycoast/
+
+Package installation
+--------------------
+
+Pycoast can be installed in an existing Python environment via pip or in a
+conda environment via ``conda`` using the conda-forge channel. To use pip:
+
+.. code-block:: bash
+
+    pip install pycoast
+
+Alternatively, with conda:
+
+.. code-block:: bash
+
+    conda install -c conda-forge pycoast
+
 Installation of shape files
 ---------------------------
-Pycoast depends on pyshp_ and PIL_.
 
-Install pycoast and dependencies.
+To use the features of pycoast that draw country or other political borders,
+rivers, and lakes, shapefiles from the
+`SOEST GSHHG <https://www.soest.hawaii.edu/pwessel/gshhg/>`_ website must be
+installed. Download the zipped GSHHS and WDBII shapefiles. At the time of
+writing the current zip file can be found at:
 
-Download the zipped GSHHS and WDBII Shapefiles from SOEST_.
+http://www.soest.hawaii.edu/pwessel/gshhg/gshhg-shp-2.3.7.zip
+
 Unzip the files to a data directory (hereafter *DB_DATA_ROOT*).
 The absolute path/name of this directory is called *db_root_path*
-in the code examples further down.
+in the code examples used elsewhere in the documentation.
+
 The structure of *DB_DATA_ROOT* should now be::
 
     .
@@ -27,18 +59,30 @@ The structure of *DB_DATA_ROOT* should now be::
 Where each dir on the lowest level contains Shapefiles like
 *GSHHS_shp/c/GSHHS_c_L1.shp, WDBII_shp/WDBII_border_c_L1.shp*
 
-
 Installation of city names
 --------------------------
 
-Add a subdirectory CITIES to your *DB_DATA_ROOT*.
-Download cities2022.zip_ from github/pytroll/pycoast.
-If this deep link does no work (anymore) you can try
-do download it from github.com/pytroll/pycoast/ from
-directory tests/test_data/ by pressing the *Download*
-button. If all fails ask for help on the google
-pytroll_ list or on MSG-1_. Put cities2022.zip into
-CITIES. The structure of *DB_DATA_ROOT* should now be::
+To use the features of Pycoast that depend on city locations or names, one or
+more files from `GeoNames <https://www.geonames.org/>`_ must be downloaded
+and made available in the same *DB_DATA_ROOT* directory created in the above
+GSHHG shapefile download. GeoNames releases multiple lists of city information
+available from their file archive:
+
+https://download.geonames.org/export/dump/
+
+There are files that contain city information for cities with a population
+larger than 500, 1000, 5000, and 15000. Only one of these files needs to be
+downloaded depending on your needs. At the time of writing the URLs for
+these files are:
+
+* https://download.geonames.org/export/dump/cities500.zip
+* https://download.geonames.org/export/dump/cities1000.zip
+* https://download.geonames.org/export/dump/cities5000.zip
+* https://download.geonames.org/export/dump/cities15000.zip
+
+Once downloaded, extract the single cities .txt file inside and move it to
+a new ``DB_DATA_ROOT/CITIES/`` directory. Currently, Pycoast requires that
+the file be named "cities.txt". The structure of *DB_DATA_ROOT* should now be::
 
     .
     ├── GSHHS_shp
@@ -53,16 +97,9 @@ CITIES. The structure of *DB_DATA_ROOT* should now be::
     │   ├── h
     │   ├── i
     │   └── l
-    └── CITIES
+    └─── CITIES
+        └── cities.txt
 
-Where CITIES contains cities2022.zip. Enter this archive
-and read file README_PyCoast.txt inside. Follow its instructions.
-You will end up with an additional tab delimited text file *cities.txt* in CITIES.
-The PyCoast API documentation explains in detail how to call the function *add_cities()*.
 
-.. _SOEST: http://www.soest.hawaii.edu/pwessel/gshhs/index.html
-.. _PIL: https://pillow.readthedocs.io/en/stable/
-.. _pyshp: http://code.google.com/p/pyshp/
-.. _cities2022.zip: https://raw.githubusercontent.com/lobsiger/pycoast/fix_cities/pycoast/tests/test_data/gshhs/CITIES/cities2022.zip
-.. _pytroll: https://groups.google.com/g/pytroll/
-.. _MSG-1: https://groups.io/g/MSG-1/
+The PyCoast API documentation explains in detail how to use this city
+information via the :meth:`~pycoast.cw_base.ContourWriterBase.add_cities` method.
