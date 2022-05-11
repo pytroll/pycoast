@@ -17,20 +17,19 @@ from collections import Counter
 from time import sleep
 
 import geocoder
-import numpy as np
 import pycountry
 from github import Github
 from PIL import Image
 from pyproj import Proj
 
-from pycoast import ContourWriter, ContourWriterAGG
+from pycoast import ContourWriterAGG
 
 LOG = logging.getLogger(__name__)
 geocoders = [geocoder.google, geocoder.arcgis_reverse.ArcgisReverse]
 MAX_CONTRIBUTORS = 10.0
 
 
-def get_all_pytroll_contributors(user):
+def _get_all_pytroll_contributors(user):
     g = Github(user, getpass.getpass("GitHub Password: "))
     pytroll_org = g.get_organization("pytroll")
     LOG.info("Getting all PyTroll repositories...")
@@ -41,7 +40,7 @@ def get_all_pytroll_contributors(user):
     return set_pytroll_contributors
 
 
-def get_country(locations, cache_file="countries.json"):
+def _get_country(locations, cache_file="countries.json"):
     """Return 3-digit country code for each location provided."""
     # cache country results because most APIs have query limits
     if os.path.isfile(cache_file):
@@ -52,30 +51,9 @@ def get_country(locations, cache_file="countries.json"):
     need_sleep = False
     for loc in locations:
         for gcoder in geocoders:
-            if loc in json_cache:
-                yield json_cache[loc]
-                need_sleep = False
-                break
-            else:
-                need_sleep = True
-                LOG.debug("Finding: %s", loc)
-                result = gcoder(loc)
-                if not result.ok or result.country is None:
-                    LOG.debug("Bad result using %r, country %r", gcoder, result.country)
-                    continue
-                country = result.country
-                if len(country) == 2:
-                    country = pycountry.countries.get(alpha_2=country).alpha_3
-                else:
-                    try:
-                        country = pycountry.countries.get(alpha_3=country).alpha_3
-                    except KeyError:
-                        LOG.error("Invalid country code: %s", country)
-                        continue
-                if country is not None:
-                    json_cache[loc] = country
-                yield country
-                break
+            country, need_sleep = _get_gcoder_country(loc, gcoder, json_cache)
+            if country is None:
+                continue
         else:
             try:
                 # last resort
@@ -93,7 +71,33 @@ def get_country(locations, cache_file="countries.json"):
     json.dump(json_cache, open(cache_file, "w"), indent=4, sort_keys=True)
 
 
+def _get_gcoder_country(loc, gcoder, json_cache):
+    need_sleep = False
+    if loc in json_cache:
+        return json_cache[loc], need_sleep
+    else:
+        need_sleep = True
+        LOG.debug("Finding: %s", loc)
+        result = gcoder(loc)
+        if not result.ok or result.country is None:
+            LOG.debug("Bad result using %r, country %r", gcoder, result.country)
+            return None, need_sleep
+        country = result.country
+        if len(country) == 2:
+            country = pycountry.countries.get(alpha_2=country).alpha_3
+        else:
+            try:
+                country = pycountry.countries.get(alpha_3=country).alpha_3
+            except KeyError:
+                LOG.error("Invalid country code: %s", country)
+                return None, need_sleep
+        if country is not None:
+            json_cache[loc] = country
+        return country, need_sleep
+
+
 def main():
+    """Run contributor map plotting."""
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -141,7 +145,10 @@ def main():
         import urllib.request
         import zipfile
 
-        url = "http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+        url = (
+            "http://www.naturalearthdata.com/"
+            "http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+        )
         zip_fn = "ne_110m_admin_0_countries.zip"
         LOG.info("Downloading NaturalEarth Shapefile")
         with urllib.request.urlopen(url) as response, open(zip_fn, "wb") as out_file:
@@ -166,7 +173,7 @@ def main():
     area_def = (args.map_proj, extents)
 
     LOG.info("Getting PyTroll contributors...")
-    contributors = get_all_pytroll_contributors(args.github_user)
+    contributors = _get_all_pytroll_contributors(args.github_user)
     LOG.info("Getting all PyTroll contributor locations...")
     all_user_locations = []
     for user in contributors.values():
@@ -178,7 +185,7 @@ def main():
             )
             continue
         all_user_locations.append(user.location)
-    all_countries = list(get_country(all_user_locations))
+    all_countries = list(_get_country(all_user_locations))
     number_contributors = Counter(all_countries)
     del number_contributors[None]
     all_countries = list(number_contributors.keys())
@@ -195,7 +202,7 @@ def main():
                     name = name.decode()
                 except UnicodeDecodeError:
                     name = name.decode("latin-1")
-            shape_country = list(get_country([name]))[0]
+            shape_country = list(_get_country([name]))[0]
 
             if shape_country is not None and shape_country in all_countries:
                 LOG.info(

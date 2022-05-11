@@ -1,6 +1,6 @@
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2018 PyCoast Developers
+# Copyright (C) 2011-2022 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""Setuptools-based packaging and installation configuration."""
 
 from setuptools import setup
 

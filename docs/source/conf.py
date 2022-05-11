@@ -16,6 +16,8 @@ from __future__ import annotations
 import os
 import sys
 
+from pycoast import __version__
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -66,8 +68,6 @@ copyright = "2012, Esben S. Nielsen"
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-
-from pycoast import __version__
 
 # The short X.Y version.
 version = __version__.split("+")[0]
