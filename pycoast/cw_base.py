@@ -910,287 +910,10 @@ class ContourWriterBase(object):
                   of an already cached file.
 
         """
-        # Cache management
-        cache_file = None
-        if "cache" in overlays:
-            cache_file = self._generate_cache_filename(
-                overlays["cache"]["file"],
-                area_def,
-                overlays,
-            )
-            regenerate = overlays["cache"].get("regenerate", False)
-            foreground = self._apply_cached_image(
-                cache_file, cache_epoch, background, regenerate=regenerate
-            )
-            if foreground is not None:
-                return foreground
-
-        x_size = area_def.width
-        y_size = area_def.height
-        if cache_file is None and background is not None:
-            foreground = background
-        else:
-            foreground = Image.new("RGBA", (x_size, y_size), (0, 0, 0, 0))
-
-        # Coasts, rivers, borders
-        self._add_coasts_rivers_borders_from_dict(overlays, foreground, area_def)
-
-        # Shapefiles management
-        if "shapefiles" in overlays:
-            self._add_shapefiles_from_dict(overlays["shapefiles"], foreground, area_def)
-
-        # Grid overlay
-        if "grid" in overlays:
-            self._add_grid_from_dict(overlays["grid"], foreground, area_def)
-
-        # Cities management
-        if "cities" in overlays:
-            self._add_cities_from_dict(overlays["cities"], foreground, area_def)
-
-        # Points management
-        for param_key in ["points", "text"]:
-            if param_key not in overlays:
-                continue
-            self._add_points_from_dict(overlays[param_key], foreground, area_def)
-
-        if cache_file is not None:
-            self._write_and_apply_new_cached_image(cache_file, foreground, background)
-        return foreground
-
-    def _add_coasts_rivers_borders_from_dict(self, overlays, foreground, area_def):
-        default_resolution = get_resolution_from_area(area_def)
-        DEFAULT = {
-            "level": 1,
-            "outline": "white",
-            "width": 1,
-            "fill": None,
-            "fill_opacity": 255,
-            "outline_opacity": 255,
-            "x_offset": 0,
-            "y_offset": 0,
-            "resolution": default_resolution,
-        }
-
-        for section, fun in zip(
-            ["coasts", "rivers", "borders"],
-            [self.add_coastlines, self.add_rivers, self.add_borders],
-        ):
-            if section not in overlays:
-                continue
-            params = DEFAULT.copy()
-            params.update(overlays[section])
-
-            if section != "coasts":
-                params.pop("fill_opacity", None)
-                params.pop("fill", None)
-
-            if not self.is_agg:
-                for key in ["width", "outline_opacity", "fill_opacity"]:
-                    params.pop(key, None)
-
-            fun(foreground, area_def, **params)
-            logger.info("%s added", section.capitalize())
-
-    def _add_shapefiles_from_dict(self, shapefiles, foreground, area_def):
-        # Backward compatibility and config.ini
-        if isinstance(shapefiles, dict):
-            shapefiles = [shapefiles]
-
-        DEFAULT_FILENAME = None
-        DEFAULT_OUTLINE = "white"
-        DEFAULT_FILL = None
-        for params in shapefiles:
-            params = params.copy()  # don't modify the user's dictionary
-            params.setdefault("filename", DEFAULT_FILENAME)
-            params.setdefault("outline", DEFAULT_OUTLINE)
-            params.setdefault("fill", DEFAULT_FILL)
-            if not self.is_agg:
-                for key in ["width", "outline_opacity", "fill_opacity"]:
-                    params.pop(key, None)
-            self.add_shapefile_shapes(
-                foreground,
-                area_def,
-                feature_type=None,
-                x_offset=0,
-                y_offset=0,
-                **params,
-            )
-
-    def _add_grid_from_dict(self, grid_dict, foreground, area_def):
-        if "major_lonlat" in grid_dict or "minor_lonlat" in grid_dict:
-            Dlonlat = grid_dict.get("major_lonlat", (10.0, 10.0))
-            dlonlat = grid_dict.get("minor_lonlat", (2.0, 2.0))
-        else:
-            Dlonlat = (
-                grid_dict.get("lon_major", 10.0),
-                grid_dict.get("lat_major", 10.0),
-            )
-            dlonlat = (
-                grid_dict.get("lon_minor", 2.0),
-                grid_dict.get("lat_minor", 2.0),
-            )
-        outline = grid_dict.get("outline", "white")
-        write_text = grid_dict.get("write_text", True)
-        if isinstance(write_text, str):
-            write_text = write_text.lower() in ["true", "yes", "1", "on"]
-        font = grid_dict.get("font", None)
-        font_size = int(grid_dict.get("font_size", 10))
-        fill = grid_dict.get("fill", outline)
-        fill_opacity = grid_dict.get("fill_opacity", 255)
-        if isinstance(font, str):
-            if self.is_agg:
-                from aggdraw import Font
-
-                font = Font(fill, font, opacity=fill_opacity, size=font_size)
-            else:
-                from PIL.ImageFont import truetype
-
-                font = truetype(font, font_size)
-        minor_outline = grid_dict.get("minor_outline", "white")
-        minor_is_tick = grid_dict.get("minor_is_tick", True)
-        if isinstance(minor_is_tick, str):
-            minor_is_tick = minor_is_tick.lower() in ["true", "yes", "1"]
-        lon_placement = grid_dict.get("lon_placement", "tb")
-        lat_placement = grid_dict.get("lat_placement", "lr")
-
-        grid_kwargs = {}
-        if self.is_agg:
-            width = float(grid_dict.get("width", 1.0))
-            minor_width = float(grid_dict.get("minor_width", 0.5))
-            outline_opacity = grid_dict.get("outline_opacity", 255)
-            minor_outline_opacity = grid_dict.get("minor_outline_opacity", 255)
-            grid_kwargs["width"] = width
-            grid_kwargs["minor_width"] = minor_width
-            grid_kwargs["outline_opacity"] = outline_opacity
-            grid_kwargs["minor_outline_opacity"] = minor_outline_opacity
-
-        self.add_grid(
-            foreground,
-            area_def,
-            Dlonlat,
-            dlonlat,
-            font=font,
-            write_text=write_text,
-            fill=fill,
-            outline=outline,
-            minor_outline=minor_outline,
-            minor_is_tick=minor_is_tick,
-            lon_placement=lon_placement,
-            lat_placement=lat_placement,
-            **grid_kwargs,
+        overlay_helper = _OverlaysFromDict(
+            self, overlays, area_def, cache_epoch, background
         )
-
-    def _add_cities_from_dict(self, cities_dict, foreground, area_def):
-        # Backward compatibility and config.ini
-        if isinstance(cities_dict, dict):
-            cities_dict = [cities_dict]
-
-        DEFAULT_FONTSIZE = 12
-        DEFAULT_SYMBOL = "circle"
-        DEFAULT_PTSIZE = 6
-        DEFAULT_OUTLINE = "black"
-        DEFAULT_FILL = "white"
-
-        for params in cities_dict:
-            params = params.copy()
-            cities_list = params.pop("cities_list")
-            font_file = params.pop("font")
-            font_size = int(params.pop("font_size", DEFAULT_FONTSIZE))
-            symbol = params.pop("symbol", DEFAULT_SYMBOL)
-            ptsize = int(params.pop("ptsize", DEFAULT_PTSIZE))
-            outline = params.pop("outline", DEFAULT_OUTLINE)
-            fill = params.pop("fill", DEFAULT_FILL)
-
-            self.add_cities(
-                foreground,
-                area_def,
-                cities_list,
-                font_file,
-                font_size,
-                symbol,
-                ptsize,
-                outline,
-                fill,
-                **params,
-            )
-
-    def _add_points_from_dict(self, points_dict, foreground, area_def):
-        DEFAULT_FONTSIZE = 12
-        DEFAULT_SYMBOL = "circle"
-        DEFAULT_PTSIZE = 6
-        DEFAULT_OUTLINE = "black"
-        DEFAULT_FILL = "white"
-
-        params = points_dict.copy()
-        points_list = list(params.pop("points_list"))
-        font_file = params.pop("font")
-        font_size = int(params.pop("font_size", DEFAULT_FONTSIZE))
-        symbol = params.pop("symbol", DEFAULT_SYMBOL)
-        ptsize = int(params.pop("ptsize", DEFAULT_PTSIZE))
-        outline = params.pop("outline", DEFAULT_OUTLINE)
-        fill = params.pop("fill", DEFAULT_FILL)
-
-        self.add_points(
-            foreground,
-            area_def,
-            points_list,
-            font_file,
-            font_size,
-            symbol,
-            ptsize,
-            outline,
-            fill,
-            **params,
-        )
-
-    @staticmethod
-    def _apply_cached_image(cache_file, cache_epoch, background, regenerate=False):
-        try:
-            config_time = cache_epoch or 0
-            cache_time = os.path.getmtime(cache_file)
-            # Cache file will be used only if it's newer than config file
-            if config_time is not None and config_time < cache_time and not regenerate:
-                foreground = Image.open(cache_file)
-                logger.info("Using image in cache %s", cache_file)
-                if background is not None:
-                    background.paste(foreground, mask=foreground.split()[-1])
-                return foreground
-            logger.info("Regenerating cache file.")
-        except OSError:
-            logger.info(
-                "No overlay image found, new overlay image will be saved in cache."
-            )
-        return None
-
-    @staticmethod
-    def _write_and_apply_new_cached_image(cache_file, foreground, background):
-        try:
-            foreground.save(cache_file)
-        except IOError as e:
-            logger.error("Can't save cache: %s", str(e))
-        if background is not None:
-            background.paste(foreground, mask=foreground.split()[-1])
-
-    def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
-        area_hash = hash(area_def)
-        base_dir, file_prefix = os.path.split(cache_prefix)
-        params_to_hash = self._prepare_hashable_dict(overlays_dict)
-        param_hash = hash_dict(params_to_hash)
-        return os.path.join(base_dir, f"{file_prefix}_{area_hash}_{param_hash}.png")
-
-    @staticmethod
-    def _prepare_hashable_dict(nonhashable_dict):
-        params_to_hash = {}
-        # avoid wasteful deep copy by only doing two levels of copying
-        for overlay_name, overlay_dict in nonhashable_dict.items():
-            if overlay_name == "cache":
-                continue
-            params_to_hash[overlay_name] = overlay_dict.copy()
-        # font objects are not hashable
-        for font_cat in ("cities", "points", "grid"):
-            if font_cat in params_to_hash:
-                params_to_hash[font_cat].pop("font", None)
-        return params_to_hash
+        return overlay_helper.apply_overlays()
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
         """Create and return a transparent image adding all the overlays contained in a configuration file.
@@ -1819,3 +1542,300 @@ class GeoNamesCitiesParser:
                 continue
             city_name, lon, lat = city_info[1], float(city_info[5]), float(city_info[4])
             yield city_name, lon, lat
+
+
+class _OverlaysFromDict:
+    """Helper for drawing overlays from a dictionary of parameters."""
+
+    def __init__(self, contour_writer, overlays, area_def, cache_epoch, background):
+        self._cw = contour_writer
+        self._overlays = overlays
+        self._is_cached = False
+        self._cache_filename = None
+        self._background = background
+        self._area_def = area_def
+
+        foreground = None
+        if "cache" in overlays:
+            cache_filename, foreground = self._get_cached_filename_and_foreground(
+                cache_epoch
+            )
+            self._cache_filename = cache_filename
+            self._is_cached = foreground is not None
+
+        if foreground is None:
+            if self._cache_filename is None and self._background is not None:
+                foreground = self._background
+            else:
+                x_size = area_def.width
+                y_size = area_def.height
+                foreground = Image.new("RGBA", (x_size, y_size), (0, 0, 0, 0))
+
+        self._foreground = foreground
+
+    def _get_cached_filename_and_foreground(self, cache_epoch):
+        cache_file = self._generate_cache_filename(
+            self._overlays["cache"]["file"],
+            self._area_def,
+            self._overlays,
+        )
+        regenerate = self._overlays["cache"].get("regenerate", False)
+        foreground = self._apply_cached_image(
+            cache_file, cache_epoch, self._background, regenerate=regenerate
+        )
+        return cache_file, foreground
+
+    @staticmethod
+    def _apply_cached_image(cache_file, cache_epoch, background, regenerate=False):
+        try:
+            config_time = cache_epoch or 0
+            cache_time = os.path.getmtime(cache_file)
+            # Cache file will be used only if it's newer than config file
+            if config_time is not None and config_time < cache_time and not regenerate:
+                foreground = Image.open(cache_file)
+                logger.info("Using image in cache %s", cache_file)
+                if background is not None:
+                    background.paste(foreground, mask=foreground.split()[-1])
+                return foreground
+            logger.info("Regenerating cache file.")
+        except OSError:
+            logger.info(
+                "No overlay image found, new overlay image will be saved in cache."
+            )
+        return None
+
+    def _write_and_apply_new_cached_image(self):
+        try:
+            self._foreground.save(self._cache_filename)
+        except IOError as e:
+            logger.error("Can't save cache: %s", str(e))
+        if self._background is not None:
+            self._background.paste(self._foreground, mask=self._foreground.split()[-1])
+
+    def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
+        area_hash = hash(area_def)
+        base_dir, file_prefix = os.path.split(cache_prefix)
+        params_to_hash = self._prepare_hashable_dict(overlays_dict)
+        param_hash = hash_dict(params_to_hash)
+        return os.path.join(base_dir, f"{file_prefix}_{area_hash}_{param_hash}.png")
+
+    @staticmethod
+    def _prepare_hashable_dict(nonhashable_dict):
+        params_to_hash = {}
+        # avoid wasteful deep copy by only doing two levels of copying
+        for overlay_name, overlay_dict in nonhashable_dict.items():
+            if overlay_name == "cache":
+                continue
+            params_to_hash[overlay_name] = overlay_dict.copy()
+        # font objects are not hashable
+        for font_cat in ("cities", "points", "grid"):
+            if font_cat in params_to_hash:
+                params_to_hash[font_cat].pop("font", None)
+        return params_to_hash
+
+    def apply_overlays(self):
+        if self._is_cached:
+            return self._foreground
+
+        overlays = self._overlays
+        self._add_coasts_rivers_borders_from_dict(overlays)
+        if "shapefiles" in overlays:
+            self._add_shapefiles_from_dict(overlays["shapefiles"])
+        if "grid" in overlays:
+            self._add_grid_from_dict(overlays["grid"])
+        if "cities" in overlays:
+            self._add_cities_from_dict(overlays["cities"])
+        for param_key in ["points", "text"]:
+            if param_key not in overlays:
+                continue
+            self._add_points_from_dict(overlays[param_key])
+
+        if self._cache_filename is not None:
+            self._write_and_apply_new_cached_image()
+        return self._foreground
+
+    def _add_coasts_rivers_borders_from_dict(self, overlays):
+        default_resolution = get_resolution_from_area(self._area_def)
+        DEFAULT = {
+            "level": 1,
+            "outline": "white",
+            "width": 1,
+            "fill": None,
+            "fill_opacity": 255,
+            "outline_opacity": 255,
+            "x_offset": 0,
+            "y_offset": 0,
+            "resolution": default_resolution,
+        }
+
+        for section, fun in zip(
+            ["coasts", "rivers", "borders"],
+            [self._cw.add_coastlines, self._cw.add_rivers, self._cw.add_borders],
+        ):
+            if section not in overlays:
+                continue
+            params = DEFAULT.copy()
+            params.update(overlays[section])
+
+            if section != "coasts":
+                params.pop("fill_opacity", None)
+                params.pop("fill", None)
+
+            if not self._cw.is_agg:
+                for key in ["width", "outline_opacity", "fill_opacity"]:
+                    params.pop(key, None)
+
+            fun(self._foreground, self._area_def, **params)
+            logger.info("%s added", section.capitalize())
+
+    def _add_shapefiles_from_dict(self, shapefiles):
+        # Backward compatibility and config.ini
+        if isinstance(shapefiles, dict):
+            shapefiles = [shapefiles]
+
+        DEFAULT_FILENAME = None
+        DEFAULT_OUTLINE = "white"
+        DEFAULT_FILL = None
+        for params in shapefiles:
+            params = params.copy()  # don't modify the user's dictionary
+            params.setdefault("filename", DEFAULT_FILENAME)
+            params.setdefault("outline", DEFAULT_OUTLINE)
+            params.setdefault("fill", DEFAULT_FILL)
+            if not self._cw.is_agg:
+                for key in ["width", "outline_opacity", "fill_opacity"]:
+                    params.pop(key, None)
+            self._cw.add_shapefile_shapes(
+                self._foreground,
+                self._area_def,
+                feature_type=None,
+                x_offset=0,
+                y_offset=0,
+                **params,
+            )
+
+    def _add_grid_from_dict(self, grid_dict):
+        if "major_lonlat" in grid_dict or "minor_lonlat" in grid_dict:
+            Dlonlat = grid_dict.get("major_lonlat", (10.0, 10.0))
+            dlonlat = grid_dict.get("minor_lonlat", (2.0, 2.0))
+        else:
+            Dlonlat = (
+                grid_dict.get("lon_major", 10.0),
+                grid_dict.get("lat_major", 10.0),
+            )
+            dlonlat = (
+                grid_dict.get("lon_minor", 2.0),
+                grid_dict.get("lat_minor", 2.0),
+            )
+        outline = grid_dict.get("outline", "white")
+        write_text = grid_dict.get("write_text", True)
+        if isinstance(write_text, str):
+            write_text = write_text.lower() in ["true", "yes", "1", "on"]
+        font = grid_dict.get("font", None)
+        font_size = int(grid_dict.get("font_size", 10))
+        fill = grid_dict.get("fill", outline)
+        fill_opacity = grid_dict.get("fill_opacity", 255)
+        if isinstance(font, str):
+            if self._cw.is_agg:
+                from aggdraw import Font
+
+                font = Font(fill, font, opacity=fill_opacity, size=font_size)
+            else:
+                from PIL.ImageFont import truetype
+
+                font = truetype(font, font_size)
+        minor_outline = grid_dict.get("minor_outline", "white")
+        minor_is_tick = grid_dict.get("minor_is_tick", True)
+        if isinstance(minor_is_tick, str):
+            minor_is_tick = minor_is_tick.lower() in ["true", "yes", "1"]
+        lon_placement = grid_dict.get("lon_placement", "tb")
+        lat_placement = grid_dict.get("lat_placement", "lr")
+
+        grid_kwargs = {}
+        if self._cw.is_agg:
+            width = float(grid_dict.get("width", 1.0))
+            minor_width = float(grid_dict.get("minor_width", 0.5))
+            outline_opacity = grid_dict.get("outline_opacity", 255)
+            minor_outline_opacity = grid_dict.get("minor_outline_opacity", 255)
+            grid_kwargs["width"] = width
+            grid_kwargs["minor_width"] = minor_width
+            grid_kwargs["outline_opacity"] = outline_opacity
+            grid_kwargs["minor_outline_opacity"] = minor_outline_opacity
+
+        self._cw.add_grid(
+            self._foreground,
+            self._area_def,
+            Dlonlat,
+            dlonlat,
+            font=font,
+            write_text=write_text,
+            fill=fill,
+            outline=outline,
+            minor_outline=minor_outline,
+            minor_is_tick=minor_is_tick,
+            lon_placement=lon_placement,
+            lat_placement=lat_placement,
+            **grid_kwargs,
+        )
+
+    def _add_cities_from_dict(self, cities_dict):
+        # Backward compatibility and config.ini
+        if isinstance(cities_dict, dict):
+            cities_dict = [cities_dict]
+
+        DEFAULT_FONTSIZE = 12
+        DEFAULT_SYMBOL = "circle"
+        DEFAULT_PTSIZE = 6
+        DEFAULT_OUTLINE = "black"
+        DEFAULT_FILL = "white"
+
+        for params in cities_dict:
+            params = params.copy()
+            cities_list = params.pop("cities_list")
+            font_file = params.pop("font")
+            font_size = int(params.pop("font_size", DEFAULT_FONTSIZE))
+            symbol = params.pop("symbol", DEFAULT_SYMBOL)
+            ptsize = int(params.pop("ptsize", DEFAULT_PTSIZE))
+            outline = params.pop("outline", DEFAULT_OUTLINE)
+            fill = params.pop("fill", DEFAULT_FILL)
+
+            self._cw.add_cities(
+                self._foreground,
+                self._area_def,
+                cities_list,
+                font_file,
+                font_size,
+                symbol,
+                ptsize,
+                outline,
+                fill,
+                **params,
+            )
+
+    def _add_points_from_dict(self, points_dict):
+        DEFAULT_FONTSIZE = 12
+        DEFAULT_SYMBOL = "circle"
+        DEFAULT_PTSIZE = 6
+        DEFAULT_OUTLINE = "black"
+        DEFAULT_FILL = "white"
+
+        params = points_dict.copy()
+        points_list = list(params.pop("points_list"))
+        font_file = params.pop("font")
+        font_size = int(params.pop("font_size", DEFAULT_FONTSIZE))
+        symbol = params.pop("symbol", DEFAULT_SYMBOL)
+        ptsize = int(params.pop("ptsize", DEFAULT_PTSIZE))
+        outline = params.pop("outline", DEFAULT_OUTLINE)
+        fill = params.pop("fill", DEFAULT_FILL)
+
+        self._cw.add_points(
+            self._foreground,
+            self._area_def,
+            points_list,
+            font_file,
+            font_size,
+            symbol,
+            ptsize,
+            outline,
+            fill,
+            **params,
+        )
