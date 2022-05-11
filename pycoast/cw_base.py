@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pycoast, Writing of coastlines, borders and rivers to images in Python
 #
-# Copyright (C) 2011-2020 PyCoast Developers
+# Copyright (C) 2011-2022 PyCoast Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from PIL import Image
 import pyproj
 import logging
 import ast
+import math
 
 import configparser
 
@@ -764,7 +765,7 @@ class ContourWriterBase(object):
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'cities', 'points', 'grid']
+        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'shapefiles', 'grid', 'cities', 'points']
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -877,6 +878,11 @@ class ContourWriterBase(object):
 
         # Shapefiles management
         if 'shapefiles' in overlays:
+
+            # Backward compatibility and config.ini
+            if isinstance(overlays['shapefiles'], dict):
+                overlays['shapefiles'] = [overlays['shapefiles']]
+
             DEFAULT_FILENAME = None
             DEFAULT_OUTLINE = 'white'
             DEFAULT_FILL = None
@@ -943,22 +949,31 @@ class ContourWriterBase(object):
 
         # Cities management
         if 'cities' in overlays:
-            DEFAULT_FONT_SIZE = 12
-            DEFAULT_OUTLINE = "yellow"
 
-            citylist = [s.lstrip()
-                        for s in overlays['cities']['list'].split(',')]
-            font_file = overlays['cities']['font']
-            font_size = int(overlays['cities'].get('font_size',
-                                                   DEFAULT_FONT_SIZE))
-            outline = overlays['cities'].get('outline', DEFAULT_OUTLINE)
-            pt_size = int(overlays['cities'].get('pt_size', None))
-            box_outline = overlays['cities'].get('box_outline', None)
-            box_opacity = int(overlays['cities'].get('box_opacity', 255))
+            # Backward compatibility and config.ini
+            if isinstance(overlays['cities'], dict):
+                overlays['cities'] = [overlays['cities']]
 
-            self.add_cities(foreground, area_def, citylist, font_file,
-                            font_size, pt_size, outline, box_outline,
-                            box_opacity)
+            DEFAULT_FONTSIZE = 12
+            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_PTSIZE = 6
+            DEFAULT_OUTLINE = 'black'
+            DEFAULT_FILL = 'white'
+
+            for params in overlays['cities'].copy():
+
+                cities_list = params.pop('cities_list')
+                font_file = params.pop('font')
+                font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+
+                symbol = params.pop('symbol', DEFAULT_SYMBOL)
+                ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+
+                outline = params.pop('outline', DEFAULT_OUTLINE)
+                fill = params.pop('fill', DEFAULT_FILL)
+
+                self.add_cities(foreground, area_def, cities_list, font_file, font_size,
+                                symbol, ptsize, outline, fill, **params)
 
         # Points management
         for param_key in ['points', 'text']:
@@ -967,8 +982,8 @@ class ContourWriterBase(object):
             DEFAULT_FONTSIZE = 12
             DEFAULT_SYMBOL = 'circle'
             DEFAULT_PTSIZE = 6
-            DEFAULT_OUTLINE = 'white'
-            DEFAULT_FILL = None
+            DEFAULT_OUTLINE = 'black'
+            DEFAULT_FILL = 'white'
 
             params = overlays[param_key].copy()
 
@@ -1050,65 +1065,196 @@ class ContourWriterBase(object):
         return self.add_overlay_from_dict(overlays, area_def,
                                           os.path.getmtime(config_file), background)
 
-    def add_cities(self, image, area_def, citylist, font_file, font_size,
-                   ptsize, outline, box_outline, box_opacity, db_root_path=None):
-        """Add cities (point and name) to a PIL image object."""
+    def draw_star(self, draw, symbol, x, y, ptsize, **kwargs):
+        # 5 <= n <= 8, symbol = string in ['star8', 'star7', 'star6', 'star5']
+        n = int(symbol[4])
+        alpha2 = math.pi / n
+        # r1 = outer radius (defaults to 0.5 * ptsize), r1 > r2 = inner radius
+        r1 = 0.5 * ptsize
+        r2 = r1 / (math.cos(alpha2) + math.sin(alpha2) * math.tan(2.0 * alpha2))
+        xy = []
+        alpha = 0.0
+        # Walk from star top ray CW around the symbol
+        for i in range(2 * n):
+            if (i % 2) == 0:
+                xy.append(x + r1 * math.sin(alpha))
+                xy.append(y - r1 * math.cos(alpha))
+            else:
+                xy.append(x + r2 * math.sin(alpha))
+                xy.append(y - r2 * math.cos(alpha))
+            alpha += alpha2
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def draw_hexagon(self, draw, x, y, ptsize, **kwargs):
+        xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
+              x + 0.50 * ptsize, y,
+              x + 0.25 * ptsize, y + 0.4330127 * ptsize,
+              x - 0.25 * ptsize, y + 0.4330127 * ptsize,
+              x - 0.50 * ptsize, y,
+              x - 0.25 * ptsize, y - 0.4330127 * ptsize]
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def draw_pentagon(self, draw, x, y, ptsize, **kwargs):
+        xy = [x, y - 0.5 * ptsize,
+              x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
+              x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+              x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
+              x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def draw_triangle(self, draw, x, y, ptsize, **kwargs):
+        xy = [x, y - 0.5 * ptsize,
+              x + 0.4330127 * ptsize, y + 0.25 * ptsize,
+              x - 0.4330127 * ptsize, y + 0.25 * ptsize]
+        self._draw_polygon(draw, xy, **kwargs)
+
+    def add_cities(self, image, area_def, cities_list, font_file, font_size=12,
+                   symbol='circle', ptsize=6, outline='black', fill='white', db_root_path=None, **kwargs):
+        """Add cities (symbol and UTF-8 names as description) to a PIL image object.
+
+        :Parameters:
+            image : object
+                PIL image object
+            area_def : object
+                Area Definition of the provided image
+            cities_list : list of city names ['City1', 'City2', City3, ..., 'CityN']
+              | a list of UTF-8 or ASCII strings. If either of these strings is found
+              | in file db_root_path/CITIES/cities.red, longitude and latitude is read
+              | and the city is added like a point with its UTF-8 name as description
+              | e.g. cities_list = ['Zurich', 'Oslo'] will add cities 'Zürich', 'Oslo'.
+              | Check the README_PyCoast.txt in archive cities2022.zip for more details.
+            font_file : str
+                Path to font file
+            font_size : int
+                Size of font
+            symbol : string
+                type of symbol, one of the elelments from the list
+                ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
+                'star8', 'star7', 'star6', 'star5', 'asterisk']
+            ptsize : int
+                Size of the point.
+            outline : str or (R, G, B), optional
+                Line color of the symbol
+            fill : str or (R, G, B), optional
+                Filling color of the symbol
+
+        :Optional keyword arguments:
+            width : float
+                Line width of the symbol
+            outline_opacity : int, optional {0; 255}
+                Opacity of the line of the symbol.
+            fill_opacity : int, optional {0; 255}
+                Opacity of the filling of the symbol
+            box_outline : str or (R, G, B), optional
+                Line color of the textbox borders.
+            box_linewidth : float
+                Line width of the the borders of the textbox
+            box_fill : str or (R, G, B), optional
+                Filling color of the background of the textbox.
+            box_opacity : int, optional {0; 255}
+                Opacity of the background filling of the textbox.
+        """
         if db_root_path is None:
             db_root_path = self.db_root_path
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
 
+        try:
+            from pyresample.geometry import AreaDefinition
+        except ImportError:
+            raise ImportError("Missing required 'pyresample' module, please install it.")
+
+        if not isinstance(area_def, AreaDefinition):
+            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
+
         draw = self._get_canvas(image)
 
-        # read shape file with points
-        # Sc-Kh shapefilename = os.path.join(self.db_root_path,
-        # "cities_15000_alternativ.shp")
-        shapefilename = os.path.join(
-            db_root_path, os.path.join("CITIES",
-                                       "cities_15000_alternativ.shp"))
+        # cities.red is a reduced version of the files avalable at http://download.geonames.org
+        # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
+        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
         try:
-            s = shapefile.Reader(shapefilename)
-            shapes = s.shapes()
-        except AttributeError:
-            raise ValueError('Could not find shapefile %s'
-                             % shapefilename)
+            cities_file = open(textfilename, mode='r', encoding='utf-8')
+        except FileNotFoundError:
+            raise FileNotFoundError('Could not find file %s' % textfilename)
 
-        font = self._get_font(outline, font_file, font_size)
+        for city_row in cities_file:
+            city_info = city_row.split('\t')
+            if not city_info or not (city_info[1] in cities_list or city_info[2] in cities_list):
+                continue
+            city_name, lon, lat = city_info[1], float(city_info[5]), float(city_info[4])
 
-        # Iterate through shapes
-        for i, shape in enumerate(shapes):
-            # Select cities with name
-            record = s.record(i)
-            if record[3] in citylist:
+            try:
+                x, y = area_def.get_array_indices_from_lonlat(lon, lat)
+            except ValueError:
+                logger.info("City %s is out of the area, it will not be added to the image.",
+                            city_name + ' ' + str((lon, lat)))
+            else:
+                # add symbol
+                if ptsize != 0:
+                    half_ptsize = int(round(ptsize / 2.))
+                    dot_box = [x - half_ptsize, y - half_ptsize,
+                               x + half_ptsize, y + half_ptsize]
 
-                city_name = record[3]
+                    width = kwargs.get('width', 1.)
+                    outline_opacity = kwargs.get('outline_opacity', 255)
+                    fill_opacity = kwargs.get('fill_opacity', 255)
 
-                # use only parts of _get_pixel_index
-                # Get shape data as array and reproject
-                shape_data = np.array(shape.points)
-                lons = shape_data[:, 0][0]
-                lats = shape_data[:, 1][0]
+                    # draw the symbol at the (x, y) position
+                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
+                        self._draw_ellipse(draw, dot_box,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    # All regular polygons are drawn horizontally based
+                    elif symbol == 'hexagon':
+                        self.draw_hexagon(draw, x, y, ptsize,
+                                          outline=outline, width=width,
+                                          outline_opacity=outline_opacity,
+                                          fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'pentagon':
+                        self.draw_pentagon(draw, x, y, ptsize,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'square':
+                        self._draw_rectangle(draw, dot_box,
+                                             outline=outline, width=width,
+                                             outline_opacity=outline_opacity,
+                                             fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'triangle':
+                        self.draw_triangle(draw, x, y, ptsize,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    # All stars are drawn with one vertical ray on top
+                    elif symbol in ['star8', 'star7', 'star6', 'star5']:
+                        self.draw_star(draw, symbol, x, y, ptsize,
+                                       outline=outline, width=width,
+                                       outline_opacity=outline_opacity,
+                                       fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'asterisk':  # an '*' sign
+                        self._draw_asterisk(draw, ptsize, (x, y),
+                                            outline=outline, width=width,
+                                            outline_opacity=outline_opacity)
+                    elif symbol:
+                        raise ValueError("Unsupported symbol type: " + str(symbol))
 
-                try:
-                    (x, y) = area_def.get_xy_from_lonlat(lons, lats)
-                except ValueError as exc:
-                    logger.debug("Point not added (%s)", str(exc))
+                    text_position = [x + ptsize, y]
                 else:
-                    # add_dot
-                    if ptsize is not None:
-                        dot_box = [x - ptsize, y - ptsize,
-                                   x + ptsize, y + ptsize]
-                        self._draw_ellipse(
-                            draw, dot_box, fill=outline, outline=outline)
-                        text_position = [x + 9, y - 5]  # FIXME
-                    else:
-                        text_position = [x, y]
+                    text_position = [x, y]
+
+                font = self._get_font(outline, font_file, font_size)
+
+                new_kwargs = kwargs.copy()
+
+                box_outline = new_kwargs.pop('box_outline', 'white')
+                box_opacity = new_kwargs.pop('box_opacity', 0)
 
                 # add text_box
-                    self._draw_text_box(draw, text_position, city_name, font, outline,
-                                        box_outline, box_opacity)
-                    logger.info("%s added", str(city_name))
-
+                self._draw_text_box(draw, text_position, city_name, font, outline,
+                                    box_outline, box_opacity, **new_kwargs)
+                logger.info("%s added", city_name + ' ' + str((lon, lat)))
+        cities_file.close()
         self._finalize(draw)
 
     def add_points(self, image, area_def, points_list, font_file, font_size=12,
@@ -1136,9 +1282,9 @@ class ContourWriterBase(object):
             font_size : int
                 Size of font
             symbol : string
-                type of symbol, one of the elements from the list
-                ['circle', 'square', 'asterisk']
-                or None to prevent rendering
+                type of symbol, one of the elelments from the list
+                ['circle', 'hexagon', 'pentagon', 'square', 'triangle',
+                'star8', 'star7', 'star6', 'star5, 'asterisk']
             ptsize : int
                 Size of the point (should be zero if symbol:None).
             outline : str or (R, G, B), optional
@@ -1180,6 +1326,7 @@ class ContourWriterBase(object):
             except ValueError:
                 logger.info(f"Point ({x}, {y}) is out of the image area, it will not be added to the image.")
             else:
+                # add symbol
                 if ptsize != 0:
                     half_ptsize = int(round(ptsize / 2.))
 
@@ -1188,11 +1335,22 @@ class ContourWriterBase(object):
 
                     width = kwargs.get('width', 1.)
                     outline_opacity = kwargs.get('outline_opacity', 255)
-                    fill_opacity = kwargs.get('fill_opacity', 0)
+                    fill_opacity = kwargs.get('fill_opacity', 255)
 
                     # draw the symbol at the (x, y) position
-                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e circle with fill
+                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
                         self._draw_ellipse(draw, dot_box,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    # All regular polygons are drawn horizontally based
+                    elif symbol == 'hexagon':
+                        self.draw_hexagon(draw, x, y, ptsize,
+                                          outline=outline, width=width,
+                                          outline_opacity=outline_opacity,
+                                          fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'pentagon':
+                        self.draw_pentagon(draw, x, y, ptsize,
                                            outline=outline, width=width,
                                            outline_opacity=outline_opacity,
                                            fill=fill, fill_opacity=fill_opacity)
@@ -1201,6 +1359,17 @@ class ContourWriterBase(object):
                                              outline=outline, width=width,
                                              outline_opacity=outline_opacity,
                                              fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == 'triangle':
+                        self.draw_triangle(draw, x, y, ptsize,
+                                           outline=outline, width=width,
+                                           outline_opacity=outline_opacity,
+                                           fill=fill, fill_opacity=fill_opacity)
+                    # All stars are drawn with one vertical ray on top
+                    elif symbol in ['star8', 'star7', 'star6', 'star5']:
+                        self.draw_star(draw, symbol, x, y, ptsize,
+                                       outline=outline, width=width,
+                                       outline_opacity=outline_opacity,
+                                       fill=fill, fill_opacity=fill_opacity)
                     elif symbol == 'asterisk':  # an '*' sign
                         self._draw_asterisk(draw, ptsize, (x, y),
                                             outline=outline, width=width,

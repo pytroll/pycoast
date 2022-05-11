@@ -1,0 +1,20 @@
+X	Bad Schwalbach	Bad Schwalbach	X	50.14196	8.06964
+X	Belp	Belp	X	46.89129	7.49825
+X	Berlin	Berlin	X	52.52437	13.41053
+X	Dublin	Dublin	X	53.33306	-6.24889
+X	Edinburgh	Edinburgh	X	55.95206	-3.19648
+X	Fairbanks	Fairbanks	X	64.83778	-147.71639
+X	Freiburg	Freiburg	X	47.9959	7.85222
+X	Hilversum	Hilversum	X	52.22333	5.17639
+X	Huesca	Huesca	X	42.13615	-0.4087
+X	London	London	X	42.98339	-81.23304
+X	London	London	X	51.50853	-0.12574
+X	Madrid	Madrid	X	40.4165	-3.70256
+X	Marseille	Marseille	X	43.29695	5.38107
+X	Montélimar	Montelimar	X	44.55468	4.75469
+X	Oslo	Oslo	X	59.91273	10.74609
+X	Paris	Paris	X	48.85341	2.3488
+X	Reykjavík	Reykjavik	X	64.13548	-21.89541
+X	Rome	Rome	X	41.89193	12.51133
+X	Toronto	Toronto	X	43.70011	-79.4163
+X	Zürich	Zurich	X	47.36667	8.55
