@@ -150,7 +150,7 @@ class ContourWriterBase(object):
 
     """
 
-    _draw_module = None
+    _draw_module = "FIXME"
     # This is a flag to make _add_grid aware of which draw.text
     # subroutine, from PIL, aggdraw or cairo is being used
     # (unfortunately they are not fully compatible).
