@@ -22,7 +22,13 @@ import versioneer
 requires = ["aggdraw", "pyshp", "numpy", "pyproj", "pillow"]
 
 extras_require = {
-    "docs": ["sphinx", "pyresample", "pytest"],
+    "docs": [
+        "sphinx",
+        "pyresample",
+        "pytest",
+        "sphinx_rtd_theme",
+        "sphinxcontrib-apidoc",
+    ],
     "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls"],
 }
 

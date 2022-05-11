@@ -10,9 +10,7 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-#
-# To generate apidoc modules:
-#     sphinx-apidoc -f -T -o source/api ../pycoast ../pycoast/tests
+"""Sphinx configuration file for generating package documentation."""
 from __future__ import annotations
 
 import os
@@ -37,7 +35,16 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
     "sphinx.ext.napoleon",
+    "sphinxcontrib.apidoc",
 ]
+
+# API docs
+apidoc_module_dir = "../../pycoast"
+apidoc_output_dir = "api"
+apidoc_excluded_paths = [
+    "version.py",
+]
+apidoc_separate_modules = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -106,7 +113,7 @@ pygments_style = "sphinx"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "default"
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

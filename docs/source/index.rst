@@ -23,4 +23,4 @@ images using data from the GSHHS and WDBII datasets
    points
    shapefiles
    test
-   PyCoast API <api/pycoast>
+   PyCoast API <api/modules>
