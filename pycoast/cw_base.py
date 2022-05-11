@@ -1184,8 +1184,10 @@ class ContourWriterBase(object):
         # Iterate through lines
         while s != '':
             t = s.split('\t')
-            if t[0] in cities_list or t[1] in cities_list:
-                city_name, lon, lat = t[0], float(t[2]), float(t[3])
+            if not t:
+                continue
+            if t[1] in cities_list or t[2] in cities_list:
+                city_name, lon, lat = t[1], float(t[5]), float(t[4])
                 try:
                     x, y = area_def.get_array_indices_from_lonlat(lon, lat)
                 except ValueError:

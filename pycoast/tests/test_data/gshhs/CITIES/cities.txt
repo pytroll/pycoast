@@ -1,26 +1,20 @@
-Bad Schwalbach	Bad Schwalbach	8.06964	50.14196	DE
-Belp	Belp	7.49825	46.89129	CH
-Berlin	Berlin	13.41053	52.52437	DE
-Berlin	Berlin	-71.18508	44.46867	US
-Dublin	Dublin	-6.24889	53.33306	IE
-Dublin	Dublin	-82.90375	32.54044	US
-Edinburgh	Edinburgh	-3.19648	55.95206	GB
-Fairbanks	Fairbanks	-147.71639	64.83778	US
-Freiburg	Freiburg	7.85222	47.9959	DE
-Hilversum	Hilversum	5.17639	52.22333	NL
-Huesca	Huesca	-0.4087	42.13615	ES
-London	London	-0.12574	51.50853	GB
-London	London	-81.23304	42.98339	CA
-Madrid	Madrid	-3.70256	40.4165	ES
-Madrid	Madrid	-74.26419	4.73245	CO
-Marseille	Marseille	5.38107	43.29695	FR
-Montélimar	Montelimar	4.75469	44.55468	FR
-Oslo	Oslo	10.74609	59.91273	NO
-Paris	Paris	2.3488	48.85341	FR
-Paris	Paris	-70.50062	44.25979	US
-Reykjavík	Reykjavik	-21.89541	64.13548	IS
-Rome	Rome	12.51133	41.89193	IT
-Rome	Rome	-75.45573	43.21285	US
-Toronto	Toronto	151.59373	-33.01357	AU
-Toronto	Toronto	-79.4163	43.70011	CA
-Zürich	Zurich	8.55	47.36667	CH
+X	Bad Schwalbach	Bad Schwalbach	X	50.14196	8.06964
+X	Belp	Belp	X	46.89129	7.49825
+X	Berlin	Berlin	X	52.52437	13.41053
+X	Dublin	Dublin	X	53.33306	-6.24889
+X	Edinburgh	Edinburgh	X	55.95206	-3.19648
+X	Fairbanks	Fairbanks	X	64.83778	-147.71639
+X	Freiburg	Freiburg	X	47.9959	7.85222
+X	Hilversum	Hilversum	X	52.22333	5.17639
+X	Huesca	Huesca	X	42.13615	-0.4087
+X	London	London	X	42.98339	-81.23304
+X	London	London	X	51.50853	-0.12574
+X	Madrid	Madrid	X	40.4165	-3.70256
+X	Marseille	Marseille	X	43.29695	5.38107
+X	Montélimar	Montelimar	X	44.55468	4.75469
+X	Oslo	Oslo	X	59.91273	10.74609
+X	Paris	Paris	X	48.85341	2.3488
+X	Reykjavík	Reykjavik	X	64.13548	-21.89541
+X	Rome	Rome	X	41.89193	12.51133
+X	Toronto	Toronto	X	43.70011	-79.4163
+X	Zürich	Zurich	X	47.36667	8.55
