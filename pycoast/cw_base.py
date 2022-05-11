@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Base class for contour writers."""
+from __future__ import annotations
 
 import ast
 import configparser
@@ -25,6 +26,7 @@ import json
 import logging
 import math
 import os
+from typing import Generator
 
 import numpy as np
 import pyproj
@@ -1344,20 +1346,11 @@ class ContourWriterBase(object):
 
         # cities.red is a reduced version of the files avalable at http://download.geonames.org
         # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
-        textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
-        try:
-            cities_file = open(textfilename, mode="r", encoding="utf-8")
-        except FileNotFoundError:
-            raise FileNotFoundError("Could not find file %s" % textfilename)
-
-        for city_row in cities_file:
-            city_info = city_row.split("\t")
-            if not city_info or not (
-                city_info[1] in cities_list or city_info[2] in cities_list
-            ):
-                continue
-            city_name, lon, lat = city_info[1], float(city_info[5]), float(city_info[4])
-
+        cities_filename = os.path.join(
+            db_root_path, os.path.join("CITIES", "cities.txt")
+        )
+        cities_parser = GeoNamesCitiesParser(cities_filename)
+        for city_name, lon, lat in cities_parser.iter_cities_names_lon_lat(cities_list):
             try:
                 x, y = area_def.get_array_indices_from_lonlat(lon, lat)
             except ValueError:
@@ -1365,131 +1358,54 @@ class ContourWriterBase(object):
                     "City %s is out of the area, it will not be added to the image.",
                     city_name + " " + str((lon, lat)),
                 )
-            else:
-                # add symbol
-                if ptsize != 0:
-                    half_ptsize = int(round(ptsize / 2.0))
-                    dot_box = [
-                        x - half_ptsize,
-                        y - half_ptsize,
-                        x + half_ptsize,
-                        y + half_ptsize,
-                    ]
+                continue
+            # add symbol
+            if ptsize != 0:
+                half_ptsize = int(round(ptsize / 2.0))
+                dot_box = [
+                    x - half_ptsize,
+                    y - half_ptsize,
+                    x + half_ptsize,
+                    y + half_ptsize,
+                ]
 
-                    width = kwargs.get("width", 1.0)
-                    outline_opacity = kwargs.get("outline_opacity", 255)
-                    fill_opacity = kwargs.get("fill_opacity", 255)
-
-                    # draw the symbol at the (x, y) position
-                    if (
-                        symbol == "circle"
-                    ):  # a 'circle' or a 'dot' i.e. circle with fill
-                        self._draw_ellipse(
-                            draw,
-                            dot_box,
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                            fill=fill,
-                            fill_opacity=fill_opacity,
-                        )
-                    # All regular polygons are drawn horizontally based
-                    elif symbol == "hexagon":
-                        self.draw_hexagon(
-                            draw,
-                            x,
-                            y,
-                            ptsize,
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                            fill=fill,
-                            fill_opacity=fill_opacity,
-                        )
-                    elif symbol == "pentagon":
-                        self.draw_pentagon(
-                            draw,
-                            x,
-                            y,
-                            ptsize,
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                            fill=fill,
-                            fill_opacity=fill_opacity,
-                        )
-                    elif symbol == "square":
-                        self._draw_rectangle(
-                            draw,
-                            dot_box,
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                            fill=fill,
-                            fill_opacity=fill_opacity,
-                        )
-                    elif symbol == "triangle":
-                        self.draw_triangle(
-                            draw,
-                            x,
-                            y,
-                            ptsize,
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                            fill=fill,
-                            fill_opacity=fill_opacity,
-                        )
-                    # All stars are drawn with one vertical ray on top
-                    elif symbol in ["star8", "star7", "star6", "star5"]:
-                        self.draw_star(
-                            draw,
-                            symbol,
-                            x,
-                            y,
-                            ptsize,
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                            fill=fill,
-                            fill_opacity=fill_opacity,
-                        )
-                    elif symbol == "asterisk":  # an '*' sign
-                        self._draw_asterisk(
-                            draw,
-                            ptsize,
-                            (x, y),
-                            outline=outline,
-                            width=width,
-                            outline_opacity=outline_opacity,
-                        )
-                    elif symbol:
-                        raise ValueError("Unsupported symbol type: " + str(symbol))
-
-                    text_position = [x + ptsize, y]
-                else:
-                    text_position = [x, y]
-
-                font = self._get_font(outline, font_file, font_size)
-
-                new_kwargs = kwargs.copy()
-
-                box_outline = new_kwargs.pop("box_outline", "white")
-                box_opacity = new_kwargs.pop("box_opacity", 0)
-
-                # add text_box
-                self._draw_text_box(
+                width = kwargs.get("width", 1.0)
+                outline_opacity = kwargs.get("outline_opacity", 255)
+                fill_opacity = kwargs.get("fill_opacity", 255)
+                self._draw_point_element(
                     draw,
-                    text_position,
-                    city_name,
-                    font,
+                    symbol,
+                    dot_box,
+                    x,
+                    y,
+                    width,
+                    ptsize,
                     outline,
-                    box_outline,
-                    box_opacity,
-                    **new_kwargs,
+                    outline_opacity,
+                    fill,
+                    fill_opacity,
                 )
-                logger.info("%s added", city_name + " " + str((lon, lat)))
-        cities_file.close()
+                text_position = [x + ptsize, y]
+            else:
+                text_position = [x, y]
+
+            font = self._get_font(outline, font_file, font_size)
+            new_kwargs = kwargs.copy()
+            box_outline = new_kwargs.pop("box_outline", "white")
+            box_opacity = new_kwargs.pop("box_opacity", 0)
+
+            # add text_box
+            self._draw_text_box(
+                draw,
+                text_position,
+                city_name,
+                font,
+                outline,
+                box_outline,
+                box_opacity,
+                **new_kwargs,
+            )
+            logger.info("%s added", city_name + " " + str((lon, lat)))
         self._finalize(draw)
 
     def add_points(
@@ -1881,3 +1797,22 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj, x_offset=0, y_offs
         index_arrays.append(index_array)
 
     return index_arrays, is_reduced
+
+
+class GeoNamesCitiesParser:
+    """Helper for parsing citiesN.txt files from GeoNames.org."""
+
+    def __init__(self, cities_filename: str):
+        self._cities_file = open(cities_filename, mode="r", encoding="utf-8")
+
+    def iter_cities_names_lon_lat(
+        self, cities_list: list[str]
+    ) -> Generator[tuple[str, float, float], None, None]:
+        for city_row in self._cities_file:
+            city_info = city_row.split("\t")
+            if not city_info or not (
+                city_info[1] in cities_list or city_info[2] in cities_list
+            ):
+                continue
+            city_name, lon, lat = city_info[1], float(city_info[5]), float(city_info[4])
+            yield city_name, lon, lat
