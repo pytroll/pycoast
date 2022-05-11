@@ -2,9 +2,9 @@ Shapes from ESRI shape files
 -------------------------------
 
 Pycoast supports plotting of polygons and polylines from ESRI shapefiles,
-currently only in lonlat coordinates format. 
+currently only in lonlat coordinates format.
 In the following example we use :attr:`add_shapefile_shapes` method to plot all line shapes
-found in the file Metareas.shp. We then use the :attr:`add_shapefile_shape` (notice the singular) 
+found in the file Metareas.shp. We then use the :attr:`add_shapefile_shape` (notice the singular)
 to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.
 
     >>> from pycoast import ContourWriterAGG
@@ -15,13 +15,13 @@ to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.
     >>> cw = ContourWriterAGG(gshhs_root_dir)
     ...
     >>> cw.add_coastlines(img, area_def, resolution='l', level=4)
-    >>> cw.add_shapefile_shapes(img, area_def, 
+    >>> cw.add_shapefile_shapes(img, area_def,
                                 'test/test_data/shapes/Metareas.shp',
                                 outline='red',width=2)
-    >>> cw.add_shapefile_shape(img, area_def, 
+    >>> cw.add_shapefile_shape(img, area_def,
                                'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
                                3, outline='blue')
-    >>> cw.add_shapefile_shape(img, area_def, 
+    >>> cw.add_shapefile_shape(img, area_def,
                                'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
                                4, outline='blue', fill='green')
 
@@ -67,4 +67,3 @@ and specify that each polygon should be blue and any other shape should be red.
 .. _OGR: http://www.gdal.org/ogr2ogr.html
 .. _GDAL: http://www.gdal.org/
 .. _PIL: http://www.pythonware.com/products/pil/
-

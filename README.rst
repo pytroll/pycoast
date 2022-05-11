@@ -10,7 +10,12 @@ PyCoast
 .. image:: https://img.shields.io/pypi/v/pycoast.svg
         :target: https://pypi.python.org/pypi/pycoast
 
-Python package for adding coastlines and borders to raster images.
+.. image:: https://results.pre-commit.ci/badge/github/pytroll/pycoast/main.svg
+   :target: https://results.pre-commit.ci/latest/github/pytroll/pycoast/main
+   :alt: pre-commit.ci status
+
+Python package for adding coastlines, borders, rivers, lakes, cities, and other
+overlays to raster images.
 
 Installation
 ------------

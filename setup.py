@@ -16,36 +16,38 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
+
 import versioneer
 
-requires = ['aggdraw', 'pyshp', 'numpy', 'pyproj', 'pillow']
+requires = ["aggdraw", "pyshp", "numpy", "pyproj", "pillow"]
 
 extras_require = {
-    "docs": ["sphinx", 'pyresample', 'pytest'],
-    "tests": ['pyresample', 'pytest', 'pytest-cov', 'coverage', 'coveralls'],
+    "docs": ["sphinx", "pyresample", "pytest"],
+    "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls"],
 }
 
-with open('README', 'r') as readme_file:
+with open("README", "r") as readme_file:
     long_description = readme_file.read()
 
-setup(name='pycoast',
-      version=versioneer.get_version(),
-      cmdclass=versioneer.get_cmdclass(),
-      description='Writing of coastlines, borders and rivers to images in Python',
-      long_description=long_description,
-      author='Esben S. Nielsen',
-      author_email='esn@dmi.dk',
-      packages=['pycoast', 'pycoast.tests'],
-      install_requires=requires,
-      extras_require=extras_require,
-      python_requires='>3.7',
-      zip_safe=False,
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-          'Programming Language :: Python',
-          'Operating System :: OS Independent',
-          'Intended Audience :: Science/Research',
-          'Topic :: Scientific/Engineering'
-      ]
-      )
+setup(
+    name="pycoast",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
+    description="Writing of coastlines, borders and rivers to images in Python",
+    long_description=long_description,
+    author="Esben S. Nielsen",
+    author_email="esn@dmi.dk",
+    packages=["pycoast", "pycoast.tests"],
+    install_requires=requires,
+    extras_require=extras_require,
+    python_requires=">3.7",
+    zip_safe=False,
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Programming Language :: Python",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering",
+    ],
+)

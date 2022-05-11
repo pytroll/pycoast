@@ -44,4 +44,3 @@
    the changelog (the portion under the version section header) in the
    "Describe this release" box. Finally click "Publish release".
 9. Verify the GitHub actions for deployment succeed and the release is on PyPI.
-

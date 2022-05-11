@@ -12,13 +12,13 @@ Tip: if the building of aggdraw fails with:
 .. code-block:: bash
 
     agg_array.h:523: error: cast from ‘agg::int8u*’ to ‘unsigned int’ loses precision
-    
+
 Try:
 
 .. code-block:: bash
 
     export CFLAGS="-fpermissive"
-    
+
 before building.
 
 Using pycoast with AGG for making antialiased drawing:
@@ -32,7 +32,7 @@ Using pycoast with AGG for making antialiased drawing:
     >>> cw = ContourWriterAGG('/home/esn/data/gshhs')
     >>> cw.add_coastlines(img, (proj4_string, area_extent), resolution='l', width=0.5)
     >>> img.show()
-    
+
 .. image:: images/geos_coast_agg.png
 
 and making the not-so-nice image from the first example nice:

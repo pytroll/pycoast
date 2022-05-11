@@ -18,10 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ContourWriter based on the aggdraw library."""
 
-from PIL import Image
 import logging
 
 import aggdraw
+from PIL import Image
 
 from pycoast.cw_base import ContourWriterBase
 
@@ -51,41 +51,44 @@ class ContourWriterAGG(ContourWriterBase):
 
     def _draw_polygon(self, draw, coordinates, **kwargs):
         """Draw polygon."""
-        pen = aggdraw.Pen(kwargs['outline'],
-                          kwargs['width'],
-                          kwargs['outline_opacity'])
+        pen = aggdraw.Pen(kwargs["outline"], kwargs["width"], kwargs["outline_opacity"])
 
-        fill_opacity = kwargs.get('fill_opacity', 255) if kwargs['fill'] else 0
+        fill_opacity = kwargs.get("fill_opacity", 255) if kwargs["fill"] else 0
 
-        brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+        brush = aggdraw.Brush(kwargs["fill"], fill_opacity)
         draw.polygon(coordinates, pen, brush)
 
     def _draw_rectangle(self, draw, coordinates, **kwargs):
         """Draw rectangle."""
-        pen = aggdraw.Pen(kwargs['outline'],
-                          kwargs['width'],
-                          kwargs['outline_opacity'])
+        pen = aggdraw.Pen(kwargs["outline"], kwargs["width"], kwargs["outline_opacity"])
 
-        fill_opacity = kwargs.get('fill_opacity', 255) if kwargs['fill'] else 0
+        fill_opacity = kwargs.get("fill_opacity", 255) if kwargs["fill"] else 0
 
-        brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+        brush = aggdraw.Brush(kwargs["fill"], fill_opacity)
 
         draw.rectangle(coordinates, pen, brush)
 
     def _draw_ellipse(self, draw, coordinates, **kwargs):
         """Draw ellipse."""
-        pen = aggdraw.Pen(kwargs['outline'],
-                          kwargs['width'],
-                          kwargs['outline_opacity'])
+        pen = aggdraw.Pen(kwargs["outline"], kwargs["width"], kwargs["outline_opacity"])
 
-        fill_opacity = kwargs.get('fill_opacity', 255) if kwargs['fill'] else 0
+        fill_opacity = kwargs.get("fill_opacity", 255) if kwargs["fill"] else 0
 
-        brush = aggdraw.Brush(kwargs['fill'], fill_opacity)
+        brush = aggdraw.Brush(kwargs["fill"], fill_opacity)
 
         draw.ellipse(coordinates, brush, pen)
 
-    def _draw_text_box(self, draw, text_position, text, font, outline,
-                       box_outline, box_opacity, **kwargs):
+    def _draw_text_box(
+        self,
+        draw,
+        text_position,
+        text,
+        font,
+        outline,
+        box_outline,
+        box_opacity,
+        **kwargs,
+    ):
         """Add a text box at position (x,y)."""
         if box_outline is not None:
             text_size = draw.textsize(text, font)
@@ -96,65 +99,94 @@ class ContourWriterAGG(ContourWriterBase):
             yLR = yUL + text_size[1]
             box_size = (xUL, yUL, xLR, yLR)
 
-            width = kwargs.get('box_linewidth', 1)
-            fill = kwargs.get('box_fill', None)
+            width = kwargs.get("box_linewidth", 1)
+            fill = kwargs.get("box_fill", None)
 
             self._draw_rectangle(
-                draw, box_size, outline=box_outline, width=width,
-                outline_opacity=box_opacity, fill=fill, fill_opacity=box_opacity)
+                draw,
+                box_size,
+                outline=box_outline,
+                width=width,
+                outline_opacity=box_opacity,
+                fill=fill,
+                fill_opacity=box_opacity,
+            )
 
         self._draw_text(draw, text_position, text, font, align="no")
 
     def _draw_line(self, draw, coordinates, **kwargs):
         """Draw line."""
-        pen = aggdraw.Pen(kwargs['outline'],
-                          kwargs['width'],
-                          kwargs['outline_opacity'])
+        pen = aggdraw.Pen(kwargs["outline"], kwargs["width"], kwargs["outline_opacity"])
         draw.line(coordinates, pen)
 
     def _draw_asterisk(self, draw, pt_size, coordinate, **kwargs):
         """Draw a asterisk sign '*' at the given coordinate."""
-        half_ptsize = int(round(pt_size / 2.))
+        half_ptsize = int(round(pt_size / 2.0))
         x, y = coordinate
 
-        outline = kwargs.get('outline', 'white')
-        width = kwargs.get('width', 1.)
-        outline_opacity = kwargs.get('outline_opacity', 255)
+        outline = kwargs.get("outline", "white")
+        width = kwargs.get("width", 1.0)
+        outline_opacity = kwargs.get("outline_opacity", 255)
 
         # draw '|'
         (x_bm, y_bm) = (x, y - half_ptsize)  # bottom middle point
         (x_tm, y_tm) = (x, y + half_ptsize)  # top middle point
-        self._draw_line(draw, [x_bm, y_bm, x_tm, y_tm],
-                        outline=outline, width=width,
-                        outline_opacity=outline_opacity)
+        self._draw_line(
+            draw,
+            [x_bm, y_bm, x_tm, y_tm],
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
         # draw '-'
         (x_lm, y_lm) = (x - half_ptsize, y)  # left middle point
         (x_rm, y_rm) = (x + half_ptsize, y)  # right middle point
-        self._draw_line(draw, [x_lm, y_lm, x_rm, y_rm],
-                        outline=outline, width=width,
-                        outline_opacity=outline_opacity)
+        self._draw_line(
+            draw,
+            [x_lm, y_lm, x_rm, y_rm],
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
         # draw '/'
         (x_bl, y_bl) = (x - half_ptsize, y - half_ptsize)  # bottom left point
         (x_tr, y_tr) = (x + half_ptsize, y + half_ptsize)  # top right point
-        self._draw_line(draw, [x_bl, y_bl, x_tr, y_tr],
-                        outline=outline, width=width,
-                        outline_opacity=outline_opacity)
+        self._draw_line(
+            draw,
+            [x_bl, y_bl, x_tr, y_tr],
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
         # draw '\'
         (x_tl, y_tl) = (x - half_ptsize, y + half_ptsize)  # top left point
         (x_br, y_br) = (x + half_ptsize, y - half_ptsize)  # bottom right point
-        self._draw_line(draw, [x_tl, y_tl, x_br, y_br],
-                        outline=outline, width=width,
-                        outline_opacity=outline_opacity)
+        self._draw_line(
+            draw,
+            [x_tl, y_tl, x_br, y_br],
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
 
     def _finalize(self, draw):
         """Flush the AGG image object."""
         draw.flush()
 
-    def add_shapefile_shapes(self, image, area_def, filename,
-                             feature_type=None,
-                             fill=None, fill_opacity=255, outline='white',
-                             width=1, outline_opacity=255, x_offset=0,
-                             y_offset=0):
+    def add_shapefile_shapes(
+        self,
+        image,
+        area_def,
+        filename,
+        feature_type=None,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add shape file shapes from an ESRI shapefile.
 
         Note: Currently only supports lon-lat formatted coordinates.
@@ -187,19 +219,35 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_shapefile_shapes(image=image, area_def=area_def,
-                                   filename=filename,
-                                   feature_type=feature_type,
-                                   x_offset=x_offset, y_offset=y_offset,
-                                   fill=fill, fill_opacity=fill_opacity,
-                                   outline=outline, width=width,
-                                   outline_opacity=outline_opacity)
+        self._add_shapefile_shapes(
+            image=image,
+            area_def=area_def,
+            filename=filename,
+            feature_type=feature_type,
+            x_offset=x_offset,
+            y_offset=y_offset,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
 
-    def add_shapefile_shape(self, image, area_def, filename, shape_id,
-                            feature_type=None,
-                            fill=None, fill_opacity=255, outline='white',
-                            width=1, outline_opacity=255, x_offset=0,
-                            y_offset=0):
+    def add_shapefile_shape(
+        self,
+        image,
+        area_def,
+        filename,
+        shape_id,
+        feature_type=None,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add a single shape file shape from an ESRI shapefile.
 
         Note: To add all shapes in file use the 'add_shape_file_shapes' routine
@@ -236,18 +284,34 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_shapefile_shape(image=image,
-                                  area_def=area_def, filename=filename,
-                                  shape_id=shape_id,
-                                  feature_type=feature_type,
-                                  x_offset=x_offset, y_offset=y_offset,
-                                  fill=fill, fill_opacity=fill_opacity,
-                                  outline=outline, width=width,
-                                  outline_opacity=outline_opacity)
+        self._add_shapefile_shape(
+            image=image,
+            area_def=area_def,
+            filename=filename,
+            shape_id=shape_id,
+            feature_type=feature_type,
+            x_offset=x_offset,
+            y_offset=y_offset,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
 
-    def add_line(self, image, area_def, lonlats,
-                 fill=None, fill_opacity=255, outline='white', width=1,
-                 outline_opacity=255, x_offset=0, y_offset=0):
+    def add_line(
+        self,
+        image,
+        area_def,
+        lonlats,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add a user defined poly-line from a list of (lon,lat) coordinates.
 
         :Parameters:
@@ -272,14 +336,32 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_line(image, area_def, lonlats, x_offset=x_offset,
-                       y_offset=y_offset, fill=fill, fill_opacity=fill_opacity,
-                       outline=outline, width=width,
-                       outline_opacity=outline_opacity)
+        self._add_line(
+            image,
+            area_def,
+            lonlats,
+            x_offset=x_offset,
+            y_offset=y_offset,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
 
-    def add_polygon(self, image, area_def, lonlats,
-                    fill=None, fill_opacity=255, outline='white', width=1,
-                    outline_opacity=255, x_offset=0, y_offset=0):
+    def add_polygon(
+        self,
+        image,
+        area_def,
+        lonlats,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add a user defined polygon from a list of (lon,lat) coordinates.
 
         :Parameters:
@@ -308,17 +390,39 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_polygon(image, area_def, lonlats, x_offset=x_offset,
-                          y_offset=y_offset, fill=fill,
-                          fill_opacity=fill_opacity, outline=outline,
-                          width=width, outline_opacity=outline_opacity)
+        self._add_polygon(
+            image,
+            area_def,
+            lonlats,
+            x_offset=x_offset,
+            y_offset=y_offset,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+        )
 
-    def add_grid(self, image, area_def, Dlonlat, dlonlat,
-                 font=None, write_text=True, fill=None, fill_opacity=255,
-                 outline='white', width=1.0, outline_opacity=255,
-                 minor_outline='white', minor_width=0.5,
-                 minor_outline_opacity=255, minor_is_tick=True,
-                 lon_placement='tb', lat_placement='lr'):
+    def add_grid(
+        self,
+        image,
+        area_def,
+        Dlonlat,
+        dlonlat,
+        font=None,
+        write_text=True,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1.0,
+        outline_opacity=255,
+        minor_outline="white",
+        minor_width=0.5,
+        minor_outline_opacity=255,
+        minor_is_tick=True,
+        lon_placement="tb",
+        lat_placement="lr",
+    ):
         """Add a lon-lat grid to a PIL image object.
 
         :Parameters:
@@ -354,23 +458,48 @@ class ContourWriterAGG(ContourWriterBase):
         """
         Dlon, Dlat = Dlonlat
         dlon, dlat = dlonlat
-        self._add_grid(image, area_def, Dlon, Dlat, dlon, dlat,
-                       font=font, write_text=write_text,
-                       fill=fill, fill_opacity=fill_opacity, outline=outline,
-                       width=width, outline_opacity=outline_opacity,
-                       minor_outline=minor_outline, minor_width=minor_width,
-                       minor_outline_opacity=minor_outline_opacity,
-                       minor_is_tick=minor_is_tick,
-                       lon_placement=lon_placement,
-                       lat_placement=lat_placement)
+        self._add_grid(
+            image,
+            area_def,
+            Dlon,
+            Dlat,
+            dlon,
+            dlat,
+            font=font,
+            write_text=write_text,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            minor_outline=minor_outline,
+            minor_width=minor_width,
+            minor_outline_opacity=minor_outline_opacity,
+            minor_is_tick=minor_is_tick,
+            lon_placement=lon_placement,
+            lat_placement=lat_placement,
+        )
 
-    def add_grid_to_file(self, filename, area_def, Dlonlat, dlonlat,
-                         font=None, write_text=True,
-                         fill=None, fill_opacity=255,
-                         outline='white', width=1, outline_opacity=255,
-                         minor_outline='white', minor_width=0.5,
-                         minor_outline_opacity=255, minor_is_tick=True,
-                         lon_placement='tb', lat_placement='lr'):
+    def add_grid_to_file(
+        self,
+        filename,
+        area_def,
+        Dlonlat,
+        dlonlat,
+        font=None,
+        write_text=True,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        minor_outline="white",
+        minor_width=0.5,
+        minor_outline_opacity=255,
+        minor_is_tick=True,
+        lon_placement="tb",
+        lat_placement="lr",
+    ):
         """Add a lon-lat grid to an image. The resulting image is in 'RGBA' mode.
 
         :Parameters:
@@ -405,22 +534,42 @@ class ContourWriterAGG(ContourWriterBase):
 
         """
         image = Image.open(filename)
-        image = image.convert('RGBA')
-        self.add_grid(image, area_def, Dlonlat, dlonlat,
-                      font=font, write_text=write_text,
-                      fill=fill, fill_opacity=fill_opacity,
-                      outline=outline, width=width,
-                      outline_opacity=outline_opacity,
-                      minor_outline=minor_outline,
-                      minor_width=minor_width,
-                      minor_outline_opacity=minor_outline_opacity,
-                      minor_is_tick=minor_is_tick,
-                      lon_placement=lon_placement, lat_placement=lat_placement)
+        image = image.convert("RGBA")
+        self.add_grid(
+            image,
+            area_def,
+            Dlonlat,
+            dlonlat,
+            font=font,
+            write_text=write_text,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            minor_outline=minor_outline,
+            minor_width=minor_width,
+            minor_outline_opacity=minor_outline_opacity,
+            minor_is_tick=minor_is_tick,
+            lon_placement=lon_placement,
+            lat_placement=lat_placement,
+        )
         image.save(filename)
 
-    def add_coastlines(self, image, area_def, resolution='c', level=1,
-                       fill=None, fill_opacity=255, outline='white', width=1,
-                       outline_opacity=255, x_offset=0, y_offset=0):
+    def add_coastlines(
+        self,
+        image,
+        area_def,
+        resolution="c",
+        level=1,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add coastlines to a PIL image object.
 
         :Parameters:
@@ -450,17 +599,36 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_feature(image, area_def, 'polygon', 'GSHHS',
-                          resolution=resolution, level=level,
-                          fill=fill, fill_opacity=fill_opacity,
-                          outline=outline, width=width,
-                          outline_opacity=outline_opacity, x_offset=x_offset,
-                          y_offset=y_offset)
+        self._add_feature(
+            image,
+            area_def,
+            "polygon",
+            "GSHHS",
+            resolution=resolution,
+            level=level,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
 
-    def add_coastlines_to_file(self, filename, area_def, resolution='c',
-                               level=1, fill=None, fill_opacity=255,
-                               outline='white', width=1, outline_opacity=255,
-                               x_offset=0, y_offset=0):
+    def add_coastlines_to_file(
+        self,
+        filename,
+        area_def,
+        resolution="c",
+        level=1,
+        fill=None,
+        fill_opacity=255,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add coastlines to an image file. The resulting image is in 'RGBA' mode.
 
         :Parameters:
@@ -491,17 +659,34 @@ class ContourWriterAGG(ContourWriterBase):
 
         """
         image = Image.open(filename)
-        image = image.convert('RGBA')
-        self.add_coastlines(image, area_def, resolution=resolution,
-                            level=level, fill=fill,
-                            fill_opacity=fill_opacity, outline=outline,
-                            width=width, outline_opacity=outline_opacity,
-                            x_offset=x_offset, y_offset=y_offset)
+        image = image.convert("RGBA")
+        self.add_coastlines(
+            image,
+            area_def,
+            resolution=resolution,
+            level=level,
+            fill=fill,
+            fill_opacity=fill_opacity,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
         image.save(filename)
 
-    def add_borders(self, image, area_def, resolution='c', level=1,
-                    outline='white', width=1, outline_opacity=255,
-                    x_offset=0, y_offset=0):
+    def add_borders(
+        self,
+        image,
+        area_def,
+        resolution="c",
+        level=1,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add borders to a PIL image object.
 
         :Parameters:
@@ -527,14 +712,33 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_feature(image, area_def, 'line', 'WDBII', tag='border',
-                          resolution=resolution, level=level, outline=outline,
-                          width=width, outline_opacity=outline_opacity,
-                          x_offset=x_offset, y_offset=y_offset)
+        self._add_feature(
+            image,
+            area_def,
+            "line",
+            "WDBII",
+            tag="border",
+            resolution=resolution,
+            level=level,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
 
-    def add_borders_to_file(self, filename, area_def, resolution='c',
-                            level=1, outline='white', width=1,
-                            outline_opacity=255, x_offset=0, y_offset=0):
+    def add_borders_to_file(
+        self,
+        filename,
+        area_def,
+        resolution="c",
+        level=1,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add borders to an image file. The resulting image is in 'RGBA' mode.
 
         :Parameters:
@@ -562,15 +766,31 @@ class ContourWriterAGG(ContourWriterBase):
         """
         image = Image.open(filename)
         image = image.convert("RGBA")
-        self.add_borders(image, area_def, resolution=resolution, level=level,
-                         outline=outline, width=width,
-                         outline_opacity=outline_opacity, x_offset=x_offset,
-                         y_offset=y_offset)
+        self.add_borders(
+            image,
+            area_def,
+            resolution=resolution,
+            level=level,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
         image.save(filename)
 
-    def add_rivers(self, image, area_def, resolution='c', level=1,
-                   outline='white', width=1, outline_opacity=255,
-                   x_offset=0, y_offset=0):
+    def add_rivers(
+        self,
+        image,
+        area_def,
+        resolution="c",
+        level=1,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add rivers to a PIL image object.
 
         :Parameters:
@@ -596,15 +816,34 @@ class ContourWriterAGG(ContourWriterBase):
                 Pixel offset in y direction
 
         """
-        self._add_feature(image, area_def, 'line', 'WDBII', tag='river',
-                          zero_pad=True, resolution=resolution, level=level,
-                          outline=outline, width=width,
-                          outline_opacity=outline_opacity, x_offset=x_offset,
-                          y_offset=y_offset)
+        self._add_feature(
+            image,
+            area_def,
+            "line",
+            "WDBII",
+            tag="river",
+            zero_pad=True,
+            resolution=resolution,
+            level=level,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
 
-    def add_rivers_to_file(self, filename, area_def, resolution='c', level=1,
-                           outline='white', width=1, outline_opacity=255,
-                           x_offset=0, y_offset=0):
+    def add_rivers_to_file(
+        self,
+        filename,
+        area_def,
+        resolution="c",
+        level=1,
+        outline="white",
+        width=1,
+        outline_opacity=255,
+        x_offset=0,
+        y_offset=0,
+    ):
         """Add rivers to an image file. The resulting image is in 'RGBA' mode.
 
         :Parameters:
@@ -632,10 +871,17 @@ class ContourWriterAGG(ContourWriterBase):
         """
         image = Image.open(filename)
         image = image.convert("RGBA")
-        self.add_rivers(image, area_def, resolution=resolution, level=level,
-                        outline=outline, width=width,
-                        outline_opacity=outline_opacity, x_offset=x_offset,
-                        y_offset=y_offset)
+        self.add_rivers(
+            image,
+            area_def,
+            resolution=resolution,
+            level=level,
+            outline=outline,
+            width=width,
+            outline_opacity=outline_opacity,
+            x_offset=x_offset,
+            y_offset=y_offset,
+        )
         image.save(filename)
 
     def _get_font(self, outline, font_file, font_size):

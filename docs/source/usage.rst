@@ -20,7 +20,7 @@ Pycoast can add contours to either a PIL image object:
     >>> cw.add_rivers(img, area_def, level=5, outline='blue')
     >>> cw.add_borders(img, area_def, outline=(255, 0, 0))
     >>> img.show()
-    
+
 or to an image file:
 
     >>> from pycoast import ContourWriterAGG
@@ -31,7 +31,7 @@ or to an image file:
     >>> cw.add_coastlines_to_file('BMNG_clouds_201109181715_areaT2.png', area_def, resolution='l', level=4)
     >>> cw.add_rivers_to_file('BMNG_clouds_201109181715_areaT2.png', area_def, level=5, outline='blue')
     >>> cw.add_borders_to_file('BMNG_clouds_201109181715_areaT2.png', area_def, outline=(255, 0, 0))
-    
+
 Where the :attr:`area_extent` is the extent of the image in projection
 coordinates as (x_ll, y_ll, x_ur, x_ur) measured at pixel edges.
 

@@ -8,7 +8,7 @@ Mapas Temáticos - Geoprocessamento
 
 * Título: Divisão Política do Brasil
 
-* Descrição: Mapas apresentando a divisão política-administrativa do Brasil, incluindo as 
+* Descrição: Mapas apresentando a divisão política-administrativa do Brasil, incluindo as
 	    capitais, estados e grandes regiões.
 
 * Ano/Revisão: 2000.3

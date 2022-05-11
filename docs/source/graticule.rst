@@ -29,7 +29,7 @@ and for AGG:
     >>> area_extent = (-3363403.31,-2291879.85,2630596.69,2203620.1)
     >>> area_def = (proj4_string, area_extent)
     >>> cw = ContourWriterAGG('/home/esn/data/gshhs')
-    >>> font = aggdraw.Font('black', '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf', 
+    >>> font = aggdraw.Font('black', '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf',
     ...                     opacity=127, size=16)
     >>> img = Image.open('BMNG_clouds_201109181715_areaT2.png')
     >>> cw.add_coastlines(img, area_def, resolution='l', level=4)
@@ -55,7 +55,7 @@ From v0.5.0 the graticule is also usable for globe projections:
     >>> area_def = (proj4_string, area_extent)
     >>> cw = ContourWriterAGG(gshhs_root_dir)
     >>> cw.add_coastlines(img, area_def, resolution='l')
-    >>> cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue', 
+    >>> cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), fill='blue',
     ... outline='blue', minor_outline='blue', write_text=False)
     >>> img.show()
 
@@ -80,7 +80,7 @@ E.g. :attr:`lon_placement='tl'` will make the lon labels display at the top and 
     >>> cw.add_grid(img, area_def, (10.0,10.0),(2.0,2.0), font=font, fill='blue',
     ...             outline='blue', minor_outline='blue',
     ...             lon_placement='tblr', lat_placement='')
-    >>> img.show()  
+    >>> img.show()
 
 .. image:: images/nh_grid_coarse_agg.png
 
@@ -96,4 +96,3 @@ Tip: If the adding graticule with AGG fails with something like:
 make sure the FREETYPE_ROOT in setup.py of aggdraw points to the correct location e.g. set *FREETYPE_ROOT = "/usr"*
 
 .. _PIL: http://www.pythonware.com/products/pil/
-

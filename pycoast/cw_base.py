@@ -18,18 +18,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Base class for contour writers."""
 
-import os
+import ast
+import configparser
 import hashlib
 import json
-import shapefile
-import numpy as np
-from PIL import Image
-import pyproj
 import logging
-import ast
 import math
+import os
 
-import configparser
+import numpy as np
+import pyproj
+import shapefile
+from PIL import Image
 
 try:
     from pyresample import AreaDefinition
@@ -43,7 +43,7 @@ def get_resolution_from_area(area_def):
     """Get the best resolution for an area definition."""
     x_size = area_def.width
     y_size = area_def.height
-    prj = Proj(area_def.crs if hasattr(area_def, 'crs') else area_def.proj_str)
+    prj = Proj(area_def.crs if hasattr(area_def, "crs") else area_def.proj_str)
     if prj.is_latlong():
         x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
         x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
@@ -85,15 +85,19 @@ class _CoordConverter:
             "image": self._image_to_pixels,
         }
         if coord_ref not in convert_methods:
-            pretty_coord_refs = [f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())]
+            pretty_coord_refs = [
+                f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())
+            ]
             raise ValueError(f"'coord_ref' must be one of {pretty_coord_refs}.")
         self._convert_method = convert_methods[coord_ref]
 
     def _check_area_def(self, area_def):
         if AreaDefinition is None:
-            raise ImportError("Missing required 'pyresample' module, please "
-                              "install it with 'pip install pyresample' or "
-                              "'conda install pyresample'.")
+            raise ImportError(
+                "Missing required 'pyresample' module, please "
+                "install it with 'pip install pyresample' or "
+                "'conda install pyresample'."
+            )
         if not isinstance(area_def, AreaDefinition):
             raise ValueError("'area_def' must be an instance of AreaDefinition")
         return area_def
@@ -112,8 +116,10 @@ class _CoordConverter:
         if y < 0:
             y += area_def.height
         if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
-            raise ValueError("Image pixel coords out of image bounds "
-                             f"(width={area_def.width}, height={area_def.height}).")
+            raise ValueError(
+                "Image pixel coords out of image bounds "
+                f"(width={area_def.width}, height={area_def.height})."
+            )
         return x, y
 
 
@@ -129,7 +135,7 @@ class Proj(pyproj.Proj):
     """Wrapper around pyproj to add in 'is_latlong'."""
 
     def is_latlong(self):
-        if hasattr(self, 'crs'):
+        if hasattr(self, "crs"):
             return self.crs.is_geographic
         # pyproj<2.0
         return super(Proj, self).is_latlong()
@@ -151,35 +157,35 @@ class ContourWriterBase(object):
 
     def __init__(self, db_root_path=None):
         if db_root_path is None:
-            self.db_root_path = os.environ.get('GSHHS_DATA_ROOT')
+            self.db_root_path = os.environ.get("GSHHS_DATA_ROOT")
         else:
             self.db_root_path = db_root_path
 
-    def _draw_text(self, draw, position, txt, font, align='cc', **kwargs):
+    def _draw_text(self, draw, position, txt, font, align="cc", **kwargs):
         """Draw text with agg module."""
         txt_width, txt_height = draw.textsize(txt, font)
         x_pos, y_pos = position
         ax, ay = align.lower()
-        if ax == 'r':
+        if ax == "r":
             x_pos = x_pos - txt_width
-        elif ax == 'c':
+        elif ax == "c":
             x_pos = x_pos - txt_width / 2
 
-        if ay == 'b':
+        if ay == "b":
             y_pos = y_pos - txt_height
-        elif ay == 'c':
+        elif ay == "c":
             y_pos = y_pos - txt_width / 2
 
         self._engine_text_draw(draw, x_pos, y_pos, txt, font, **kwargs)
 
     def _engine_text_draw(self, draw, pos, txt, font, **kwargs):
-        raise NotImplementedError('Text drawing undefined for render engine')
+        raise NotImplementedError("Text drawing undefined for render engine")
 
     def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
         """Draw text with default PIL module."""
         if font is None:
             # NOTE: Default font does not use font size in PIL writer
-            font = self._get_font(kwargs.get('fill', 'black'), font, 12)
+            font = self._get_font(kwargs.get("fill", "black"), font, 12)
         placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
@@ -222,10 +228,10 @@ class ContourWriterBase(object):
 
         # loop through line steps and detect crossings
         intercepts = []
-        align_left = 'LC'
-        align_right = 'RC'
-        align_top = 'CT'
-        align_bottom = 'CB'
+        align_left = "LC"
+        align_right = "RC"
+        align_top = "CT"
+        align_bottom = "CB"
         prev_xy = xys[0]
         for i in range(1, len(xys) - 1):
             xy = xys[i]
@@ -254,13 +260,21 @@ class ContourWriterBase(object):
 
         return intercepts
 
-    def _add_grid(self, image, area_def,
-                  Dlon, Dlat,
-                  dlon, dlat,
-                  font=None, write_text=True, **kwargs):
+    def _add_grid(
+        self,
+        image,
+        area_def,
+        Dlon,
+        Dlat,
+        dlon,
+        dlat,
+        font=None,
+        write_text=True,
+        **kwargs,
+    ):
         """Add a lat lon grid to image."""
         try:
-            proj_def = area_def.crs if hasattr(area_def, 'crs') else area_def.proj_dict
+            proj_def = area_def.crs if hasattr(area_def, "crs") else area_def.proj_dict
             area_extent = area_def.area_extent
         except AttributeError:
             proj_def = area_def[0]
@@ -272,11 +286,10 @@ class ContourWriterBase(object):
 
         # use kwargs for major lines ... but reform for minor lines:
         minor_line_kwargs = kwargs.copy()
-        minor_line_kwargs['outline'] = kwargs['minor_outline']
+        minor_line_kwargs["outline"] = kwargs["minor_outline"]
         if is_agg:
-            minor_line_kwargs['outline_opacity'] = \
-                kwargs['minor_outline_opacity']
-            minor_line_kwargs['width'] = kwargs['minor_width']
+            minor_line_kwargs["outline_opacity"] = kwargs["minor_outline_opacity"]
+            minor_line_kwargs["width"] = kwargs["minor_width"]
 
         # text margins (at sides of image frame)
         y_text_margin = 4
@@ -290,8 +303,9 @@ class ContourWriterBase(object):
         y_offset = 0
 
         # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = \
-            _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
+        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(
+            area_extent, x_size, y_size, prj
+        )
 
         # Handle dateline crossing
         if lon_max < lon_min:
@@ -310,7 +324,7 @@ class ContourWriterBase(object):
             increase_min_lat = 0.0
 
         # major lon lines
-        round_lon_min = (lon_min - (lon_min % Dlon))
+        round_lon_min = lon_min - (lon_min % Dlon)
         maj_lons = np.arange(round_lon_min, lon_max, Dlon)
         maj_lons[maj_lons > 180] = maj_lons[maj_lons > 180] - 360
 
@@ -322,23 +336,25 @@ class ContourWriterBase(object):
         min_lons = np.lib.arraysetops.setdiff1d(min_lons, maj_lons)
 
         # lats along major lon lines
-        lin_lats = np.arange(lat_min + increase_min_lat,
-                             lat_max - shorten_max_lat,
-                             float(lat_max - lat_min) / y_size)
+        lin_lats = np.arange(
+            lat_min + increase_min_lat,
+            lat_max - shorten_max_lat,
+            float(lat_max - lat_min) / y_size,
+        )
         # lin_lats in rather high definition so that it can be used to
         # position text labels near edges of image...
 
         # perhaps better to find the actual length of line in pixels...
 
-        round_lat_min = (lat_min - (lat_min % Dlat))
+        round_lat_min = lat_min - (lat_min % Dlat)
 
         # major lat lines
         maj_lats = np.arange(round_lat_min + increase_min_lat, lat_max, Dlat)
 
         # minor lon lines (ticks)
-        min_lats = np.arange(round_lat_min + increase_min_lat,
-                             lat_max - shorten_max_lat,
-                             dlat)
+        min_lats = np.arange(
+            round_lat_min + increase_min_lat, lat_max - shorten_max_lat, dlat
+        )
 
         # Get min_lats not in maj_lats
         min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
@@ -348,86 +364,94 @@ class ContourWriterBase(object):
         lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) // 5)
 
         # MINOR LINES ######
-        if not kwargs['minor_is_tick']:
+        if not kwargs["minor_is_tick"]:
             # minor lat lines
             for lat in min_lats:
                 lonlats = [(x, lat) for x in lin_lons]
-                index_arrays, is_reduced = _get_pixel_index(lonlats,
-                                                            area_extent,
-                                                            x_size, y_size,
-                                                            prj,
-                                                            x_offset=x_offset,
-                                                            y_offset=y_offset)
+                index_arrays, is_reduced = _get_pixel_index(
+                    lonlats,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset=x_offset,
+                    y_offset=y_offset,
+                )
                 del is_reduced
                 # Skip empty datasets
                 if len(index_arrays) == 0:
                     continue
                 # make PIL draw the tick line...
                 for index_array in index_arrays:
-                    self._draw_line(draw,
-                                    index_array.flatten().tolist(),
-                                    **minor_line_kwargs)
+                    self._draw_line(
+                        draw, index_array.flatten().tolist(), **minor_line_kwargs
+                    )
             # minor lon lines
             for lon in min_lons:
                 lonlats = [(lon, x) for x in lin_lats]
-                index_arrays, is_reduced = _get_pixel_index(lonlats,
-                                                            area_extent,
-                                                            x_size, y_size,
-                                                            prj,
-                                                            x_offset=x_offset,
-                                                            y_offset=y_offset)
+                index_arrays, is_reduced = _get_pixel_index(
+                    lonlats,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset=x_offset,
+                    y_offset=y_offset,
+                )
                 # Skip empty datasets
                 if len(index_arrays) == 0:
                     continue
                 # make PIL draw the tick line...
                 for index_array in index_arrays:
-                    self._draw_line(draw,
-                                    index_array.flatten().tolist(),
-                                    **minor_line_kwargs)
+                    self._draw_line(
+                        draw, index_array.flatten().tolist(), **minor_line_kwargs
+                    )
 
         # MAJOR LINES AND MINOR TICKS ######
         # major lon lines and tick marks:
         for lon in maj_lons:
             # Draw 'minor' tick lines dlat separation along the lon
-            if kwargs['minor_is_tick']:
-                tick_lons = np.linspace(lon - Dlon / 20.0,
-                                        lon + Dlon / 20.0,
-                                        5)
+            if kwargs["minor_is_tick"]:
+                tick_lons = np.linspace(lon - Dlon / 20.0, lon + Dlon / 20.0, 5)
 
                 for lat in min_lats:
                     lonlats = [(x, lat) for x in tick_lons]
-                    index_arrays, is_reduced = \
-                        _get_pixel_index(lonlats,
-                                         area_extent,
-                                         x_size, y_size,
-                                         prj,
-                                         x_offset=x_offset,
-                                         y_offset=y_offset)
+                    index_arrays, is_reduced = _get_pixel_index(
+                        lonlats,
+                        area_extent,
+                        x_size,
+                        y_size,
+                        prj,
+                        x_offset=x_offset,
+                        y_offset=y_offset,
+                    )
                     # Skip empty datasets
                     if len(index_arrays) == 0:
                         continue
                     # make PIL draw the tick line...
                     for index_array in index_arrays:
-                        self._draw_line(draw,
-                                        index_array.flatten().tolist(),
-                                        **minor_line_kwargs)
+                        self._draw_line(
+                            draw, index_array.flatten().tolist(), **minor_line_kwargs
+                        )
 
             # Draw 'major' lines
             lonlats = [(lon, x) for x in lin_lats]
-            index_arrays, is_reduced = _get_pixel_index(lonlats, area_extent,
-                                                        x_size, y_size,
-                                                        prj,
-                                                        x_offset=x_offset,
-                                                        y_offset=y_offset)
+            index_arrays, is_reduced = _get_pixel_index(
+                lonlats,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset=x_offset,
+                y_offset=y_offset,
+            )
             # Skip empty datasets
             if len(index_arrays) == 0:
                 continue
 
             # make PIL draw the lines...
             for index_array in index_arrays:
-                self._draw_line(draw,
-                                index_array.flatten().tolist(),
-                                **kwargs)
+                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
 
             # add lon text markings at each end of longitude line
             if write_text:
@@ -435,44 +459,48 @@ class ContourWriterBase(object):
                     txt = "%.2dE" % (lon)
                 else:
                     txt = "%.2dW" % (-lon)
-                xys = self._find_line_intercepts(index_array, image.size,
-                                                 (x_text_margin,
-                                                  y_text_margin))
+                xys = self._find_line_intercepts(
+                    index_array, image.size, (x_text_margin, y_text_margin)
+                )
 
-                self._draw_grid_labels(draw, xys, 'lon_placement',
-                                       txt, font, **kwargs)
+                self._draw_grid_labels(draw, xys, "lon_placement", txt, font, **kwargs)
 
         # major lat lines and tick marks:
         for lat in maj_lats:
             # Draw 'minor' tick dlon separation along the lat
-            if kwargs['minor_is_tick']:
-                tick_lats = np.linspace(lat - Dlat / 20.0,
-                                        lat + Dlat / 20.0,
-                                        5)
+            if kwargs["minor_is_tick"]:
+                tick_lats = np.linspace(lat - Dlat / 20.0, lat + Dlat / 20.0, 5)
                 for lon in min_lons:
                     lonlats = [(lon, x) for x in tick_lats]
-                    index_arrays, is_reduced = \
-                        _get_pixel_index(lonlats, area_extent,
-                                         x_size, y_size,
-                                         prj,
-                                         x_offset=x_offset,
-                                         y_offset=y_offset)
+                    index_arrays, is_reduced = _get_pixel_index(
+                        lonlats,
+                        area_extent,
+                        x_size,
+                        y_size,
+                        prj,
+                        x_offset=x_offset,
+                        y_offset=y_offset,
+                    )
                     # Skip empty datasets
                     if len(index_arrays) == 0:
                         continue
                     # make PIL draw the tick line...
                     for index_array in index_arrays:
-                        self._draw_line(draw,
-                                        index_array.flatten().tolist(),
-                                        **minor_line_kwargs)
+                        self._draw_line(
+                            draw, index_array.flatten().tolist(), **minor_line_kwargs
+                        )
 
             # Draw 'major' lines
             lonlats = [(x, lat) for x in lin_lons]
-            index_arrays, is_reduced = _get_pixel_index(lonlats, area_extent,
-                                                        x_size, y_size,
-                                                        prj,
-                                                        x_offset=x_offset,
-                                                        y_offset=y_offset)
+            index_arrays, is_reduced = _get_pixel_index(
+                lonlats,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset=x_offset,
+                y_offset=y_offset,
+            )
             # Skip empty datasets
             if len(index_arrays) == 0:
                 continue
@@ -487,53 +515,56 @@ class ContourWriterBase(object):
                     txt = "%.2dN" % (lat)
                 else:
                     txt = "%.2dS" % (-lat)
-                xys = self._find_line_intercepts(index_array, image.size,
-                                                 (x_text_margin,
-                                                  y_text_margin))
-                self._draw_grid_labels(draw, xys, 'lat_placement',
-                                       txt, font, **kwargs)
+                xys = self._find_line_intercepts(
+                    index_array, image.size, (x_text_margin, y_text_margin)
+                )
+                self._draw_grid_labels(draw, xys, "lat_placement", txt, font, **kwargs)
 
         # Draw cross on poles ...
         if lat_max == 90.0:
-            crosslats = np.arange(90.0 - Dlat / 2.0, 90.0,
-                                  float(lat_max - lat_min) / y_size)
+            crosslats = np.arange(
+                90.0 - Dlat / 2.0, 90.0, float(lat_max - lat_min) / y_size
+            )
             for lon in (0.0, 90.0, 180.0, -90.0):
                 lonlats = [(lon, x) for x in crosslats]
-                index_arrays, is_reduced = _get_pixel_index(lonlats,
-                                                            area_extent,
-                                                            x_size, y_size,
-                                                            prj,
-                                                            x_offset=x_offset,
-                                                            y_offset=y_offset)
+                index_arrays, is_reduced = _get_pixel_index(
+                    lonlats,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset=x_offset,
+                    y_offset=y_offset,
+                )
                 # Skip empty datasets
                 if len(index_arrays) == 0:
                     continue
 
                 # make PIL draw the lines...
                 for index_array in index_arrays:
-                    self._draw_line(draw,
-                                    index_array.flatten().tolist(),
-                                    **kwargs)
+                    self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
         if lat_min == -90.0:
-            crosslats = np.arange(-90.0, -90.0 + Dlat / 2.0,
-                                  float(lat_max - lat_min) / y_size)
+            crosslats = np.arange(
+                -90.0, -90.0 + Dlat / 2.0, float(lat_max - lat_min) / y_size
+            )
             for lon in (0.0, 90.0, 180.0, -90.0):
                 lonlats = [(lon, x) for x in crosslats]
-                index_arrays, is_reduced = _get_pixel_index(lonlats,
-                                                            area_extent,
-                                                            x_size, y_size,
-                                                            prj,
-                                                            x_offset=x_offset,
-                                                            y_offset=y_offset)
+                index_arrays, is_reduced = _get_pixel_index(
+                    lonlats,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset=x_offset,
+                    y_offset=y_offset,
+                )
                 # Skip empty datasets
                 if len(index_arrays) == 0:
                     continue
 
                 # make PIL draw the lines...
                 for index_array in index_arrays:
-                    self._draw_line(draw,
-                                    index_array.flatten().tolist(),
-                                    **kwargs)
+                    self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
         self._finalize(draw)
 
     def _find_bounding_box(self, xys):
@@ -541,14 +572,18 @@ class ContourWriterBase(object):
         lats = [y for (x, y) in xys]
         return [min(lons), min(lats), max(lons), max(lats)]
 
-    def _add_shapefile_shapes(self, image, area_def, filename,
-                              feature_type=None, **kwargs):
+    def _add_shapefile_shapes(
+        self, image, area_def, filename, feature_type=None, **kwargs
+    ):
         """Draw all shapes (polygon/poly-lines) from a shape file onto a PIL Image."""
         sf = shapefile.Reader(filename)
-        return self.add_shapes(image, area_def, sf.shapes(), feature_type=feature_type, **kwargs)
+        return self.add_shapes(
+            image, area_def, sf.shapes(), feature_type=feature_type, **kwargs
+        )
 
-    def _add_shapefile_shape(self, image, area_def, filename, shape_id,
-                             feature_type=None, **kwargs):
+    def _add_shapefile_shape(
+        self, image, area_def, filename, shape_id, feature_type=None, **kwargs
+    ):
         """Draw a single shape (polygon/poly-line) definition.
 
         Accesses single shape using shape_id from a custom shape file.
@@ -556,7 +591,9 @@ class ContourWriterBase(object):
         """
         sf = shapefile.Reader(filename)
         shape = sf.shape(shape_id)
-        return self.add_shapes(image, area_def, [shape], feature_type=feature_type, **kwargs)
+        return self.add_shapes(
+            image, area_def, [shape], feature_type=feature_type, **kwargs
+        )
 
     def _add_line(self, image, area_def, lonlats, **kwargs):
         """Draw a custom polyline.
@@ -584,7 +621,16 @@ class ContourWriterBase(object):
         shape.bbox = self._find_bounding_box(lonlats)
         self.add_shapes(image, area_def, [shape], feature_type="polygon", **kwargs)
 
-    def add_shapes(self, image, area_def, shapes, feature_type=None, x_offset=0, y_offset=0, **kwargs):
+    def add_shapes(
+        self,
+        image,
+        area_def,
+        shapes,
+        feature_type=None,
+        x_offset=0,
+        y_offset=0,
+        **kwargs,
+    ):
         """Draw shape objects to PIL image.
 
         :Parameters:
@@ -610,7 +656,7 @@ class ContourWriterBase(object):
 
         """
         try:
-            proj_def = area_def.crs if hasattr(area_def, 'crs') else area_def.proj_dict
+            proj_def = area_def.crs if hasattr(area_def, "crs") else area_def.proj_dict
             area_extent = area_def.area_extent
         except AttributeError:
             proj_def = area_def[0]
@@ -623,10 +669,9 @@ class ContourWriterBase(object):
         prj = Proj(proj_def)
 
         # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent,
-                                                                       x_size,
-                                                                       y_size,
-                                                                       prj)
+        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(
+            area_extent, x_size, y_size, prj
+        )
 
         # Iterate through shapes
         for shape in shapes:
@@ -666,13 +711,16 @@ class ContourWriterBase(object):
             parts = list(shape.parts) + [len(shape.points)]
             for i in range(len(parts) - 1):
                 # Get pixel index coordinates of shape
-                points = shape.points[parts[i]:parts[i + 1]]
-                index_arrays, is_reduced = _get_pixel_index(points,
-                                                            area_extent,
-                                                            x_size, y_size,
-                                                            prj,
-                                                            x_offset=x_offset,
-                                                            y_offset=y_offset)
+                points = shape.points[parts[i] : parts[i + 1]]
+                index_arrays, is_reduced = _get_pixel_index(
+                    points,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset=x_offset,
+                    y_offset=y_offset,
+                )
 
                 # Skip empty datasets
                 if len(index_arrays) == 0:
@@ -680,29 +728,50 @@ class ContourWriterBase(object):
 
                 # Make PIL draw the polygon or line
                 for index_array in index_arrays:
-                    if ftype == 'polygon' and not is_reduced:
+                    if ftype == "polygon" and not is_reduced:
                         # Draw polygon if dataset has not been reduced
-                        self._draw_polygon(draw, index_array.flatten().tolist(), **new_kwargs)
-                    elif ftype == 'line' or is_reduced:
+                        self._draw_polygon(
+                            draw, index_array.flatten().tolist(), **new_kwargs
+                        )
+                    elif ftype == "line" or is_reduced:
                         # Draw line
-                        self._draw_line(draw, index_array.flatten().tolist(), **new_kwargs)
+                        self._draw_line(
+                            draw, index_array.flatten().tolist(), **new_kwargs
+                        )
                     else:
-                        raise ValueError('Unknown contour type: %s' % ftype)
+                        raise ValueError("Unknown contour type: %s" % ftype)
 
         self._finalize(draw)
 
-    def _add_feature(self, image, area_def, feature_type,
-                     db_name, tag=None, zero_pad=False, resolution='c',
-                     level=1, x_offset=0, y_offset=0, db_root_path=None,
-                     **kwargs):
+    def _add_feature(
+        self,
+        image,
+        area_def,
+        feature_type,
+        db_name,
+        tag=None,
+        zero_pad=False,
+        resolution="c",
+        level=1,
+        x_offset=0,
+        y_offset=0,
+        db_root_path=None,
+        **kwargs,
+    ):
         """Add a contour feature to image."""
         shape_generator = self._iterate_db(
-            db_name, tag, resolution, level, zero_pad,
-            db_root_path=db_root_path
+            db_name, tag, resolution, level, zero_pad, db_root_path=db_root_path
         )
 
-        return self.add_shapes(image, area_def, shape_generator, feature_type=feature_type,
-                               x_offset=x_offset, y_offset=y_offset, **kwargs)
+        return self.add_shapes(
+            image,
+            area_def,
+            shape_generator,
+            feature_type=feature_type,
+            x_offset=x_offset,
+            y_offset=y_offset,
+            **kwargs,
+        )
 
     def _iterate_db(self, db_name, tag, resolution, level, zero_pad, db_root_path=None):
         """Iterate through datasets."""
@@ -711,14 +780,14 @@ class ContourWriterBase(object):
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
 
-        format_string = '%s_%s_'
+        format_string = "%s_%s_"
         if tag is not None:
-            format_string += '%s_'
+            format_string += "%s_"
 
         if zero_pad:
-            format_string += 'L%02i.shp'
+            format_string += "L%02i.shp"
         else:
-            format_string += 'L%s.shp'
+            format_string += "L%s.shp"
 
         if not isinstance(level, list):
             level = range(1, level + 1)
@@ -727,21 +796,24 @@ class ContourWriterBase(object):
 
             # One shapefile per level
             if tag is None:
-                shapefilename = \
-                    os.path.join(db_root_path, '%s_shp' % db_name,
-                                 resolution, format_string %
-                                 (db_name, resolution, i))
+                shapefilename = os.path.join(
+                    db_root_path,
+                    "%s_shp" % db_name,
+                    resolution,
+                    format_string % (db_name, resolution, i),
+                )
             else:
-                shapefilename = \
-                    os.path.join(db_root_path, '%s_shp' % db_name,
-                                 resolution, format_string %
-                                 (db_name, tag, resolution, i))
+                shapefilename = os.path.join(
+                    db_root_path,
+                    "%s_shp" % db_name,
+                    resolution,
+                    format_string % (db_name, tag, resolution, i),
+                )
             try:
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
             except AttributeError:
-                raise ValueError('Could not find shapefile %s'
-                                 % shapefilename)
+                raise ValueError("Could not find shapefile %s" % shapefilename)
 
             for shape in shapes:
                 yield shape
@@ -754,18 +826,26 @@ class ContourWriterBase(object):
         """Convert a config file to a dict."""
         config = configparser.ConfigParser()
         try:
-            with open(config_file, 'r'):
+            with open(config_file, "r"):
                 logger.info("Overlays config file %s found", str(config_file))
             config.read(config_file)
         except IOError:
-            logger.error("Overlays config file %s does not exist!",
-                         str(config_file))
+            logger.error("Overlays config file %s does not exist!", str(config_file))
             raise
         except configparser.NoSectionError:
             logger.error("Error in %s", str(config_file))
             raise
 
-        SECTIONS = ['cache', 'coasts', 'rivers', 'borders', 'shapefiles', 'grid', 'cities', 'points']
+        SECTIONS = [
+            "cache",
+            "coasts",
+            "rivers",
+            "borders",
+            "shapefiles",
+            "grid",
+            "cities",
+            "points",
+        ]
         overlays = {}
         for section in config.sections():
             if section in SECTIONS:
@@ -778,7 +858,9 @@ class ContourWriterBase(object):
                         overlays[section][option] = val
         return overlays
 
-    def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
+    def add_overlay_from_dict(
+        self, overlays, area_def, cache_epoch=None, background=None
+    ):
         """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
 
         Optionally caches overlay results for faster rendering of images with
@@ -825,14 +907,16 @@ class ContourWriterBase(object):
         """
         # Cache management
         cache_file = None
-        if 'cache' in overlays:
+        if "cache" in overlays:
             cache_file = self._generate_cache_filename(
-                overlays['cache']['file'],
+                overlays["cache"]["file"],
                 area_def,
                 overlays,
             )
-            regenerate = overlays['cache'].get('regenerate', False)
-            foreground = self._apply_cached_image(cache_file, cache_epoch, background, regenerate=regenerate)
+            regenerate = overlays["cache"].get("regenerate", False)
+            foreground = self._apply_cached_image(
+                cache_file, cache_epoch, background, regenerate=regenerate
+            )
             if foreground is not None:
                 return foreground
 
@@ -841,164 +925,214 @@ class ContourWriterBase(object):
         if cache_file is None and background is not None:
             foreground = background
         else:
-            foreground = Image.new('RGBA', (x_size, y_size), (0, 0, 0, 0))
+            foreground = Image.new("RGBA", (x_size, y_size), (0, 0, 0, 0))
 
         is_agg = self._draw_module == "AGG"
 
         # Coasts, rivers, borders
         default_resolution = get_resolution_from_area(area_def)
 
-        DEFAULT = {'level': 1,
-                   'outline': 'white',
-                   'width': 1,
-                   'fill': None,
-                   'fill_opacity': 255,
-                   'outline_opacity': 255,
-                   'x_offset': 0,
-                   'y_offset': 0,
-                   'resolution': default_resolution}
+        DEFAULT = {
+            "level": 1,
+            "outline": "white",
+            "width": 1,
+            "fill": None,
+            "fill_opacity": 255,
+            "outline_opacity": 255,
+            "x_offset": 0,
+            "y_offset": 0,
+            "resolution": default_resolution,
+        }
 
-        for section, fun in zip(['coasts', 'rivers', 'borders'],
-                                [self.add_coastlines, self.add_rivers, self.add_borders]):
+        for section, fun in zip(
+            ["coasts", "rivers", "borders"],
+            [self.add_coastlines, self.add_rivers, self.add_borders],
+        ):
             if section not in overlays:
                 continue
             params = DEFAULT.copy()
             params.update(overlays[section])
 
             if section != "coasts":
-                params.pop('fill_opacity', None)
-                params.pop('fill', None)
+                params.pop("fill_opacity", None)
+                params.pop("fill", None)
 
             if not is_agg:
-                for key in ['width', 'outline_opacity', 'fill_opacity']:
+                for key in ["width", "outline_opacity", "fill_opacity"]:
                     params.pop(key, None)
 
             fun(foreground, area_def, **params)
             logger.info("%s added", section.capitalize())
 
         # Shapefiles management
-        if 'shapefiles' in overlays:
+        if "shapefiles" in overlays:
 
             # Backward compatibility and config.ini
-            if isinstance(overlays['shapefiles'], dict):
-                overlays['shapefiles'] = [overlays['shapefiles']]
+            if isinstance(overlays["shapefiles"], dict):
+                overlays["shapefiles"] = [overlays["shapefiles"]]
 
             DEFAULT_FILENAME = None
-            DEFAULT_OUTLINE = 'white'
+            DEFAULT_OUTLINE = "white"
             DEFAULT_FILL = None
 
-            for params in overlays['shapefiles'].copy():
-                filename = params.pop('filename', DEFAULT_FILENAME)
-                outline = params.pop('outline', DEFAULT_OUTLINE)
-                fill = params.pop('fill', DEFAULT_FILL)
+            for params in overlays["shapefiles"].copy():
+                filename = params.pop("filename", DEFAULT_FILENAME)
+                outline = params.pop("outline", DEFAULT_OUTLINE)
+                fill = params.pop("fill", DEFAULT_FILL)
                 if not is_agg:
-                    for key in ['width', 'outline_opacity', 'fill_opacity']:
+                    for key in ["width", "outline_opacity", "fill_opacity"]:
                         params.pop(key, None)
-                self.add_shapefile_shapes(foreground, area_def, filename=filename,
-                                          feature_type=None, outline=outline, fill=fill,
-                                          x_offset=0, y_offset=0, **params)
+                self.add_shapefile_shapes(
+                    foreground,
+                    area_def,
+                    filename=filename,
+                    feature_type=None,
+                    outline=outline,
+                    fill=fill,
+                    x_offset=0,
+                    y_offset=0,
+                    **params,
+                )
 
         # Grid overlay
-        if 'grid' in overlays:
-            if 'major_lonlat' in overlays['grid'] or 'minor_lonlat' in overlays['grid']:
-                Dlonlat = overlays['grid'].get('major_lonlat', (10.0, 10.0))
-                dlonlat = overlays['grid'].get('minor_lonlat', (2.0, 2.0))
+        if "grid" in overlays:
+            if "major_lonlat" in overlays["grid"] or "minor_lonlat" in overlays["grid"]:
+                Dlonlat = overlays["grid"].get("major_lonlat", (10.0, 10.0))
+                dlonlat = overlays["grid"].get("minor_lonlat", (2.0, 2.0))
             else:
-                Dlonlat = (overlays['grid'].get('lon_major', 10.0), overlays['grid'].get('lat_major', 10.0))
-                dlonlat = (overlays['grid'].get('lon_minor', 2.0), overlays['grid'].get('lat_minor', 2.0))
-            outline = overlays['grid'].get('outline', 'white')
-            write_text = overlays['grid'].get('write_text', True)
+                Dlonlat = (
+                    overlays["grid"].get("lon_major", 10.0),
+                    overlays["grid"].get("lat_major", 10.0),
+                )
+                dlonlat = (
+                    overlays["grid"].get("lon_minor", 2.0),
+                    overlays["grid"].get("lat_minor", 2.0),
+                )
+            outline = overlays["grid"].get("outline", "white")
+            write_text = overlays["grid"].get("write_text", True)
             if isinstance(write_text, str):
-                write_text = write_text.lower() in ['true', 'yes', '1', 'on']
-            font = overlays['grid'].get('font', None)
-            font_size = int(overlays['grid'].get('font_size', 10))
-            fill = overlays['grid'].get('fill', outline)
-            fill_opacity = overlays['grid'].get('fill_opacity', 255)
+                write_text = write_text.lower() in ["true", "yes", "1", "on"]
+            font = overlays["grid"].get("font", None)
+            font_size = int(overlays["grid"].get("font_size", 10))
+            fill = overlays["grid"].get("fill", outline)
+            fill_opacity = overlays["grid"].get("fill_opacity", 255)
             if isinstance(font, str):
                 if is_agg:
                     from aggdraw import Font
+
                     font = Font(fill, font, opacity=fill_opacity, size=font_size)
                 else:
                     from PIL.ImageFont import truetype
+
                     font = truetype(font, font_size)
-            minor_outline = overlays['grid'].get('minor_outline', 'white')
-            minor_is_tick = overlays['grid'].get('minor_is_tick', True)
+            minor_outline = overlays["grid"].get("minor_outline", "white")
+            minor_is_tick = overlays["grid"].get("minor_is_tick", True)
             if isinstance(minor_is_tick, str):
-                minor_is_tick = minor_is_tick.lower() in ['true', 'yes', '1']
-            lon_placement = overlays['grid'].get('lon_placement', 'tb')
-            lat_placement = overlays['grid'].get('lat_placement', 'lr')
+                minor_is_tick = minor_is_tick.lower() in ["true", "yes", "1"]
+            lon_placement = overlays["grid"].get("lon_placement", "tb")
+            lat_placement = overlays["grid"].get("lat_placement", "lr")
 
             grid_kwargs = {}
             if is_agg:
-                width = float(overlays['grid'].get('width', 1.0))
-                minor_width = float(overlays['grid'].get('minor_width', 0.5))
-                outline_opacity = overlays['grid'].get('outline_opacity', 255)
-                minor_outline_opacity = overlays['grid'].get('minor_outline_opacity', 255)
-                grid_kwargs['width'] = width
-                grid_kwargs['minor_width'] = minor_width
-                grid_kwargs['outline_opacity'] = outline_opacity
-                grid_kwargs['minor_outline_opacity'] = minor_outline_opacity
+                width = float(overlays["grid"].get("width", 1.0))
+                minor_width = float(overlays["grid"].get("minor_width", 0.5))
+                outline_opacity = overlays["grid"].get("outline_opacity", 255)
+                minor_outline_opacity = overlays["grid"].get(
+                    "minor_outline_opacity", 255
+                )
+                grid_kwargs["width"] = width
+                grid_kwargs["minor_width"] = minor_width
+                grid_kwargs["outline_opacity"] = outline_opacity
+                grid_kwargs["minor_outline_opacity"] = minor_outline_opacity
 
-            self.add_grid(foreground, area_def, Dlonlat, dlonlat,
-                          font=font, write_text=write_text, fill=fill,
-                          outline=outline, minor_outline=minor_outline,
-                          minor_is_tick=minor_is_tick,
-                          lon_placement=lon_placement,
-                          lat_placement=lat_placement,
-                          **grid_kwargs)
+            self.add_grid(
+                foreground,
+                area_def,
+                Dlonlat,
+                dlonlat,
+                font=font,
+                write_text=write_text,
+                fill=fill,
+                outline=outline,
+                minor_outline=minor_outline,
+                minor_is_tick=minor_is_tick,
+                lon_placement=lon_placement,
+                lat_placement=lat_placement,
+                **grid_kwargs,
+            )
 
         # Cities management
-        if 'cities' in overlays:
+        if "cities" in overlays:
 
             # Backward compatibility and config.ini
-            if isinstance(overlays['cities'], dict):
-                overlays['cities'] = [overlays['cities']]
+            if isinstance(overlays["cities"], dict):
+                overlays["cities"] = [overlays["cities"]]
 
             DEFAULT_FONTSIZE = 12
-            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_SYMBOL = "circle"
             DEFAULT_PTSIZE = 6
-            DEFAULT_OUTLINE = 'black'
-            DEFAULT_FILL = 'white'
+            DEFAULT_OUTLINE = "black"
+            DEFAULT_FILL = "white"
 
-            for params in overlays['cities'].copy():
+            for params in overlays["cities"].copy():
 
-                cities_list = params.pop('cities_list')
-                font_file = params.pop('font')
-                font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+                cities_list = params.pop("cities_list")
+                font_file = params.pop("font")
+                font_size = int(params.pop("font_size", DEFAULT_FONTSIZE))
 
-                symbol = params.pop('symbol', DEFAULT_SYMBOL)
-                ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+                symbol = params.pop("symbol", DEFAULT_SYMBOL)
+                ptsize = int(params.pop("ptsize", DEFAULT_PTSIZE))
 
-                outline = params.pop('outline', DEFAULT_OUTLINE)
-                fill = params.pop('fill', DEFAULT_FILL)
+                outline = params.pop("outline", DEFAULT_OUTLINE)
+                fill = params.pop("fill", DEFAULT_FILL)
 
-                self.add_cities(foreground, area_def, cities_list, font_file, font_size,
-                                symbol, ptsize, outline, fill, **params)
+                self.add_cities(
+                    foreground,
+                    area_def,
+                    cities_list,
+                    font_file,
+                    font_size,
+                    symbol,
+                    ptsize,
+                    outline,
+                    fill,
+                    **params,
+                )
 
         # Points management
-        for param_key in ['points', 'text']:
+        for param_key in ["points", "text"]:
             if param_key not in overlays:
                 continue
             DEFAULT_FONTSIZE = 12
-            DEFAULT_SYMBOL = 'circle'
+            DEFAULT_SYMBOL = "circle"
             DEFAULT_PTSIZE = 6
-            DEFAULT_OUTLINE = 'black'
-            DEFAULT_FILL = 'white'
+            DEFAULT_OUTLINE = "black"
+            DEFAULT_FILL = "white"
 
             params = overlays[param_key].copy()
 
-            points_list = list(params.pop('points_list'))
-            font_file = params.pop('font')
-            font_size = int(params.pop('font_size', DEFAULT_FONTSIZE))
+            points_list = list(params.pop("points_list"))
+            font_file = params.pop("font")
+            font_size = int(params.pop("font_size", DEFAULT_FONTSIZE))
 
-            symbol = params.pop('symbol', DEFAULT_SYMBOL)
-            ptsize = int(params.pop('ptsize', DEFAULT_PTSIZE))
+            symbol = params.pop("symbol", DEFAULT_SYMBOL)
+            ptsize = int(params.pop("ptsize", DEFAULT_PTSIZE))
 
-            outline = params.pop('outline', DEFAULT_OUTLINE)
-            fill = params.pop('fill', DEFAULT_FILL)
+            outline = params.pop("outline", DEFAULT_OUTLINE)
+            fill = params.pop("fill", DEFAULT_FILL)
 
-            self.add_points(foreground, area_def, points_list, font_file, font_size,
-                            symbol, ptsize, outline, fill, **params)
+            self.add_points(
+                foreground,
+                area_def,
+                points_list,
+                font_file,
+                font_size,
+                symbol,
+                ptsize,
+                outline,
+                fill,
+                **params,
+            )
 
         if cache_file is not None:
             self._write_and_apply_new_cached_image(cache_file, foreground, background)
@@ -1012,13 +1146,15 @@ class ContourWriterBase(object):
             # Cache file will be used only if it's newer than config file
             if config_time is not None and config_time < cache_time and not regenerate:
                 foreground = Image.open(cache_file)
-                logger.info('Using image in cache %s', cache_file)
+                logger.info("Using image in cache %s", cache_file)
                 if background is not None:
                     background.paste(foreground, mask=foreground.split()[-1])
                 return foreground
             logger.info("Regenerating cache file.")
         except OSError:
-            logger.info("No overlay image found, new overlay image will be saved in cache.")
+            logger.info(
+                "No overlay image found, new overlay image will be saved in cache."
+            )
         return None
 
     @staticmethod
@@ -1042,13 +1178,13 @@ class ContourWriterBase(object):
         params_to_hash = {}
         # avoid wasteful deep copy by only doing two levels of copying
         for overlay_name, overlay_dict in nonhashable_dict.items():
-            if overlay_name == 'cache':
+            if overlay_name == "cache":
                 continue
             params_to_hash[overlay_name] = overlay_dict.copy()
         # font objects are not hashable
-        for font_cat in ('cities', 'points', 'grid'):
+        for font_cat in ("cities", "points", "grid"):
             if font_cat in params_to_hash:
-                params_to_hash[font_cat].pop('font', None)
+                params_to_hash[font_cat].pop("font", None)
         return params_to_hash
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
@@ -1062,8 +1198,9 @@ class ContourWriterBase(object):
 
         """
         overlays = self._config_to_dict(config_file)
-        return self.add_overlay_from_dict(overlays, area_def,
-                                          os.path.getmtime(config_file), background)
+        return self.add_overlay_from_dict(
+            overlays, area_def, os.path.getmtime(config_file), background
+        )
 
     def draw_star(self, draw, symbol, x, y, ptsize, **kwargs):
         # 5 <= n <= 8, symbol = string in ['star8', 'star7', 'star6', 'star5']
@@ -1086,30 +1223,62 @@ class ContourWriterBase(object):
         self._draw_polygon(draw, xy, **kwargs)
 
     def draw_hexagon(self, draw, x, y, ptsize, **kwargs):
-        xy = [x + 0.25 * ptsize, y - 0.4330127 * ptsize,
-              x + 0.50 * ptsize, y,
-              x + 0.25 * ptsize, y + 0.4330127 * ptsize,
-              x - 0.25 * ptsize, y + 0.4330127 * ptsize,
-              x - 0.50 * ptsize, y,
-              x - 0.25 * ptsize, y - 0.4330127 * ptsize]
+        xy = [
+            x + 0.25 * ptsize,
+            y - 0.4330127 * ptsize,
+            x + 0.50 * ptsize,
+            y,
+            x + 0.25 * ptsize,
+            y + 0.4330127 * ptsize,
+            x - 0.25 * ptsize,
+            y + 0.4330127 * ptsize,
+            x - 0.50 * ptsize,
+            y,
+            x - 0.25 * ptsize,
+            y - 0.4330127 * ptsize,
+        ]
         self._draw_polygon(draw, xy, **kwargs)
 
     def draw_pentagon(self, draw, x, y, ptsize, **kwargs):
-        xy = [x, y - 0.5 * ptsize,
-              x + 0.4755283 * ptsize, y - 0.1545085 * ptsize,
-              x + 0.2938926 * ptsize, y + 0.4045085 * ptsize,
-              x - 0.2938926 * ptsize, y + 0.4045085 * ptsize,
-              x - 0.4755283 * ptsize, y - 0.1545085 * ptsize]
+        xy = [
+            x,
+            y - 0.5 * ptsize,
+            x + 0.4755283 * ptsize,
+            y - 0.1545085 * ptsize,
+            x + 0.2938926 * ptsize,
+            y + 0.4045085 * ptsize,
+            x - 0.2938926 * ptsize,
+            y + 0.4045085 * ptsize,
+            x - 0.4755283 * ptsize,
+            y - 0.1545085 * ptsize,
+        ]
         self._draw_polygon(draw, xy, **kwargs)
 
     def draw_triangle(self, draw, x, y, ptsize, **kwargs):
-        xy = [x, y - 0.5 * ptsize,
-              x + 0.4330127 * ptsize, y + 0.25 * ptsize,
-              x - 0.4330127 * ptsize, y + 0.25 * ptsize]
+        xy = [
+            x,
+            y - 0.5 * ptsize,
+            x + 0.4330127 * ptsize,
+            y + 0.25 * ptsize,
+            x - 0.4330127 * ptsize,
+            y + 0.25 * ptsize,
+        ]
         self._draw_polygon(draw, xy, **kwargs)
 
-    def add_cities(self, image, area_def, cities_list, font_file, font_size=12,
-                   symbol='circle', ptsize=6, outline='black', fill='white', db_root_path=None, **kwargs):
+    def add_cities(
+        self,
+        image,
+        area_def,
+        cities_list,
+        font_file,
+        font_size=12,
+        symbol="circle",
+        ptsize=6,
+        outline="black",
+        fill="white",
+        db_root_path=None,
+        **kwargs,
+    ):
         """Add cities (symbol and UTF-8 names as description) to a PIL image object.
 
         :Parameters:
@@ -1162,10 +1331,14 @@ class ContourWriterBase(object):
         try:
             from pyresample.geometry import AreaDefinition
         except ImportError:
-            raise ImportError("Missing required 'pyresample' module, please install it.")
+            raise ImportError(
+                "Missing required 'pyresample' module, please install it."
+            )
 
         if not isinstance(area_def, AreaDefinition):
-            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
+            raise ValueError(
+                "Expected 'area_def' is an instance of AreaDefinition object"
+            )
 
         draw = self._get_canvas(image)
 
@@ -1173,69 +1346,123 @@ class ContourWriterBase(object):
         # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
         textfilename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
         try:
-            cities_file = open(textfilename, mode='r', encoding='utf-8')
+            cities_file = open(textfilename, mode="r", encoding="utf-8")
         except FileNotFoundError:
-            raise FileNotFoundError('Could not find file %s' % textfilename)
+            raise FileNotFoundError("Could not find file %s" % textfilename)
 
         for city_row in cities_file:
-            city_info = city_row.split('\t')
-            if not city_info or not (city_info[1] in cities_list or city_info[2] in cities_list):
+            city_info = city_row.split("\t")
+            if not city_info or not (
+                city_info[1] in cities_list or city_info[2] in cities_list
+            ):
                 continue
             city_name, lon, lat = city_info[1], float(city_info[5]), float(city_info[4])
 
             try:
                 x, y = area_def.get_array_indices_from_lonlat(lon, lat)
             except ValueError:
-                logger.info("City %s is out of the area, it will not be added to the image.",
-                            city_name + ' ' + str((lon, lat)))
+                logger.info(
+                    "City %s is out of the area, it will not be added to the image.",
+                    city_name + " " + str((lon, lat)),
+                )
             else:
                 # add symbol
                 if ptsize != 0:
-                    half_ptsize = int(round(ptsize / 2.))
-                    dot_box = [x - half_ptsize, y - half_ptsize,
-                               x + half_ptsize, y + half_ptsize]
+                    half_ptsize = int(round(ptsize / 2.0))
+                    dot_box = [
+                        x - half_ptsize,
+                        y - half_ptsize,
+                        x + half_ptsize,
+                        y + half_ptsize,
+                    ]
 
-                    width = kwargs.get('width', 1.)
-                    outline_opacity = kwargs.get('outline_opacity', 255)
-                    fill_opacity = kwargs.get('fill_opacity', 255)
+                    width = kwargs.get("width", 1.0)
+                    outline_opacity = kwargs.get("outline_opacity", 255)
+                    fill_opacity = kwargs.get("fill_opacity", 255)
 
                     # draw the symbol at the (x, y) position
-                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
-                        self._draw_ellipse(draw, dot_box,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
+                    if (
+                        symbol == "circle"
+                    ):  # a 'circle' or a 'dot' i.e. circle with fill
+                        self._draw_ellipse(
+                            draw,
+                            dot_box,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
                     # All regular polygons are drawn horizontally based
-                    elif symbol == 'hexagon':
-                        self.draw_hexagon(draw, x, y, ptsize,
-                                          outline=outline, width=width,
-                                          outline_opacity=outline_opacity,
-                                          fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'pentagon':
-                        self.draw_pentagon(draw, x, y, ptsize,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'square':
-                        self._draw_rectangle(draw, dot_box,
-                                             outline=outline, width=width,
-                                             outline_opacity=outline_opacity,
-                                             fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'triangle':
-                        self.draw_triangle(draw, x, y, ptsize,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == "hexagon":
+                        self.draw_hexagon(
+                            draw,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "pentagon":
+                        self.draw_pentagon(
+                            draw,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "square":
+                        self._draw_rectangle(
+                            draw,
+                            dot_box,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "triangle":
+                        self.draw_triangle(
+                            draw,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
                     # All stars are drawn with one vertical ray on top
-                    elif symbol in ['star8', 'star7', 'star6', 'star5']:
-                        self.draw_star(draw, symbol, x, y, ptsize,
-                                       outline=outline, width=width,
-                                       outline_opacity=outline_opacity,
-                                       fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'asterisk':  # an '*' sign
-                        self._draw_asterisk(draw, ptsize, (x, y),
-                                            outline=outline, width=width,
-                                            outline_opacity=outline_opacity)
+                    elif symbol in ["star8", "star7", "star6", "star5"]:
+                        self.draw_star(
+                            draw,
+                            symbol,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "asterisk":  # an '*' sign
+                        self._draw_asterisk(
+                            draw,
+                            ptsize,
+                            (x, y),
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                        )
                     elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
 
@@ -1247,19 +1474,38 @@ class ContourWriterBase(object):
 
                 new_kwargs = kwargs.copy()
 
-                box_outline = new_kwargs.pop('box_outline', 'white')
-                box_opacity = new_kwargs.pop('box_opacity', 0)
+                box_outline = new_kwargs.pop("box_outline", "white")
+                box_opacity = new_kwargs.pop("box_opacity", 0)
 
                 # add text_box
-                self._draw_text_box(draw, text_position, city_name, font, outline,
-                                    box_outline, box_opacity, **new_kwargs)
-                logger.info("%s added", city_name + ' ' + str((lon, lat)))
+                self._draw_text_box(
+                    draw,
+                    text_position,
+                    city_name,
+                    font,
+                    outline,
+                    box_outline,
+                    box_opacity,
+                    **new_kwargs,
+                )
+                logger.info("%s added", city_name + " " + str((lon, lat)))
         cities_file.close()
         self._finalize(draw)
 
-    def add_points(self, image, area_def, points_list, font_file, font_size=12,
-                   symbol='circle', ptsize=6, outline='black', fill='white',
-                   coord_ref='lonlat', **kwargs):
+    def add_points(
+        self,
+        image,
+        area_def,
+        points_list,
+        font_file,
+        font_size=12,
+        symbol="circle",
+        ptsize=6,
+        outline="black",
+        fill="white",
+        coord_ref="lonlat",
+        **kwargs,
+    ):
         """Add a symbol and/or text at the point(s) of interest to a PIL image object.
 
         :Parameters:
@@ -1324,73 +1570,138 @@ class ContourWriterBase(object):
             try:
                 x, y = coord_converter(x, y)
             except ValueError:
-                logger.info(f"Point ({x}, {y}) is out of the image area, it will not be added to the image.")
+                logger.info(
+                    f"Point ({x}, {y}) is out of the image area, it will not be added to the image."
+                )
             else:
                 # add symbol
                 if ptsize != 0:
-                    half_ptsize = int(round(ptsize / 2.))
+                    half_ptsize = int(round(ptsize / 2.0))
 
-                    dot_box = [x - half_ptsize, y - half_ptsize,
-                               x + half_ptsize, y + half_ptsize]
+                    dot_box = [
+                        x - half_ptsize,
+                        y - half_ptsize,
+                        x + half_ptsize,
+                        y + half_ptsize,
+                    ]
 
-                    width = kwargs.get('width', 1.)
-                    outline_opacity = kwargs.get('outline_opacity', 255)
-                    fill_opacity = kwargs.get('fill_opacity', 255)
+                    width = kwargs.get("width", 1.0)
+                    outline_opacity = kwargs.get("outline_opacity", 255)
+                    fill_opacity = kwargs.get("fill_opacity", 255)
 
                     # draw the symbol at the (x, y) position
-                    if symbol == 'circle':  # a 'circle' or a 'dot' i.e. circle with fill
-                        self._draw_ellipse(draw, dot_box,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
+                    if (
+                        symbol == "circle"
+                    ):  # a 'circle' or a 'dot' i.e. circle with fill
+                        self._draw_ellipse(
+                            draw,
+                            dot_box,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
                     # All regular polygons are drawn horizontally based
-                    elif symbol == 'hexagon':
-                        self.draw_hexagon(draw, x, y, ptsize,
-                                          outline=outline, width=width,
-                                          outline_opacity=outline_opacity,
-                                          fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'pentagon':
-                        self.draw_pentagon(draw, x, y, ptsize,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'square':
-                        self._draw_rectangle(draw, dot_box,
-                                             outline=outline, width=width,
-                                             outline_opacity=outline_opacity,
-                                             fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'triangle':
-                        self.draw_triangle(draw, x, y, ptsize,
-                                           outline=outline, width=width,
-                                           outline_opacity=outline_opacity,
-                                           fill=fill, fill_opacity=fill_opacity)
+                    elif symbol == "hexagon":
+                        self.draw_hexagon(
+                            draw,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "pentagon":
+                        self.draw_pentagon(
+                            draw,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "square":
+                        self._draw_rectangle(
+                            draw,
+                            dot_box,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "triangle":
+                        self.draw_triangle(
+                            draw,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
                     # All stars are drawn with one vertical ray on top
-                    elif symbol in ['star8', 'star7', 'star6', 'star5']:
-                        self.draw_star(draw, symbol, x, y, ptsize,
-                                       outline=outline, width=width,
-                                       outline_opacity=outline_opacity,
-                                       fill=fill, fill_opacity=fill_opacity)
-                    elif symbol == 'asterisk':  # an '*' sign
-                        self._draw_asterisk(draw, ptsize, (x, y),
-                                            outline=outline, width=width,
-                                            outline_opacity=outline_opacity)
+                    elif symbol in ["star8", "star7", "star6", "star5"]:
+                        self.draw_star(
+                            draw,
+                            symbol,
+                            x,
+                            y,
+                            ptsize,
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                            fill=fill,
+                            fill_opacity=fill_opacity,
+                        )
+                    elif symbol == "asterisk":  # an '*' sign
+                        self._draw_asterisk(
+                            draw,
+                            ptsize,
+                            (x, y),
+                            outline=outline,
+                            width=width,
+                            outline_opacity=outline_opacity,
+                        )
                     elif symbol:
                         raise ValueError("Unsupported symbol type: " + str(symbol))
                 elif desc is None:
-                    logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
+                    logger.error(
+                        "'ptsize' is 0 and 'desc' is None, nothing will be added to the image."
+                    )
 
                 if desc is not None:
-                    text_position = [x + ptsize, y]  # draw the text box next to the point
+                    text_position = [
+                        x + ptsize,
+                        y,
+                    ]  # draw the text box next to the point
                     font = self._get_font(outline, font_file, font_size)
 
                     new_kwargs = kwargs.copy()
 
-                    box_outline = new_kwargs.pop('box_outline', 'white')
-                    box_opacity = new_kwargs.pop('box_opacity', 0)
+                    box_outline = new_kwargs.pop("box_outline", "white")
+                    box_opacity = new_kwargs.pop("box_opacity", 0)
 
                     # add text_box
-                    self._draw_text_box(draw, text_position, desc, font, outline,
-                                        box_outline, box_opacity, **new_kwargs)
+                    self._draw_text_box(
+                        draw,
+                        text_position,
+                        desc,
+                        font,
+                        outline,
+                        box_outline,
+                        box_opacity,
+                        **new_kwargs,
+                    )
 
             logger.debug("Point %s has been added to the image", str((x, y)))
 
@@ -1409,19 +1720,14 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lons_s3, lats_s3 = x_ur * np.ones(y_range.size), y_range
         lons_s4, lats_s4 = x_range, y_ll * np.ones(x_range.size)
     else:
-        lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range,
-                               inverse=True)
-        lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur,
-                               inverse=True)
-        lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range,
-                               inverse=True)
-        lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll,
-                               inverse=True)
+        lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range, inverse=True)
+        lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur, inverse=True)
+        lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
+        lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
 
     angle_sum = 0
     prev = None
-    for lon in np.concatenate((lons_s1, lons_s2,
-                               lons_s3[::-1], lons_s4[::-1])):
+    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
         if not np.isfinite(lon):
             continue
         if prev is not None:
@@ -1433,29 +1739,31 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
 
     if round(angle_sum) == -360:
         # Covers NP
-        lat_min = min(lats_s1.min(), lats_s2.min(),
-                      lats_s3.min(), lats_s4.min())
+        lat_min = min(lats_s1.min(), lats_s2.min(), lats_s3.min(), lats_s4.min())
         lat_max = 90
         lon_min = -180
         lon_max = 180
     elif round(angle_sum) == 360:
         # Covers SP
         lat_min = -90
-        lat_max = max(lats_s1.max(), lats_s2.max(),
-                      lats_s3.max(), lats_s4.max())
+        lat_max = max(lats_s1.max(), lats_s2.max(), lats_s3.max(), lats_s4.max())
         lon_min = -180
         lon_max = 180
     elif round(angle_sum) == 0:
         # Covers no poles
-        if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1 and \
-                lons_s1.min() * lons_s1.max() < -25000:
+        if (
+            np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1
+            and lons_s1.min() * lons_s1.max() < -25000
+        ):
             # End points of left side on different side of dateline
             lon_min = lons_s1[lons_s1 > 0].min()
         else:
             lon_min = lons_s1.min()
 
-        if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1 and \
-                lons_s3.min() * lons_s3.max() < -25000:
+        if (
+            np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1
+            and lons_s3.min() * lons_s3.max() < -25000
+        ):
             # End points of right side on different side of dateline
             lon_max = lons_s3[lons_s3 < 0].max()
         else:
@@ -1483,11 +1791,10 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     return lon_min, lon_max, lat_min, lat_max
 
 
-def _get_pixel_index(shape, area_extent, x_size, y_size, prj,
-                     x_offset=0, y_offset=0):
+def _get_pixel_index(shape, area_extent, x_size, y_size, prj, x_offset=0, y_offset=0):
     """Map coordinates of shape to image coordinates."""
     # Get shape data as array and reproject
-    shape_data = np.array(shape.points if hasattr(shape, 'points') else shape)
+    shape_data = np.array(shape.points if hasattr(shape, "points") else shape)
     lons = shape_data[:, 0]
     lats = shape_data[:, 1]
 
