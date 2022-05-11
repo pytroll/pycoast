@@ -25,6 +25,14 @@ from glob import glob
 import numpy as np
 from PIL import Image, ImageFont
 import time
+from .utils import set_directory
+
+
+gshhs_root_dir = os.path.join(os.path.dirname(__file__), 'test_data', 'gshhs')
+repos_root_dir = os.path.join(os.path.dirname(__file__), "..", "..")
+test_file = 'test_image.png'
+grid_file = 'test_grid.png'
+p_file_coasts = 'test_coasts_p_mode.png'
 
 
 def fft_proj_rms(a1, a2):
@@ -57,12 +65,6 @@ def fft_metric(data1, data2, max_value=0.1):
     """Execute FFT metric."""
     rms = fft_proj_rms(data1, data2)
     return rms <= max_value
-
-
-gshhs_root_dir = os.path.join(os.path.dirname(__file__), 'test_data', 'gshhs')
-test_file = 'test_image.png'
-grid_file = 'test_grid.png'
-p_file_coasts = 'test_coasts_p_mode.png'
 
 
 class _ContourWriterTestBase(unittest.TestCase):
@@ -697,7 +699,8 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        cw.add_overlay_from_config(config_file, area_def, img)
+        with set_directory(repos_root_dir):
+            cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
         self.assertTrue(fft_metric(grid_data, res), 'Writing one shapefile from cfg pil failed')
