@@ -1710,32 +1710,12 @@ class ContourWriterBase(object):
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values."""
-    x_ll, y_ll, x_ur, y_ur = area_extent
-    x_range = np.linspace(x_ll, x_ur, num=x_size)
-    y_range = np.linspace(y_ll, y_ur, num=y_size)
-
-    if prj.is_latlong():
-        lons_s1, lats_s1 = x_ll * np.ones(y_range.size), y_range
-        lons_s2, lats_s2 = x_range, y_ur * np.ones(x_range.size)
-        lons_s3, lats_s3 = x_ur * np.ones(y_range.size), y_range
-        lons_s4, lats_s4 = x_range, y_ll * np.ones(x_range.size)
-    else:
-        lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range, inverse=True)
-        lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur, inverse=True)
-        lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
-        lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
-
-    angle_sum = 0
-    prev = None
-    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
-        if not np.isfinite(lon):
-            continue
-        if prev is not None:
-            delta = lon - prev
-            if abs(delta) > 180:
-                delta = (abs(delta) - 360) * np.sign(delta)
-            angle_sum += delta
-        prev = lon
+    bbox_lons, bbox_lats = _get_bounding_box_lonlat_sides(
+        area_extent, x_size, y_size, prj
+    )
+    lons_s1, lons_s2, lons_s3, lons_s4 = bbox_lons
+    lats_s1, lats_s2, lats_s3, lats_s4 = bbox_lats
+    angle_sum = _get_angle_sum(lons_s1, lons_s2, lons_s3, lons_s4)
 
     if round(angle_sum) == -360:
         # Covers NP
@@ -1789,6 +1769,39 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lat_max = 90
 
     return lon_min, lon_max, lat_min, lat_max
+
+
+def _get_bounding_box_lonlat_sides(area_extent, x_size, y_size, prj):
+    x_ll, y_ll, x_ur, y_ur = area_extent
+    x_range = np.linspace(x_ll, x_ur, num=x_size)
+    y_range = np.linspace(y_ll, y_ur, num=y_size)
+
+    if prj.is_latlong():
+        lons_s1, lats_s1 = x_ll * np.ones(y_range.size), y_range
+        lons_s2, lats_s2 = x_range, y_ur * np.ones(x_range.size)
+        lons_s3, lats_s3 = x_ur * np.ones(y_range.size), y_range
+        lons_s4, lats_s4 = x_range, y_ll * np.ones(x_range.size)
+    else:
+        lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range, inverse=True)
+        lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur, inverse=True)
+        lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
+        lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
+    return (lons_s1, lons_s2, lons_s3, lons_s4), (lats_s1, lats_s2, lats_s3, lats_s4)
+
+
+def _get_angle_sum(lons_s1, lons_s2, lons_s3, lons_s4):
+    angle_sum = 0
+    prev = None
+    for lon in np.concatenate((lons_s1, lons_s2, lons_s3[::-1], lons_s4[::-1])):
+        if not np.isfinite(lon):
+            continue
+        if prev is not None:
+            delta = lon - prev
+            if abs(delta) > 180:
+                delta = (abs(delta) - 360) * np.sign(delta)
+            angle_sum += delta
+        prev = lon
+    return angle_sum
 
 
 def _get_pixel_index(shape, area_extent, x_size, y_size, prj, x_offset=0, y_offset=0):
