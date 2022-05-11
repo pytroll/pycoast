@@ -784,44 +784,37 @@ class ContourWriterBase(object):
             db_root_path = self.db_root_path
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
-
-        format_string = "%s_%s_"
-        if tag is not None:
-            format_string += "%s_"
-
-        if zero_pad:
-            format_string += "L%02i.shp"
-        else:
-            format_string += "L%s.shp"
-
-        if not isinstance(level, list):
-            level = range(1, level + 1)
-
-        for i in level:
-
-            # One shapefile per level
-            if tag is None:
-                shapefilename = os.path.join(
-                    db_root_path,
-                    "%s_shp" % db_name,
-                    resolution,
-                    format_string % (db_name, resolution, i),
-                )
-            else:
-                shapefilename = os.path.join(
-                    db_root_path,
-                    "%s_shp" % db_name,
-                    resolution,
-                    format_string % (db_name, tag, resolution, i),
-                )
+        levels = range(1, level + 1) if not isinstance(level, list) else level
+        format_string, format_params = self._get_db_shapefile_format_and_params(
+            db_name, resolution, tag, zero_pad
+        )
+        shapefile_root_dir = os.path.join(db_root_path, f"{db_name}_shp", resolution)
+        for i in levels:
+            level_format_params = format_params + (i,)
+            shapefilename = os.path.join(
+                shapefile_root_dir, format_string % level_format_params
+            )
             try:
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
             except AttributeError:
                 raise ValueError("Could not find shapefile %s" % shapefilename)
 
-            for shape in shapes:
-                yield shape
+            yield from shapes
+
+    @staticmethod
+    def _get_db_shapefile_format_and_params(db_name, resolution, tag, zero_pad):
+        format_string = "%s_%s_"
+        format_params = (db_name, resolution)
+        if tag is not None:
+            format_string += "%s_"
+            format_params = (db_name, tag, resolution)
+
+        if zero_pad:
+            format_string += "L%02i.shp"
+        else:
+            format_string += "L%s.shp"
+        return format_string, format_params
 
     def _finalize(self, draw):
         """Do any need finalization of the drawing."""
