@@ -688,65 +688,95 @@ class ContourWriterBase(object):
             else:
                 new_kwargs = kwargs
 
-            if feature_type is None:
-                if shape.shapeType == shapefile.POLYLINE:
-                    ftype = "line"
-                elif shape.shapeType == shapefile.POLYGON:
-                    ftype = "polygon"
-                else:
-                    raise ValueError("Unsupported shape type: " + str(shape.shapeType))
-            else:
-                ftype = feature_type.lower()
-
-            # Check if polygon is possibly relevant
-            s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
-            if lon_min <= lon_max:
-                # Area_extent west or east of dateline
-                shape_is_outside_lon = lon_max < s_lon_ll or lon_min > s_lon_ur
-            else:
-                # Area_extent spans over dateline
-                shape_is_outside_lon = lon_max < s_lon_ll and lon_min > s_lon_ur
-            shape_is_outside_lat = lat_max < s_lat_ll or lat_min > s_lat_ur
-            if shape_is_outside_lon or shape_is_outside_lat:
-                # Polygon is irrelevant
+            if self._polygon_is_irrelevant(lon_min, lon_max, lat_min, lat_max, shape):
                 continue
 
-            # iterate over shape parts (some shapes split into parts)
-            # dummy shape part object
-            parts = list(shape.parts) + [len(shape.points)]
-            for i in range(len(parts) - 1):
-                # Get pixel index coordinates of shape
-                points = shape.points[parts[i] : parts[i + 1]]
-                index_arrays, is_reduced = _get_pixel_index(
-                    points,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset=x_offset,
-                    y_offset=y_offset,
-                )
-
-                # Skip empty datasets
-                if len(index_arrays) == 0:
-                    continue
-
-                # Make PIL draw the polygon or line
-                for index_array in index_arrays:
-                    if ftype == "polygon" and not is_reduced:
-                        # Draw polygon if dataset has not been reduced
-                        self._draw_polygon(
-                            draw, index_array.flatten().tolist(), **new_kwargs
-                        )
-                    elif ftype == "line" or is_reduced:
-                        # Draw line
-                        self._draw_line(
-                            draw, index_array.flatten().tolist(), **new_kwargs
-                        )
-                    else:
-                        raise ValueError("Unknown contour type: %s" % ftype)
-
+            self._add_shape(
+                shape,
+                feature_type,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset,
+                y_offset,
+                draw,
+                new_kwargs,
+            )
         self._finalize(draw)
+
+    @staticmethod
+    def _polygon_is_irrelevant(lon_min, lon_max, lat_min, lat_max, shape):
+        # Check if polygon is possibly relevant
+        s_lon_ll, s_lat_ll, s_lon_ur, s_lat_ur = shape.bbox
+        if lon_min <= lon_max:
+            # Area_extent west or east of dateline
+            shape_is_outside_lon = lon_max < s_lon_ll or lon_min > s_lon_ur
+        else:
+            # Area_extent spans over dateline
+            shape_is_outside_lon = lon_max < s_lon_ll and lon_min > s_lon_ur
+        shape_is_outside_lat = lat_max < s_lat_ll or lat_min > s_lat_ur
+        return shape_is_outside_lon or shape_is_outside_lat
+
+    def _add_shape(
+        self,
+        shape,
+        feature_type,
+        area_extent,
+        x_size,
+        y_size,
+        prj,
+        x_offset,
+        y_offset,
+        draw,
+        new_kwargs,
+    ):
+        ftype = self._feature_type_for_shape(shape, feature_type)
+
+        # iterate over shape parts (some shapes split into parts)
+        # dummy shape part object
+        parts = list(shape.parts) + [len(shape.points)]
+        for i in range(len(parts) - 1):
+            # Get pixel index coordinates of shape
+            points = shape.points[parts[i] : parts[i + 1]]
+            index_arrays, is_reduced = _get_pixel_index(
+                points,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset=x_offset,
+                y_offset=y_offset,
+            )
+
+            # Skip empty datasets
+            if len(index_arrays) == 0:
+                return
+
+            # Make PIL draw the polygon or line
+            for index_array in index_arrays:
+                if ftype == "polygon" and not is_reduced:
+                    # Draw polygon if dataset has not been reduced
+                    self._draw_polygon(
+                        draw, index_array.flatten().tolist(), **new_kwargs
+                    )
+                elif ftype == "line" or is_reduced:
+                    # Draw line
+                    self._draw_line(draw, index_array.flatten().tolist(), **new_kwargs)
+                else:
+                    raise ValueError("Unknown contour type: %s" % ftype)
+
+    @staticmethod
+    def _feature_type_for_shape(shape, feature_type):
+        if feature_type is not None:
+            return feature_type.lower()
+        if shape.shapeType == shapefile.POLYLINE:
+            ftype = "line"
+        elif shape.shapeType == shapefile.POLYGON:
+            ftype = "polygon"
+        else:
+            raise ValueError("Unsupported shape type: " + str(shape.shapeType))
+        return ftype
 
     def _add_feature(
         self,
