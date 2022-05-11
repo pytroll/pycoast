@@ -75,25 +75,24 @@ def _get_gcoder_country(loc, gcoder, json_cache):
     need_sleep = False
     if loc in json_cache:
         return json_cache[loc], need_sleep
+    need_sleep = True
+    LOG.debug("Finding: %s", loc)
+    result = gcoder(loc)
+    if not result.ok or result.country is None:
+        LOG.debug("Bad result using %r, country %r", gcoder, result.country)
+        return None, need_sleep
+    country = result.country
+    if len(country) == 2:
+        country = pycountry.countries.get(alpha_2=country).alpha_3
     else:
-        need_sleep = True
-        LOG.debug("Finding: %s", loc)
-        result = gcoder(loc)
-        if not result.ok or result.country is None:
-            LOG.debug("Bad result using %r, country %r", gcoder, result.country)
+        try:
+            country = pycountry.countries.get(alpha_3=country).alpha_3
+        except KeyError:
+            LOG.error("Invalid country code: %s", country)
             return None, need_sleep
-        country = result.country
-        if len(country) == 2:
-            country = pycountry.countries.get(alpha_2=country).alpha_3
-        else:
-            try:
-                country = pycountry.countries.get(alpha_3=country).alpha_3
-            except KeyError:
-                LOG.error("Invalid country code: %s", country)
-                return None, need_sleep
-        if country is not None:
-            json_cache[loc] = country
-        return country, need_sleep
+    if country is not None:
+        json_cache[loc] = country
+    return country, need_sleep
 
 
 def main():
@@ -151,7 +150,9 @@ def main():
         )
         zip_fn = "ne_110m_admin_0_countries.zip"
         LOG.info("Downloading NaturalEarth Shapefile")
-        with urllib.request.urlopen(url) as response, open(zip_fn, "wb") as out_file:
+        with urllib.request.urlopen(url) as response, open(
+            zip_fn, "wb"
+        ) as out_file:  # nosec: B310
             shutil.copyfileobj(response, out_file)
         zip_ref = zipfile.ZipFile(zip_fn, "r")
         zip_ref.extractall(".")
