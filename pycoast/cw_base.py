@@ -188,19 +188,6 @@ class ContourWriterBase(object):
     def _engine_text_draw(self, draw, pos, txt, font, **kwargs):
         raise NotImplementedError("Text drawing undefined for render engine")
 
-    def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
-        """Draw text with default PIL module."""
-        if font is None:
-            # NOTE: Default font does not use font size in PIL writer
-            font = self._get_font(kwargs.get("fill", "black"), font, 12)
-        placement_def = kwargs[linetype].lower()
-        for xy in xys:
-            # note xy[0] is xy coordinate pair,
-            # xy[1] is required alignment e.g. 'tl','lr','lc','cc'...
-            ax, ay = xy[1].lower()
-            if ax in placement_def or ay in placement_def:
-                self._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
-
     def _add_grid(
         self,
         image,
@@ -1686,7 +1673,7 @@ class _GridDrawer:
                     (self._x_text_margin, self._y_text_margin),
                 )
 
-                self._cw._draw_grid_labels(
+                self._draw_grid_labels(
                     self._draw, xys, "lon_placement", txt, self._font, **self._kwargs
                 )
 
@@ -1723,7 +1710,7 @@ class _GridDrawer:
                     (self._x_size, self._y_size),
                     (self._x_text_margin, self._y_text_margin),
                 )
-                self._cw._draw_grid_labels(
+                self._draw_grid_labels(
                     self._draw, xys, "lat_placement", txt, self._font, **self._kwargs
                 )
 
@@ -1798,6 +1785,19 @@ class _GridDrawer:
         else:
             txt = "%.2dS" % (-lat)
         return txt
+
+    def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
+        """Draw text with default PIL module."""
+        if font is None:
+            # NOTE: Default font does not use font size in PIL writer
+            font = self._cw._get_font(kwargs.get("fill", "black"), font, 12)
+        placement_def = kwargs[linetype].lower()
+        for xy in xys:
+            # note xy[0] is xy coordinate pair,
+            # xy[1] is required alignment e.g. 'tl','lr','lc','cc'...
+            ax, ay = xy[1].lower()
+            if ax in placement_def or ay in placement_def:
+                self._cw._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
 
 
 def _find_line_intercepts(xys, size, margins):
