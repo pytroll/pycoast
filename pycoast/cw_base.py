@@ -1628,53 +1628,8 @@ class _GridDrawer:
             self._draw_minor_ticks()
         else:
             self._draw_minor_lines()
-
-        major_lon_lines = [[(lon, x) for x in self._lin_lats] for lon in self._maj_lons]
-        for lonlats in major_lon_lines:
-            index_arrays = self._grid_line_index_array_generator(
-                [lonlats],
-            )
-            for index_array in index_arrays:
-                self._cw._draw_line(
-                    self._draw, index_array.flatten().tolist(), **self._kwargs
-                )
-
-            # add lon text markings at each end of longitude line
-            if self._write_text:
-                txt = self._grid_lon_label(lonlats[0][0])
-                xys = _find_line_intercepts(
-                    index_array,
-                    (self._x_size, self._y_size),
-                    (self._x_text_margin, self._y_text_margin),
-                )
-
-                self._draw_grid_labels(
-                    self._draw, xys, "lon_placement", txt, self._font, **self._kwargs
-                )
-
-        for lat in self._maj_lats:
-            # Draw 'major' lines
-            lonlats = [(x, lat) for x in self._lin_lons]
-            index_arrays = self._grid_line_index_array_generator(
-                [lonlats],
-            )
-            for index_array in index_arrays:
-                self._cw._draw_line(
-                    self._draw, index_array.flatten().tolist(), **self._kwargs
-                )
-
-            # add lat text markings at each end of parallels ...
-            if self._write_text:
-                txt = self._grid_lat_label(lat)
-                xys = _find_line_intercepts(
-                    index_array,
-                    (self._x_size, self._y_size),
-                    (self._x_text_margin, self._y_text_margin),
-                )
-                self._draw_grid_labels(
-                    self._draw, xys, "lat_placement", txt, self._font, **self._kwargs
-                )
-
+        self._draw_major_lon_lines()
+        self._draw_major_lat_lines()
         self._draw_pole_crosses()
 
     def _draw_minor_lines(self):
@@ -1727,6 +1682,60 @@ class _GridDrawer:
         for index_array in index_arrays:
             self._cw._draw_line(self._draw, index_array.flatten().tolist(), **kwargs)
 
+    def _draw_major_lon_lines(self):
+        def _lon_label_from_line_lonlats(lonlats):
+            return self._grid_lon_label(lonlats[0][0])
+
+        major_lon_lines = [[(lon, x) for x in self._lin_lats] for lon in self._maj_lons]
+        label_placement = self._kwargs["lon_placement"].lower()
+        self._draw_major_lines(
+            major_lon_lines,
+            _lon_label_from_line_lonlats,
+            label_placement,
+        )
+
+    def _draw_major_lat_lines(self):
+        def _lat_label_from_line_lonlats(lonlats):
+            return self._grid_lat_label(lonlats[0][1])
+
+        major_lat_lines = [[(x, lat) for x in self._lin_lons] for lat in self._maj_lats]
+        label_placement = self._kwargs["lat_placement"].lower()
+        self._draw_major_lines(
+            major_lat_lines,
+            _lat_label_from_line_lonlats,
+            label_placement,
+        )
+
+    def _draw_major_lines(
+        self, major_lines_lonlats, label_gen_func, label_placement_definition
+    ):
+        for lonlats in major_lines_lonlats:
+            index_arrays = self._grid_line_index_array_generator(
+                [lonlats],
+            )
+            for index_array in index_arrays:
+                self._cw._draw_line(
+                    self._draw, index_array.flatten().tolist(), **self._kwargs
+                )
+
+            # add lon text markings at each end of longitude line
+            if self._write_text:
+                txt = label_gen_func(lonlats)
+                xys = _find_line_intercepts(
+                    index_array,
+                    (self._x_size, self._y_size),
+                    (self._x_text_margin, self._y_text_margin),
+                )
+
+                self._draw_grid_labels(
+                    self._draw,
+                    xys,
+                    label_placement_definition,
+                    txt,
+                    self._font,
+                    **self._kwargs,
+                )
+
     def _grid_line_index_array_generator(
         self,
         grid_lines,
@@ -1761,12 +1770,11 @@ class _GridDrawer:
             txt = "%.2dS" % (-lat)
         return txt
 
-    def _draw_grid_labels(self, draw, xys, linetype, txt, font, **kwargs):
+    def _draw_grid_labels(self, draw, xys, placement_def, txt, font, **kwargs):
         """Draw text with default PIL module."""
         if font is None:
             # NOTE: Default font does not use font size in PIL writer
             font = self._cw._get_font(kwargs.get("fill", "black"), font, 12)
-        placement_def = kwargs[linetype].lower()
         for xy in xys:
             # note xy[0] is xy coordinate pair,
             # xy[1] is required alignment e.g. 'tl','lr','lc','cc'...
