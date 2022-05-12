@@ -364,47 +364,20 @@ class ContourWriterBase(object):
 
         # MINOR LINES ######
         if not kwargs["minor_is_tick"]:
-            # minor lat lines
-            for lat in min_lats:
-                lonlats = [(x, lat) for x in lin_lons]
-                index_arrays, is_reduced = _get_pixel_index(
-                    lonlats,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset=x_offset,
-                    y_offset=y_offset,
-                )
-                del is_reduced
-                # Skip empty datasets
-                if len(index_arrays) == 0:
-                    continue
-                # make PIL draw the tick line...
-                for index_array in index_arrays:
-                    self._draw_line(
-                        draw, index_array.flatten().tolist(), **minor_line_kwargs
-                    )
-            # minor lon lines
-            for lon in min_lons:
-                lonlats = [(lon, x) for x in lin_lats]
-                index_arrays, is_reduced = _get_pixel_index(
-                    lonlats,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset=x_offset,
-                    y_offset=y_offset,
-                )
-                # Skip empty datasets
-                if len(index_arrays) == 0:
-                    continue
-                # make PIL draw the tick line...
-                for index_array in index_arrays:
-                    self._draw_line(
-                        draw, index_array.flatten().tolist(), **minor_line_kwargs
-                    )
+            minor_lat_lines = [[(x, lat) for x in lin_lons] for lat in min_lats]
+            minor_lon_lines = [[(lon, x) for x in lin_lats] for lon in min_lons]
+            minor_lines = minor_lat_lines + minor_lon_lines
+            self._draw_minor_grid_lines(
+                minor_lines,
+                draw,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset,
+                y_offset,
+                minor_line_kwargs,
+            )
 
         # MAJOR LINES AND MINOR TICKS ######
         # major lon lines and tick marks:
@@ -565,6 +538,35 @@ class ContourWriterBase(object):
                 for index_array in index_arrays:
                     self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
         self._finalize(draw)
+
+    def _draw_minor_grid_lines(
+        self,
+        minor_lines,
+        draw,
+        area_extent,
+        x_size,
+        y_size,
+        prj,
+        x_offset,
+        y_offset,
+        minor_line_kwargs,
+    ):
+        for minor_line_lonlats in minor_lines:
+            index_arrays, _ = _get_pixel_index(
+                minor_line_lonlats,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset=x_offset,
+                y_offset=y_offset,
+            )
+            if not index_arrays:
+                continue
+            for index_array in index_arrays:
+                self._draw_line(
+                    draw, index_array.flatten().tolist(), **minor_line_kwargs
+                )
 
     def _find_bounding_box(self, xys):
         lons = [x for (x, y) in xys]
