@@ -344,7 +344,6 @@ class ContourWriterBase(object):
         # position text labels near edges of image...
 
         # perhaps better to find the actual length of line in pixels...
-
         round_lat_min = lat_min - (lat_min % Dlat)
 
         # major lat lines
@@ -358,8 +357,7 @@ class ContourWriterBase(object):
         # Get min_lats not in maj_lats
         min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
 
-        # lons along major lat lines (extended slightly to avoid missing the
-        # end)
+        # lons along major lat lines (extended slightly to avoid missing the end)
         lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) // 5)
 
         # MINOR LINES ######
@@ -385,52 +383,30 @@ class ContourWriterBase(object):
             # Draw 'minor' tick lines dlat separation along the lon
             if kwargs["minor_is_tick"]:
                 tick_lons = np.linspace(lon - Dlon / 20.0, lon + Dlon / 20.0, 5)
-
-                for lat in min_lats:
-                    lonlats = [(x, lat) for x in tick_lons]
-                    index_arrays, is_reduced = _get_pixel_index(
-                        lonlats,
-                        area_extent,
-                        x_size,
-                        y_size,
-                        prj,
-                        x_offset=x_offset,
-                        y_offset=y_offset,
-                    )
-                    # Skip empty datasets
-                    if len(index_arrays) == 0:
-                        continue
-                    # make PIL draw the tick line...
-                    for index_array in index_arrays:
-                        self._draw_line(
-                            draw, index_array.flatten().tolist(), **minor_line_kwargs
-                        )
+                minor_tick_lines = [[(x, lat) for x in tick_lons] for lat in min_lats]
+                self._draw_minor_grid_lines(
+                    minor_tick_lines,
+                    draw,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset,
+                    y_offset,
+                    minor_line_kwargs,
+                )
 
             # Draw 'major' lines
             lonlats = [(lon, x) for x in lin_lats]
-            index_arrays, is_reduced = _get_pixel_index(
-                lonlats,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset=x_offset,
-                y_offset=y_offset,
+            index_arrays = self._grid_line_index_array_generator(
+                [lonlats], area_extent, x_size, y_size, prj, x_offset, y_offset
             )
-            # Skip empty datasets
-            if len(index_arrays) == 0:
-                continue
-
-            # make PIL draw the lines...
             for index_array in index_arrays:
                 self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
 
             # add lon text markings at each end of longitude line
             if write_text:
-                if lon > 0.0:
-                    txt = "%.2dE" % (lon)
-                else:
-                    txt = "%.2dW" % (-lon)
+                txt = self._grid_lon_label(lon)
                 xys = self._find_line_intercepts(
                     index_array, image.size, (x_text_margin, y_text_margin)
                 )
@@ -442,51 +418,30 @@ class ContourWriterBase(object):
             # Draw 'minor' tick dlon separation along the lat
             if kwargs["minor_is_tick"]:
                 tick_lats = np.linspace(lat - Dlat / 20.0, lat + Dlat / 20.0, 5)
-                for lon in min_lons:
-                    lonlats = [(lon, x) for x in tick_lats]
-                    index_arrays, is_reduced = _get_pixel_index(
-                        lonlats,
-                        area_extent,
-                        x_size,
-                        y_size,
-                        prj,
-                        x_offset=x_offset,
-                        y_offset=y_offset,
-                    )
-                    # Skip empty datasets
-                    if len(index_arrays) == 0:
-                        continue
-                    # make PIL draw the tick line...
-                    for index_array in index_arrays:
-                        self._draw_line(
-                            draw, index_array.flatten().tolist(), **minor_line_kwargs
-                        )
+                minor_tick_lines = [[(lon, x) for x in tick_lats] for lon in min_lons]
+                self._draw_minor_grid_lines(
+                    minor_tick_lines,
+                    draw,
+                    area_extent,
+                    x_size,
+                    y_size,
+                    prj,
+                    x_offset,
+                    y_offset,
+                    minor_line_kwargs,
+                )
 
             # Draw 'major' lines
             lonlats = [(x, lat) for x in lin_lons]
-            index_arrays, is_reduced = _get_pixel_index(
-                lonlats,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset=x_offset,
-                y_offset=y_offset,
+            index_arrays = self._grid_line_index_array_generator(
+                [lonlats], area_extent, x_size, y_size, prj, x_offset, y_offset
             )
-            # Skip empty datasets
-            if len(index_arrays) == 0:
-                continue
-
-            # make PIL draw the lines...
             for index_array in index_arrays:
                 self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
 
             # add lat text markings at each end of parallels ...
             if write_text:
-                if lat >= 0.0:
-                    txt = "%.2dN" % (lat)
-                else:
-                    txt = "%.2dS" % (-lat)
+                txt = self._grid_lat_label(lat)
                 xys = self._find_line_intercepts(
                     index_array, image.size, (x_text_margin, y_text_margin)
                 )
@@ -549,7 +504,7 @@ class ContourWriterBase(object):
         prj,
         x_offset,
         y_offset,
-        minor_line_kwargs,
+        kwargs,
     ):
         for minor_line_lonlats in minor_lines:
             index_arrays, _ = _get_pixel_index(
@@ -564,9 +519,40 @@ class ContourWriterBase(object):
             if not index_arrays:
                 continue
             for index_array in index_arrays:
-                self._draw_line(
-                    draw, index_array.flatten().tolist(), **minor_line_kwargs
-                )
+                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
+
+    def _grid_line_index_array_generator(
+        self, grid_lines, area_extent, x_size, y_size, prj, x_offset, y_offset
+    ):
+        for grid_line_lonlats in grid_lines:
+            index_arrays, is_reduced = _get_pixel_index(
+                grid_line_lonlats,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset=x_offset,
+                y_offset=y_offset,
+            )
+            # Skip empty datasets
+            if not index_arrays:
+                continue
+            yield from index_arrays
+
+    def _grid_lon_label(self, lon):
+        # FIXME: Use f-strings or just pass the direction
+        if lon > 0.0:
+            txt = "%.2dE" % (lon)
+        else:
+            txt = "%.2dW" % (-lon)
+        return txt
+
+    def _grid_lat_label(self, lat):
+        if lat >= 0.0:
+            txt = "%.2dN" % (lat)
+        else:
+            txt = "%.2dS" % (-lat)
+        return txt
 
     def _find_bounding_box(self, xys):
         lons = [x for (x, y) in xys]
