@@ -150,9 +150,9 @@ def main():
         )
         zip_fn = "ne_110m_admin_0_countries.zip"
         LOG.info("Downloading NaturalEarth Shapefile")
-        with urllib.request.urlopen(url) as response, open(
+        with urllib.request.urlopen(url) as response, open(  # nosec: B310
             zip_fn, "wb"
-        ) as out_file:  # nosec: B310
+        ) as out_file:
             shutil.copyfileobj(response, out_file)
         zip_ref = zipfile.ZipFile(zip_fn, "r")
         zip_ref.extractall(".")
