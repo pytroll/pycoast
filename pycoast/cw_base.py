@@ -212,16 +212,10 @@ class ContourWriterBase(object):
         def is_in_box(x_y, extents):
             x, y = x_y
             xmin, xmax, ymin, ymax = extents
-            if xmin < x < xmax and ymin < y < ymax:
-                return True
-            else:
-                return False
+            return xmin < x < xmax and ymin < y < ymax
 
         def crossing(x1, x2, lim):
-            if (x1 < lim) != (x2 < lim):
-                return True
-            else:
-                return False
+            return (x1 < lim) != (x2 < lim)
 
         # set box limits
         xlim1 = margins[0]
@@ -229,8 +223,7 @@ class ContourWriterBase(object):
         xlim2 = x_size - margins[0]
         ylim2 = y_size - margins[1]
 
-        # only consider crossing within a box a little bigger than grid
-        # boundary
+        # only consider crossing within a box a little bigger than grid boundary
         search_box = (-10, x_size + 10, -10, y_size + 10)
 
         # loop through line steps and detect crossings
@@ -240,29 +233,30 @@ class ContourWriterBase(object):
         align_top = "CT"
         align_bottom = "CB"
         prev_xy = xys[0]
-        for i in range(1, len(xys) - 1):
-            xy = xys[i]
-            if is_in_box(xy, search_box):
-                # crossing LHS
-                if crossing(prev_xy[0], xy[0], xlim1):
-                    x = xlim1
-                    y = xy[1]
-                    intercepts.append(((x, y), align_left))
-                # crossing RHS
-                elif crossing(prev_xy[0], xy[0], xlim2):
-                    x = xlim2
-                    y = xy[1]
-                    intercepts.append(((x, y), align_right))
-                # crossing Top
-                elif crossing(prev_xy[1], xy[1], ylim1):
-                    x = xy[0]
-                    y = ylim1
-                    intercepts.append(((x, y), align_top))
-                # crossing Bottom
-                elif crossing(prev_xy[1], xy[1], ylim2):
-                    x = xy[0]  # - txt_width/2
-                    y = ylim2  # - txt_height
-                    intercepts.append(((x, y), align_bottom))
+        for xy in xys[1:]:
+            if not is_in_box(xy, search_box):
+                prev_xy = xy
+                continue
+            # crossing LHS
+            if crossing(prev_xy[0], xy[0], xlim1):
+                x = xlim1
+                y = xy[1]
+                intercepts.append(((x, y), align_left))
+            # crossing RHS
+            elif crossing(prev_xy[0], xy[0], xlim2):
+                x = xlim2
+                y = xy[1]
+                intercepts.append(((x, y), align_right))
+            # crossing Top
+            elif crossing(prev_xy[1], xy[1], ylim1):
+                x = xy[0]
+                y = ylim1
+                intercepts.append(((x, y), align_top))
+            # crossing Bottom
+            elif crossing(prev_xy[1], xy[1], ylim2):
+                x = xy[0]  # - txt_width/2
+                y = ylim2  # - txt_height
+                intercepts.append(((x, y), align_bottom))
             prev_xy = xy
 
         return intercepts
