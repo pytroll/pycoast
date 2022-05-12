@@ -452,46 +452,39 @@ class ContourWriterBase(object):
             crosslats = np.arange(
                 90.0 - Dlat / 2.0, 90.0, float(lat_max - lat_min) / y_size
             )
-            for lon in (0.0, 90.0, 180.0, -90.0):
-                lonlats = [(lon, x) for x in crosslats]
-                index_arrays, is_reduced = _get_pixel_index(
-                    lonlats,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset=x_offset,
-                    y_offset=y_offset,
-                )
-                # Skip empty datasets
-                if len(index_arrays) == 0:
-                    continue
+            cross_lines = [
+                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
+            ]
+            self._draw_minor_grid_lines(
+                cross_lines,
+                draw,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset,
+                y_offset,
+                kwargs,
+            )
 
-                # make PIL draw the lines...
-                for index_array in index_arrays:
-                    self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
         if lat_min == -90.0:
             crosslats = np.arange(
                 -90.0, -90.0 + Dlat / 2.0, float(lat_max - lat_min) / y_size
             )
-            for lon in (0.0, 90.0, 180.0, -90.0):
-                lonlats = [(lon, x) for x in crosslats]
-                index_arrays, is_reduced = _get_pixel_index(
-                    lonlats,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset=x_offset,
-                    y_offset=y_offset,
-                )
-                # Skip empty datasets
-                if len(index_arrays) == 0:
-                    continue
-
-                # make PIL draw the lines...
-                for index_array in index_arrays:
-                    self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
+            cross_lines = [
+                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
+            ]
+            self._draw_minor_grid_lines(
+                cross_lines,
+                draw,
+                area_extent,
+                x_size,
+                y_size,
+                prj,
+                x_offset,
+                y_offset,
+                kwargs,
+            )
         self._finalize(draw)
 
     def _draw_minor_grid_lines(
