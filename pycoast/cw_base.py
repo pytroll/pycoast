@@ -1624,38 +1624,13 @@ class _GridDrawer:
         self._lat_min = lat_min
 
     def draw_grid(self):
-        # MINOR LINES ######
-        if not self._kwargs["minor_is_tick"]:
-            minor_lat_lines = [
-                [(x, lat) for x in self._lin_lons] for lat in self._min_lats
-            ]
-            minor_lon_lines = [
-                [(lon, x) for x in self._lin_lats] for lon in self._min_lons
-            ]
-            minor_lines = minor_lat_lines + minor_lon_lines
-            self._draw_minor_grid_lines(
-                minor_lines,
-                self._minor_line_kwargs,
-            )
+        if self._kwargs["minor_is_tick"]:
+            self._draw_minor_ticks()
+        else:
+            self._draw_minor_lines()
 
-        # MAJOR LINES AND MINOR TICKS ######
-        # major lon lines and tick marks:
-        for lon in self._maj_lons:
-            # Draw 'minor' tick lines dlat separation along the lon
-            if self._kwargs["minor_is_tick"]:
-                tick_lons = np.linspace(
-                    lon - self._Dlon / 20.0, lon + self._Dlon / 20.0, 5
-                )
-                minor_tick_lines = [
-                    [(x, lat) for x in tick_lons] for lat in self._min_lats
-                ]
-                self._draw_minor_grid_lines(
-                    minor_tick_lines,
-                    self._minor_line_kwargs,
-                )
-
-            # Draw 'major' lines
-            lonlats = [(lon, x) for x in self._lin_lats]
+        major_lon_lines = [[(lon, x) for x in self._lin_lats] for lon in self._maj_lons]
+        for lonlats in major_lon_lines:
             index_arrays = self._grid_line_index_array_generator(
                 [lonlats],
             )
@@ -1666,7 +1641,7 @@ class _GridDrawer:
 
             # add lon text markings at each end of longitude line
             if self._write_text:
-                txt = self._grid_lon_label(lon)
+                txt = self._grid_lon_label(lonlats[0][0])
                 xys = _find_line_intercepts(
                     index_array,
                     (self._x_size, self._y_size),
@@ -1677,21 +1652,7 @@ class _GridDrawer:
                     self._draw, xys, "lon_placement", txt, self._font, **self._kwargs
                 )
 
-        # major lat lines and tick marks:
         for lat in self._maj_lats:
-            # Draw 'minor' tick dlon separation along the lat
-            if self._kwargs["minor_is_tick"]:
-                tick_lats = np.linspace(
-                    lat - self._Dlat / 20.0, lat + self._Dlat / 20.0, 5
-                )
-                minor_tick_lines = [
-                    [(lon, x) for x in tick_lats] for lon in self._min_lons
-                ]
-                self._draw_minor_grid_lines(
-                    minor_tick_lines,
-                    self._minor_line_kwargs,
-                )
-
             # Draw 'major' lines
             lonlats = [(x, lat) for x in self._lin_lons]
             index_arrays = self._grid_line_index_array_generator(
@@ -1714,31 +1675,48 @@ class _GridDrawer:
                     self._draw, xys, "lat_placement", txt, self._font, **self._kwargs
                 )
 
-        # Draw cross on poles ...
-        if self._lat_max == 90.0:
-            crosslats = np.arange(
-                90.0 - self._Dlat / 2.0,
-                90.0,
-                float(self._lat_max - self._lat_min) / self._y_size,
-            )
-            self._add_pole_crosslats(crosslats)
+        self._draw_pole_crosses()
 
-        if self._lat_min == -90.0:
-            crosslats = np.arange(
-                -90.0,
-                -90.0 + self._Dlat / 2.0,
-                float(self._lat_max - self._lat_min) / self._y_size,
-            )
-            self._add_pole_crosslats(crosslats)
-
-    def _add_pole_crosslats(self, crosslats):
-        cross_lines = [
-            [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
-        ]
+    def _draw_minor_lines(self):
+        minor_lat_lines = self._get_minor_lat_lines()
+        minor_lon_lines = self._get_minor_lon_lines()
         self._draw_minor_grid_lines(
-            cross_lines,
-            self._kwargs,
+            minor_lat_lines + minor_lon_lines,
+            self._minor_line_kwargs,
         )
+
+    def _get_minor_lat_lines(self):
+        return [[(x, lat) for x in self._lin_lons] for lat in self._min_lats]
+
+    def _get_minor_lon_lines(self):
+        return [[(lon, x) for x in self._lin_lats] for lon in self._min_lons]
+
+    def _draw_minor_ticks(self):
+        # minor tick lines on major lines
+        # Draw 'minor' tick lines dlat separation along the lon
+        minor_tick_lon_lines = self._get_minor_lon_tick_lines()
+        # Draw 'minor' tick dlon separation along the lat
+        minor_tick_lat_lines = self._get_minor_lat_tick_lines()
+        self._draw_minor_grid_lines(
+            minor_tick_lon_lines + minor_tick_lat_lines,
+            self._minor_line_kwargs,
+        )
+
+    def _get_minor_lon_tick_lines(self):
+        minor_tick_lon_lines = []
+        for lon in self._maj_lons:
+            tick_lons = np.linspace(lon - self._Dlon / 20.0, lon + self._Dlon / 20.0, 5)
+            minor_tick_lines = [[(x, lat) for x in tick_lons] for lat in self._min_lats]
+            minor_tick_lon_lines.extend(minor_tick_lines)
+        return minor_tick_lon_lines
+
+    def _get_minor_lat_tick_lines(self):
+        minor_tick_lat_lines = []
+        for lat in self._maj_lats:
+            tick_lats = np.linspace(lat - self._Dlat / 20.0, lat + self._Dlat / 20.0, 5)
+            minor_tick_lines = [[(lon, x) for x in tick_lats] for lon in self._min_lons]
+            minor_tick_lat_lines.extend(minor_tick_lines)
+        return minor_tick_lat_lines
 
     def _draw_minor_grid_lines(
         self,
@@ -1795,6 +1773,29 @@ class _GridDrawer:
             ax, ay = xy[1].lower()
             if ax in placement_def or ay in placement_def:
                 self._cw._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
+
+    def _draw_pole_crosses(self):
+        cross_lats_interval = float(self._lat_max - self._lat_min) / self._y_size
+        if self._lat_max == 90.0:
+            crosslats = np.arange(
+                90.0 - self._Dlat / 2.0,
+                90.0,
+                cross_lats_interval,
+            )
+            self._add_pole_crosslats(crosslats)
+
+        if self._lat_min == -90.0:
+            crosslats = np.arange(-90.0, -90.0 + self._Dlat / 2.0, cross_lats_interval)
+            self._add_pole_crosslats(crosslats)
+
+    def _add_pole_crosslats(self, crosslats):
+        cross_lines = [
+            [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
+        ]
+        self._draw_minor_grid_lines(
+            cross_lines,
+            self._kwargs,
+        )
 
 
 def _find_line_intercepts(xys, size, margins):
