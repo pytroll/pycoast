@@ -201,66 +201,6 @@ class ContourWriterBase(object):
             if ax in placement_def or ay in placement_def:
                 self._draw_text(draw, xy[0], txt, font, align=xy[1], **kwargs)
 
-    def _find_line_intercepts(self, xys, size, margins):
-        """Find intercepts of poly-line xys with image boundaries offset by margins.
-
-        Returns an array of coordinates.
-
-        """
-        x_size, y_size = size
-
-        def is_in_box(x_y, extents):
-            x, y = x_y
-            xmin, xmax, ymin, ymax = extents
-            return xmin < x < xmax and ymin < y < ymax
-
-        def crossing(x1, x2, lim):
-            return (x1 < lim) != (x2 < lim)
-
-        # set box limits
-        xlim1 = margins[0]
-        ylim1 = margins[1]
-        xlim2 = x_size - margins[0]
-        ylim2 = y_size - margins[1]
-
-        # only consider crossing within a box a little bigger than grid boundary
-        search_box = (-10, x_size + 10, -10, y_size + 10)
-
-        # loop through line steps and detect crossings
-        intercepts = []
-        align_left = "LC"
-        align_right = "RC"
-        align_top = "CT"
-        align_bottom = "CB"
-        prev_xy = xys[0]
-        for xy in xys[1:]:
-            if not is_in_box(xy, search_box):
-                prev_xy = xy
-                continue
-            # crossing LHS
-            if crossing(prev_xy[0], xy[0], xlim1):
-                x = xlim1
-                y = xy[1]
-                intercepts.append(((x, y), align_left))
-            # crossing RHS
-            elif crossing(prev_xy[0], xy[0], xlim2):
-                x = xlim2
-                y = xy[1]
-                intercepts.append(((x, y), align_right))
-            # crossing Top
-            elif crossing(prev_xy[1], xy[1], ylim1):
-                x = xy[0]
-                y = ylim1
-                intercepts.append(((x, y), align_top))
-            # crossing Bottom
-            elif crossing(prev_xy[1], xy[1], ylim2):
-                x = xy[0]  # - txt_width/2
-                y = ylim2  # - txt_height
-                intercepts.append(((x, y), align_bottom))
-            prev_xy = xy
-
-        return intercepts
-
     def _add_grid(
         self,
         image,
@@ -274,278 +214,12 @@ class ContourWriterBase(object):
         **kwargs,
     ):
         """Add a lat lon grid to image."""
-        try:
-            proj_def = area_def.crs if hasattr(area_def, "crs") else area_def.proj_dict
-            area_extent = area_def.area_extent
-        except AttributeError:
-            proj_def = area_def[0]
-            area_extent = area_def[1]
-
         draw = self._get_canvas(image)
-
-        # use kwargs for major lines ... but reform for minor lines:
-        minor_line_kwargs = kwargs.copy()
-        minor_line_kwargs["outline"] = kwargs["minor_outline"]
-        if self.is_agg:
-            minor_line_kwargs["outline_opacity"] = kwargs["minor_outline_opacity"]
-            minor_line_kwargs["width"] = kwargs["minor_width"]
-
-        # text margins (at sides of image frame)
-        y_text_margin = 4
-        x_text_margin = 4
-
-        # Area and projection info
-        x_size, y_size = image.size
-        prj = Proj(proj_def)
-
-        x_offset = 0
-        y_offset = 0
-
-        # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(
-            area_extent, x_size, y_size, prj
+        grid_drawer = _GridDrawer(
+            self, draw, area_def, Dlon, Dlat, dlon, dlat, font, write_text, kwargs
         )
-
-        # Handle dateline crossing
-        if lon_max < lon_min:
-            lon_max = 360 + lon_max
-
-        # Draw lonlat grid lines ...
-        # create adjustment of line lengths to avoid cluttered pole lines
-        if lat_max == 90.0:
-            shorten_max_lat = Dlat
-        else:
-            shorten_max_lat = 0.0
-
-        if lat_min == -90.0:
-            increase_min_lat = Dlat
-        else:
-            increase_min_lat = 0.0
-
-        # major lon lines
-        round_lon_min = lon_min - (lon_min % Dlon)
-        maj_lons = np.arange(round_lon_min, lon_max, Dlon)
-        maj_lons[maj_lons > 180] = maj_lons[maj_lons > 180] - 360
-
-        # minor lon lines (ticks)
-        min_lons = np.arange(round_lon_min, lon_max, dlon)
-        min_lons[min_lons > 180] = min_lons[min_lons > 180] - 360
-
-        # Get min_lons not in maj_lons
-        min_lons = np.lib.arraysetops.setdiff1d(min_lons, maj_lons)
-
-        # lats along major lon lines
-        lin_lats = np.arange(
-            lat_min + increase_min_lat,
-            lat_max - shorten_max_lat,
-            float(lat_max - lat_min) / y_size,
-        )
-        # lin_lats in rather high definition so that it can be used to
-        # position text labels near edges of image...
-
-        # perhaps better to find the actual length of line in pixels...
-        round_lat_min = lat_min - (lat_min % Dlat)
-
-        # major lat lines
-        maj_lats = np.arange(round_lat_min + increase_min_lat, lat_max, Dlat)
-
-        # minor lon lines (ticks)
-        min_lats = np.arange(
-            round_lat_min + increase_min_lat, lat_max - shorten_max_lat, dlat
-        )
-
-        # Get min_lats not in maj_lats
-        min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
-
-        # lons along major lat lines (extended slightly to avoid missing the end)
-        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(x_size, y_size) // 5)
-
-        # MINOR LINES ######
-        if not kwargs["minor_is_tick"]:
-            minor_lat_lines = [[(x, lat) for x in lin_lons] for lat in min_lats]
-            minor_lon_lines = [[(lon, x) for x in lin_lats] for lon in min_lons]
-            minor_lines = minor_lat_lines + minor_lon_lines
-            self._draw_minor_grid_lines(
-                minor_lines,
-                draw,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset,
-                y_offset,
-                minor_line_kwargs,
-            )
-
-        # MAJOR LINES AND MINOR TICKS ######
-        # major lon lines and tick marks:
-        for lon in maj_lons:
-            # Draw 'minor' tick lines dlat separation along the lon
-            if kwargs["minor_is_tick"]:
-                tick_lons = np.linspace(lon - Dlon / 20.0, lon + Dlon / 20.0, 5)
-                minor_tick_lines = [[(x, lat) for x in tick_lons] for lat in min_lats]
-                self._draw_minor_grid_lines(
-                    minor_tick_lines,
-                    draw,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset,
-                    y_offset,
-                    minor_line_kwargs,
-                )
-
-            # Draw 'major' lines
-            lonlats = [(lon, x) for x in lin_lats]
-            index_arrays = self._grid_line_index_array_generator(
-                [lonlats], area_extent, x_size, y_size, prj, x_offset, y_offset
-            )
-            for index_array in index_arrays:
-                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
-
-            # add lon text markings at each end of longitude line
-            if write_text:
-                txt = self._grid_lon_label(lon)
-                xys = self._find_line_intercepts(
-                    index_array, image.size, (x_text_margin, y_text_margin)
-                )
-
-                self._draw_grid_labels(draw, xys, "lon_placement", txt, font, **kwargs)
-
-        # major lat lines and tick marks:
-        for lat in maj_lats:
-            # Draw 'minor' tick dlon separation along the lat
-            if kwargs["minor_is_tick"]:
-                tick_lats = np.linspace(lat - Dlat / 20.0, lat + Dlat / 20.0, 5)
-                minor_tick_lines = [[(lon, x) for x in tick_lats] for lon in min_lons]
-                self._draw_minor_grid_lines(
-                    minor_tick_lines,
-                    draw,
-                    area_extent,
-                    x_size,
-                    y_size,
-                    prj,
-                    x_offset,
-                    y_offset,
-                    minor_line_kwargs,
-                )
-
-            # Draw 'major' lines
-            lonlats = [(x, lat) for x in lin_lons]
-            index_arrays = self._grid_line_index_array_generator(
-                [lonlats], area_extent, x_size, y_size, prj, x_offset, y_offset
-            )
-            for index_array in index_arrays:
-                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
-
-            # add lat text markings at each end of parallels ...
-            if write_text:
-                txt = self._grid_lat_label(lat)
-                xys = self._find_line_intercepts(
-                    index_array, image.size, (x_text_margin, y_text_margin)
-                )
-                self._draw_grid_labels(draw, xys, "lat_placement", txt, font, **kwargs)
-
-        # Draw cross on poles ...
-        if lat_max == 90.0:
-            crosslats = np.arange(
-                90.0 - Dlat / 2.0, 90.0, float(lat_max - lat_min) / y_size
-            )
-            cross_lines = [
-                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
-            ]
-            self._draw_minor_grid_lines(
-                cross_lines,
-                draw,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset,
-                y_offset,
-                kwargs,
-            )
-
-        if lat_min == -90.0:
-            crosslats = np.arange(
-                -90.0, -90.0 + Dlat / 2.0, float(lat_max - lat_min) / y_size
-            )
-            cross_lines = [
-                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
-            ]
-            self._draw_minor_grid_lines(
-                cross_lines,
-                draw,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset,
-                y_offset,
-                kwargs,
-            )
+        grid_drawer.draw_grid()
         self._finalize(draw)
-
-    def _draw_minor_grid_lines(
-        self,
-        minor_lines,
-        draw,
-        area_extent,
-        x_size,
-        y_size,
-        prj,
-        x_offset,
-        y_offset,
-        kwargs,
-    ):
-        for minor_line_lonlats in minor_lines:
-            index_arrays, _ = _get_pixel_index(
-                minor_line_lonlats,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset=x_offset,
-                y_offset=y_offset,
-            )
-            if not index_arrays:
-                continue
-            for index_array in index_arrays:
-                self._draw_line(draw, index_array.flatten().tolist(), **kwargs)
-
-    def _grid_line_index_array_generator(
-        self, grid_lines, area_extent, x_size, y_size, prj, x_offset, y_offset
-    ):
-        for grid_line_lonlats in grid_lines:
-            index_arrays, is_reduced = _get_pixel_index(
-                grid_line_lonlats,
-                area_extent,
-                x_size,
-                y_size,
-                prj,
-                x_offset=x_offset,
-                y_offset=y_offset,
-            )
-            # Skip empty datasets
-            if not index_arrays:
-                continue
-            yield from index_arrays
-
-    def _grid_lon_label(self, lon):
-        # FIXME: Use f-strings or just pass the direction
-        if lon > 0.0:
-            txt = "%.2dE" % (lon)
-        else:
-            txt = "%.2dW" % (-lon)
-        return txt
-
-    def _grid_lat_label(self, lat):
-        if lat >= 0.0:
-            txt = "%.2dN" % (lat)
-        else:
-            txt = "%.2dS" % (-lat)
-        return txt
 
     def _find_bounding_box(self, xys):
         lons = [x for (x, y) in xys]
@@ -1837,3 +1511,351 @@ class _OverlaysFromDict:
             fill,
             **params,
         )
+
+
+class _GridDrawer:
+    """Helper for drawing graticule/grid lines."""
+
+    def __init__(
+        self,
+        contour_writer,
+        draw,
+        area_def,
+        Dlon,
+        Dlat,
+        dlon,
+        dlat,
+        font,
+        write_text,
+        kwargs,
+    ):
+        self._cw = contour_writer
+        self._draw = draw
+
+        try:
+            proj_def = area_def.crs if hasattr(area_def, "crs") else area_def.proj_dict
+            area_extent = area_def.area_extent
+        except AttributeError:
+            proj_def = area_def[0]
+            area_extent = area_def[1]
+        self._proj_def = proj_def
+        self._area_extent = area_extent
+        self._prj = Proj(proj_def)
+
+        # use kwargs for major lines ... but reform for minor lines:
+        minor_line_kwargs = kwargs.copy()
+        minor_line_kwargs["outline"] = kwargs["minor_outline"]
+        if self._cw.is_agg:
+            minor_line_kwargs["outline_opacity"] = kwargs["minor_outline_opacity"]
+            minor_line_kwargs["width"] = kwargs["minor_width"]
+
+        # PIL ImageDraw objects versus aggdraw Draw objects
+        self._x_size = draw.im.size[0] if hasattr(draw, "im") else draw.size[0]
+        self._y_size = draw.im.size[1] if hasattr(draw, "im") else draw.size[1]
+
+        # Calculate min and max lons and lats of interest
+        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(
+            area_extent, self._x_size, self._y_size, self._prj
+        )
+
+        # Handle dateline crossing
+        if lon_max < lon_min:
+            lon_max = 360 + lon_max
+
+        # Draw lonlat grid lines ...
+        # create adjustment of line lengths to avoid cluttered pole lines
+        if lat_max == 90.0:
+            shorten_max_lat = Dlat
+        else:
+            shorten_max_lat = 0.0
+
+        if lat_min == -90.0:
+            increase_min_lat = Dlat
+        else:
+            increase_min_lat = 0.0
+
+        # major lon lines
+        round_lon_min = lon_min - (lon_min % Dlon)
+        maj_lons = np.arange(round_lon_min, lon_max, Dlon)
+        maj_lons[maj_lons > 180] = maj_lons[maj_lons > 180] - 360
+
+        # minor lon lines (ticks)
+        min_lons = np.arange(round_lon_min, lon_max, dlon)
+        min_lons[min_lons > 180] = min_lons[min_lons > 180] - 360
+
+        # Get min_lons not in maj_lons
+        min_lons = np.lib.arraysetops.setdiff1d(min_lons, maj_lons)
+
+        # lats along major lon lines
+        lin_lats = np.arange(
+            lat_min + increase_min_lat,
+            lat_max - shorten_max_lat,
+            float(lat_max - lat_min) / self._y_size,
+        )
+        # lin_lats in rather high definition so that it can be used to
+        # position text labels near edges of image...
+
+        # perhaps better to find the actual length of line in pixels...
+        round_lat_min = lat_min - (lat_min % Dlat)
+
+        # major lat lines
+        maj_lats = np.arange(round_lat_min + increase_min_lat, lat_max, Dlat)
+
+        # minor lon lines (ticks)
+        min_lats = np.arange(
+            round_lat_min + increase_min_lat, lat_max - shorten_max_lat, dlat
+        )
+
+        # Get min_lats not in maj_lats
+        min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
+
+        # lons along major lat lines (extended slightly to avoid missing the end)
+        lin_lons = np.linspace(
+            lon_min, lon_max + Dlon / 5.0, max(self._x_size, self._y_size) // 5
+        )
+
+        self._min_lons = min_lons
+        self._min_lats = min_lats
+        self._lin_lons = lin_lons
+        self._lin_lats = lin_lats
+        self._maj_lons = maj_lons
+        self._maj_lats = maj_lats
+        self._kwargs = kwargs
+        self._minor_line_kwargs = minor_line_kwargs
+        self._x_offset = 0
+        self._y_offset = 0
+        # text margins (at sides of image frame)
+        self._y_text_margin = 4
+        self._x_text_margin = 4
+        self._write_text = write_text
+        self._font = font
+        self._Dlon = Dlon
+        self._Dlat = Dlat
+        self._dlon = dlon
+        self._dlat = dlat
+        self._lat_max = lat_max
+        self._lat_min = lat_min
+
+    def draw_grid(self):
+        # MINOR LINES ######
+        if not self._kwargs["minor_is_tick"]:
+            minor_lat_lines = [
+                [(x, lat) for x in self._lin_lons] for lat in self._min_lats
+            ]
+            minor_lon_lines = [
+                [(lon, x) for x in self._lin_lats] for lon in self._min_lons
+            ]
+            minor_lines = minor_lat_lines + minor_lon_lines
+            self._draw_minor_grid_lines(
+                minor_lines,
+                self._minor_line_kwargs,
+            )
+
+        # MAJOR LINES AND MINOR TICKS ######
+        # major lon lines and tick marks:
+        for lon in self._maj_lons:
+            # Draw 'minor' tick lines dlat separation along the lon
+            if self._kwargs["minor_is_tick"]:
+                tick_lons = np.linspace(
+                    lon - self._Dlon / 20.0, lon + self._Dlon / 20.0, 5
+                )
+                minor_tick_lines = [
+                    [(x, lat) for x in tick_lons] for lat in self._min_lats
+                ]
+                self._draw_minor_grid_lines(
+                    minor_tick_lines,
+                    self._minor_line_kwargs,
+                )
+
+            # Draw 'major' lines
+            lonlats = [(lon, x) for x in self._lin_lats]
+            index_arrays = self._grid_line_index_array_generator(
+                [lonlats],
+            )
+            for index_array in index_arrays:
+                self._cw._draw_line(
+                    self._draw, index_array.flatten().tolist(), **self._kwargs
+                )
+
+            # add lon text markings at each end of longitude line
+            if self._write_text:
+                txt = self._grid_lon_label(lon)
+                xys = _find_line_intercepts(
+                    index_array,
+                    (self._x_size, self._y_size),
+                    (self._x_text_margin, self._y_text_margin),
+                )
+
+                self._cw._draw_grid_labels(
+                    self._draw, xys, "lon_placement", txt, self._font, **self._kwargs
+                )
+
+        # major lat lines and tick marks:
+        for lat in self._maj_lats:
+            # Draw 'minor' tick dlon separation along the lat
+            if self._kwargs["minor_is_tick"]:
+                tick_lats = np.linspace(
+                    lat - self._Dlat / 20.0, lat + self._Dlat / 20.0, 5
+                )
+                minor_tick_lines = [
+                    [(lon, x) for x in tick_lats] for lon in self._min_lons
+                ]
+                self._draw_minor_grid_lines(
+                    minor_tick_lines,
+                    self._minor_line_kwargs,
+                )
+
+            # Draw 'major' lines
+            lonlats = [(x, lat) for x in self._lin_lons]
+            index_arrays = self._grid_line_index_array_generator(
+                [lonlats],
+            )
+            for index_array in index_arrays:
+                self._cw._draw_line(
+                    self._draw, index_array.flatten().tolist(), **self._kwargs
+                )
+
+            # add lat text markings at each end of parallels ...
+            if self._write_text:
+                txt = self._grid_lat_label(lat)
+                xys = _find_line_intercepts(
+                    index_array,
+                    (self._x_size, self._y_size),
+                    (self._x_text_margin, self._y_text_margin),
+                )
+                self._cw._draw_grid_labels(
+                    self._draw, xys, "lat_placement", txt, self._font, **self._kwargs
+                )
+
+        # Draw cross on poles ...
+        if self._lat_max == 90.0:
+            crosslats = np.arange(
+                90.0 - self._Dlat / 2.0,
+                90.0,
+                float(self._lat_max - self._lat_min) / self._y_size,
+            )
+            cross_lines = [
+                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
+            ]
+            self._draw_minor_grid_lines(
+                cross_lines,
+                self._kwargs,
+            )
+
+        if self._lat_min == -90.0:
+            crosslats = np.arange(
+                -90.0,
+                -90.0 + self._Dlat / 2.0,
+                float(self._lat_max - self._lat_min) / self._y_size,
+            )
+            cross_lines = [
+                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
+            ]
+            self._draw_minor_grid_lines(
+                cross_lines,
+                self._kwargs,
+            )
+
+    def _draw_minor_grid_lines(
+        self,
+        minor_lines,
+        kwargs,
+    ):
+        index_arrays = self._grid_line_index_array_generator(minor_lines)
+        for index_array in index_arrays:
+            self._cw._draw_line(self._draw, index_array.flatten().tolist(), **kwargs)
+
+    def _grid_line_index_array_generator(
+        self,
+        grid_lines,
+    ):
+        for grid_line_lonlats in grid_lines:
+            index_arrays, is_reduced = _get_pixel_index(
+                grid_line_lonlats,
+                self._area_extent,
+                self._x_size,
+                self._y_size,
+                self._prj,
+                x_offset=self._x_offset,
+                y_offset=self._y_offset,
+            )
+            # Skip empty datasets
+            if not index_arrays:
+                continue
+            yield from index_arrays
+
+    def _grid_lon_label(self, lon):
+        # FIXME: Use f-strings or just pass the direction
+        if lon > 0.0:
+            txt = "%.2dE" % (lon)
+        else:
+            txt = "%.2dW" % (-lon)
+        return txt
+
+    def _grid_lat_label(self, lat):
+        if lat >= 0.0:
+            txt = "%.2dN" % (lat)
+        else:
+            txt = "%.2dS" % (-lat)
+        return txt
+
+
+def _find_line_intercepts(xys, size, margins):
+    """Find intercepts of poly-line xys with image boundaries offset by margins.
+
+    Returns an array of coordinates.
+
+    """
+    x_size, y_size = size
+
+    def is_in_box(x_y, extents):
+        x, y = x_y
+        xmin, xmax, ymin, ymax = extents
+        return xmin < x < xmax and ymin < y < ymax
+
+    def crossing(x1, x2, lim):
+        return (x1 < lim) != (x2 < lim)
+
+    # set box limits
+    xlim1 = margins[0]
+    ylim1 = margins[1]
+    xlim2 = x_size - margins[0]
+    ylim2 = y_size - margins[1]
+
+    # only consider crossing within a box a little bigger than grid boundary
+    search_box = (-10, x_size + 10, -10, y_size + 10)
+
+    # loop through line steps and detect crossings
+    intercepts = []
+    align_left = "LC"
+    align_right = "RC"
+    align_top = "CT"
+    align_bottom = "CB"
+    prev_xy = xys[0]
+    for xy in xys[1:]:
+        if not is_in_box(xy, search_box):
+            prev_xy = xy
+            continue
+        # crossing LHS
+        if crossing(prev_xy[0], xy[0], xlim1):
+            x = xlim1
+            y = xy[1]
+            intercepts.append(((x, y), align_left))
+        # crossing RHS
+        elif crossing(prev_xy[0], xy[0], xlim2):
+            x = xlim2
+            y = xy[1]
+            intercepts.append(((x, y), align_right))
+        # crossing Top
+        elif crossing(prev_xy[1], xy[1], ylim1):
+            x = xy[0]
+            y = ylim1
+            intercepts.append(((x, y), align_top))
+        # crossing Bottom
+        elif crossing(prev_xy[1], xy[1], ylim2):
+            x = xy[0]  # - txt_width/2
+            y = ylim2  # - txt_height
+            intercepts.append(((x, y), align_bottom))
+        prev_xy = xy
+
+    return intercepts
