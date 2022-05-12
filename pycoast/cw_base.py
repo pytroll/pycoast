@@ -1721,13 +1721,7 @@ class _GridDrawer:
                 90.0,
                 float(self._lat_max - self._lat_min) / self._y_size,
             )
-            cross_lines = [
-                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
-            ]
-            self._draw_minor_grid_lines(
-                cross_lines,
-                self._kwargs,
-            )
+            self._add_pole_crosslats(crosslats)
 
         if self._lat_min == -90.0:
             crosslats = np.arange(
@@ -1735,13 +1729,16 @@ class _GridDrawer:
                 -90.0 + self._Dlat / 2.0,
                 float(self._lat_max - self._lat_min) / self._y_size,
             )
-            cross_lines = [
-                [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
-            ]
-            self._draw_minor_grid_lines(
-                cross_lines,
-                self._kwargs,
-            )
+            self._add_pole_crosslats(crosslats)
+
+    def _add_pole_crosslats(self, crosslats):
+        cross_lines = [
+            [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
+        ]
+        self._draw_minor_grid_lines(
+            cross_lines,
+            self._kwargs,
+        )
 
     def _draw_minor_grid_lines(
         self,
