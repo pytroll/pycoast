@@ -89,9 +89,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_europe(self):
         from pycoast import ContourWriterPIL
 
-        euro_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_europe.png")
-        )
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe.png"))
         euro_data = np.array(euro_img)
 
         img = Image.new("RGB", (640, 480))
@@ -109,9 +107,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_europe_file(self):
         from pycoast import ContourWriterPIL
 
-        euro_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_europe.png")
-        )
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe.png"))
         euro_data = np.array(euro_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -129,9 +125,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_geos(self):
         from pycoast import ContourWriterPIL
 
-        geos_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_geos.png")
-        )
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_geos.png"))
         geos_data = np.array(geos_img)
 
         img = Image.new("RGB", (425, 425))
@@ -152,9 +146,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_grid(self):
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_europe.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe.png"))
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (640, 480))
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -164,9 +156,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
         cw.add_grid(
             img,
             area_def,
@@ -198,9 +188,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
         cw.add_grid(
             img,
             area_def,
@@ -249,9 +237,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_grid_file(self):
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_europe.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe.png"))
         grid_data = np.array(grid_img)
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
@@ -260,9 +246,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines_to_file(grid_file, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
         cw.add_grid_to_file(
             grid_file,
             area_def,
@@ -282,24 +266,18 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_dateline_cross(self):
         from pycoast import ContourWriterPIL
 
-        dl_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "dateline_cross.png")
-        )
+        dl_img = Image.open(os.path.join(os.path.dirname(__file__), "dateline_cross.png"))
         dl_data = np.array(dl_img)
 
         img = Image.new("RGB", (640, 480))
-        proj4_string = (
-            "+proj=stere +lon_0=-170.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84"
-        )
+        proj4_string = "+proj=stere +lon_0=-170.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84"
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
         cw.add_grid(
             img,
             area_def,
@@ -315,31 +293,23 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(dl_data, res), "Writing of dateline crossing data failed"
-        )
+        self.assertTrue(fft_metric(dl_data, res), "Writing of dateline crossing data failed")
 
     def test_dateline_boundary_cross(self):
         from pycoast import ContourWriterPIL
 
-        dl_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "dateline_boundary_cross.png")
-        )
+        dl_img = Image.open(os.path.join(os.path.dirname(__file__), "dateline_boundary_cross.png"))
         dl_data = np.array(dl_img)
 
         img = Image.new("RGB", (640, 480))
-        proj4_string = (
-            "+proj=stere +lon_0=140.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84"
-        )
+        proj4_string = "+proj=stere +lon_0=140.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84"
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
         cw.add_grid(
             img,
             area_def,
@@ -373,9 +343,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 10
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 10)
         cw.add_grid(
             img,
             area_def,
@@ -396,9 +364,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_add_polygon(self):
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_polygons.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_polygons.png"))
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (425, 425))
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
@@ -448,9 +414,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         }
 
         cw.add_polygon(img, area_def, polygons["REYKJAVIK_ATC"], outline="red")
-        cw.add_polygon(
-            img, area_def, polygons["ICELAND_BOX"], outline="green", fill="gray"
-        )
+        cw.add_polygon(img, area_def, polygons["ICELAND_BOX"], outline="green", fill="gray")
         cw.add_coastlines(img, area_def, resolution="l", level=4)
 
         res = np.array(img)
@@ -461,12 +425,8 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         from pycoast import ContourWriterPIL
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_points_pil.png")
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -474,9 +434,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterPIL(gshhs_root_dir)
         cw.add_coastlines(img, area_def, outline="black", resolution="l", level=4)
@@ -516,16 +474,12 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         from pycoast import ContourWriterPIL
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
 
         shape = (512, 1024)
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent)
         lonlat_coords = (13.4050, 52.5200)
         pixel_colrow = area_def.get_array_indices_from_lonlat(*lonlat_coords)
         negative_pixel_colrow = (pixel_colrow[0] - shape[1], pixel_colrow[1] - shape[0])
@@ -570,16 +524,12 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         from pycoast import ContourWriterPIL
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
 
         shape = (512, 1024)
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent)
         for pixel_colrow in (shape[::-1], (-10000, -10000)):
             img1 = Image.new("RGB", shape[::-1], (255, 255, 255))
             cw = ContourWriterPIL(gshhs_root_dir)
@@ -602,16 +552,12 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         from pycoast import ContourWriterPIL
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
 
         shape = (512, 1024)
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent)
         img1 = Image.new("RGB", shape[::-1], (255, 255, 255))
         cw = ContourWriterPIL(gshhs_root_dir)
         points_list = [((0, 0), "Berlin")]
@@ -631,9 +577,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
     def test_add_shapefile_shapes(self):
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "brazil_shapefiles.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "brazil_shapefiles.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -673,9 +617,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of Brazil shapefiles failed")
 
     def test_config_file_coasts_and_grid(self):
         from pyresample.geometry import AreaDefinition
@@ -709,9 +651,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         config_file = os.path.join(os.path.dirname(__file__), "nh_points_pil.ini")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_points_cfg_pil.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_cfg_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -719,9 +659,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
@@ -735,21 +673,15 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         from pycoast import ContourWriterPIL
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_cities_pil.png")
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
 
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterPIL(gshhs_root_dir)
         cw.add_coastlines(img, area_def, outline="black", resolution="l", level=4)
@@ -784,9 +716,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         config_file = os.path.join(os.path.dirname(__file__), "nh_cities_pil.ini")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_cities_pil.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -794,27 +724,21 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of nh cities_cfg_pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of nh cities_cfg_pil failed")
 
     def test_add_cities_from_dict_pil(self):
         from pyresample.geometry import AreaDefinition
 
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_cities_from_dict_pil.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_from_dict_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -822,9 +746,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         proj4_string = "+proj=stere +ellps=WGS84 +lat_0=51.5 +lon_0=-0.1"
         area_extent = (-2000000.0, -2000000.0, 2000000.0, 2000000.0)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         overlays = {}
         overlays["coasts"] = {"level": 4, "resolution": "l", "outline": "black"}
@@ -880,18 +802,14 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of nh_cities_from_dict_pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of nh_cities_from_dict_pil failed")
 
     def test_add_shapefiles_from_dict_pil(self):
         from pyresample.geometry import AreaDefinition
 
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "two_shapefiles_pil.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "two_shapefiles_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -905,9 +823,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         overlays["coasts"] = {"level": 4, "resolution": "l"}
         overlays["shapefiles"] = [
             {
-                "filename": os.path.join(
-                    os.path.dirname(__file__), "test_data/shapes/Metareas.shp"
-                ),
+                "filename": os.path.join(os.path.dirname(__file__), "test_data/shapes/Metareas.shp"),
                 "outline": "magenta",
                 "width": 2.5,
             },
@@ -925,9 +841,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed")
 
     def test_add_one_shapefile_from_cfg_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -936,9 +850,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         config_file = os.path.join(os.path.dirname(__file__), "nh_one_shapefile.ini")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "one_shapefile_from_cfg_pil.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "one_shapefile_from_cfg_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -952,18 +864,14 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
             cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing one shapefile from cfg pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing one shapefile from cfg pil failed")
 
     def test_add_grid_from_dict_pil(self):
         from pyresample.geometry import AreaDefinition
 
         from pycoast import ContourWriterPIL
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_from_dict_pil.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_from_dict_pil.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (800, 800))
@@ -974,9 +882,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 40
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 40)
 
         overlays = {}
         overlays["coasts"] = {"width": 3.0, "level": 4, "resolution": "l"}
@@ -1018,9 +924,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
 
         cw.add_grid(
             img,
@@ -1037,9 +941,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of western shapes pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of western shapes pil failed")
 
     def test_eastern_shapes_pil(self):
         from pycoast import ContourWriterPIL
@@ -1056,9 +958,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20)
 
         cw.add_grid(
             img,
@@ -1075,9 +975,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of eastern shapes pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of eastern shapes pil failed")
 
     def test_no_h_scratch_pil(self):
         # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
@@ -1095,9 +993,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20)
 
         cw.add_grid(
             img,
@@ -1116,9 +1012,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of no_h_scratch_pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of no_h_scratch_pil failed")
 
     def test_no_v_scratch_pil(self):
         # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
@@ -1136,9 +1030,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw = ContourWriterPIL(gshhs_root_dir)
 
         cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20)
 
         cw.add_grid(
             img,
@@ -1157,9 +1049,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of no_v_scratch_pil failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of no_v_scratch_pil failed")
 
 
 class ContourWriterTestPILAGG(_ContourWriterTestBase):
@@ -1168,9 +1058,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
     def test_europe_agg(self):
         from pycoast import ContourWriterAGG
 
-        euro_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_europe_agg.png")
-        )
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_agg.png"))
         euro_data = np.array(euro_img)
 
         img = Image.new("RGB", (640, 480))
@@ -1179,21 +1067,15 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, area_def, resolution="l", level=4)
-        cw.add_rivers(
-            img, area_def, level=5, outline="blue", width=0.5, outline_opacity=127
-        )
+        cw.add_rivers(img, area_def, level=5, outline="blue", width=0.5, outline_opacity=127)
         cw.add_borders(img, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(euro_data, res), "Writing of contours failed for AGG"
-        )
+        self.assertTrue(fft_metric(euro_data, res), "Writing of contours failed for AGG")
 
     def test_europe_agg_file(self):
         from pycoast import ContourWriterAGG
 
-        euro_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_europe_agg.png")
-        )
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_agg.png"))
         euro_data = np.array(euro_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -1201,25 +1083,17 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines_to_file(test_file, area_def, resolution="l", level=4)
-        cw.add_rivers_to_file(
-            test_file, area_def, level=5, outline="blue", width=0.5, outline_opacity=127
-        )
-        cw.add_borders_to_file(
-            test_file, area_def, outline=(255, 0, 0), width=3, outline_opacity=32
-        )
+        cw.add_rivers_to_file(test_file, area_def, level=5, outline="blue", width=0.5, outline_opacity=127)
+        cw.add_borders_to_file(test_file, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
 
         img = Image.open(test_file)
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(euro_data, res), "Writing of contours failed for AGG"
-        )
+        self.assertTrue(fft_metric(euro_data, res), "Writing of contours failed for AGG")
 
     def test_geos_agg(self):
         from pycoast import ContourWriterAGG
 
-        geos_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_geos_agg.png")
-        )
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_geos_agg.png"))
         geos_data = np.array(geos_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1234,16 +1108,12 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, (proj4_string, area_extent), resolution="l", width=0.5)
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(geos_data, res), "Writing of geos contours failed for AGG"
-        )
+        self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours failed for AGG")
 
     def test_grid_agg(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_europe_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (640, 480))
@@ -1277,9 +1147,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_europe_agg_txt.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe_agg_txt.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (640, 480))
@@ -1317,9 +1185,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
 
-        geos_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_geos_agg.png")
-        )
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_geos_agg.png"))
         geos_data = np.array(geos_img)
         img = Image.new("RGB", (425, 425))
         proj4_string = "+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0"
@@ -1349,9 +1215,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
     def test_grid_agg_file(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_europe_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe_agg.png"))
         grid_data = np.array(grid_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -1384,9 +1248,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_nh_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_nh_agg.png"))
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (425, 425))
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
@@ -1424,9 +1286,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
     def test_add_polygon_agg(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_polygons_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_polygons_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1495,22 +1355,16 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_points_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, area_def, outline="black", resolution="l", level=4)
@@ -1540,9 +1394,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "brazil_shapefiles_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "brazil_shapefiles_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1583,9 +1435,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of Brazil shapefiles failed")
 
     #    @unittest.skip("All kwargs are not supported, so can't create equal results")
     def test_config_file_coasts_and_grid(self):
@@ -1593,12 +1443,8 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        overlay_config = os.path.join(
-            os.path.dirname(__file__), "coasts_and_grid_agg.ini"
-        )
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_nh_cfg_agg.png")
-        )
+        overlay_config = os.path.join(os.path.dirname(__file__), "coasts_and_grid_agg.ini")
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_nh_cfg_agg.png"))
         grid_data = np.array(grid_img)
         proj_dict = {
             "proj": "laea",
@@ -1625,9 +1471,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         config_file = os.path.join(os.path.dirname(__file__), "nh_points_agg.ini")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_points_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1635,9 +1479,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
@@ -1670,22 +1512,16 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        font_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"
-        )
+        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_cities_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, area_def, outline="black", resolution="l", level=4)
@@ -1720,9 +1556,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         config_file = os.path.join(os.path.dirname(__file__), "nh_cities_agg.ini")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_cities_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1730,27 +1564,21 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of nh cities_cfg_agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of nh cities_cfg_agg failed")
 
     def test_add_cities_from_dict_agg(self):
         from pyresample.geometry import AreaDefinition
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "nh_cities_from_dict_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_from_dict_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1758,9 +1586,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         proj4_string = "+proj=stere +ellps=WGS84 +lat_0=51.5 +lon_0=-0.1"
         area_extent = (-2000000.0, -2000000.0, 2000000.0, 2000000.0)
 
-        area_def = AreaDefinition(
-            "nh", "nh", "nh", proj4_string, 1024, 1024, area_extent
-        )
+        area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
 
         overlays = {}
         overlays["coasts"] = {"level": 4, "resolution": "l", "outline": "black"}
@@ -1825,18 +1651,14 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of nh_cities_from_dict_agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of nh_cities_from_dict_agg failed")
 
     def test_add_shapefiles_from_dict_agg(self):
         from pyresample.geometry import AreaDefinition
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "two_shapefiles_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "two_shapefiles_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1850,9 +1672,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         overlays["coasts"] = {"level": 4, "resolution": "l"}
         overlays["shapefiles"] = [
             {
-                "filename": os.path.join(
-                    os.path.dirname(__file__), "test_data/shapes/Metareas.shp"
-                ),
+                "filename": os.path.join(os.path.dirname(__file__), "test_data/shapes/Metareas.shp"),
                 "outline": "magenta",
                 "width": 2.5,
             },
@@ -1870,9 +1690,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing two shapefiles from dict agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing two shapefiles from dict agg failed")
 
     def test_add_one_shapefile_from_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1881,9 +1699,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         config_file = os.path.join(os.path.dirname(__file__), "nh_one_shapefile.ini")
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "one_shapefile_from_cfg_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "one_shapefile_from_cfg_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1896,9 +1712,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing one shapefile from cfg agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing one shapefile from cfg agg failed")
 
     def test_add_grid_from_dict_agg(self):
         import aggdraw
@@ -1906,9 +1720,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "grid_from_dict_agg.png")
-        )
+        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_from_dict_agg.png"))
 
         grid_data = np.array(grid_img)
 
@@ -1993,9 +1805,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of western shapes agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of western shapes agg failed")
 
     def test_eastern_shapes_agg(self):
         import aggdraw
@@ -2038,9 +1848,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of eastern shapes agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of eastern shapes agg failed")
 
     def test_no_h_scratch_agg(self):
         # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
@@ -2087,9 +1895,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of no_h_scratch_agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of no_h_scratch_agg failed")
 
     def test_no_v_scratch_agg(self):
         # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
@@ -2136,9 +1942,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res), "Writing of no_v_scratch_agg failed"
-        )
+        self.assertTrue(fft_metric(grid_data, res), "Writing of no_v_scratch_agg failed")
 
 
 class FakeAreaDef:
@@ -2159,9 +1963,7 @@ class TestFromConfig:
         """Test generating a transparent foreground."""
         from pycoast import ContourWriterPIL
 
-        euro_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_europe_alpha.png")
-        )
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_alpha.png"))
         euro_data = np.array(euro_img)
 
         # img = Image.new('RGB', (640, 480))
@@ -2169,9 +1971,7 @@ class TestFromConfig:
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
         cw = ContourWriterPIL(gshhs_root_dir)
-        config_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "test_config.ini"
-        )
+        config_file = os.path.join(os.path.dirname(__file__), "test_data", "test_config.ini")
         img = cw.add_overlay_from_config(config_file, area_def)
 
         res = np.array(img)
@@ -2191,9 +1991,7 @@ class TestFromConfig:
         """Test generating a transparent foreground and cache it."""
         from pycoast import ContourWriterPIL
 
-        euro_img = Image.open(
-            os.path.join(os.path.dirname(__file__), "contours_europe_alpha.png")
-        )
+        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_alpha.png"))
         euro_data = np.array(euro_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -2267,9 +2065,7 @@ class TestFromConfig:
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        font = ImageFont.truetype(
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
-        )
+        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"))
         overlays = {
             "cache": {"file": os.path.join(tmpdir, "pycoast_cache")},
             "grid": {"font": font},
@@ -2308,9 +2104,7 @@ class TestFromConfig:
         cache_glob = glob(os.path.join(tmpdir, "pycoast_cache_*.png"))
         assert len(cache_glob) == 2
         assert os.path.isfile(cache_filename)
-        new_cache_filename = (
-            cache_glob[0] if cache_glob[0] != cache_filename else cache_glob[1]
-        )
+        new_cache_filename = cache_glob[0] if cache_glob[0] != cache_filename else cache_glob[1]
         # original cache file should be unchanged
         assert os.path.getmtime(cache_filename) == mtime
         # new cache file should be...new

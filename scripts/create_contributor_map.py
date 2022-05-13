@@ -99,9 +99,7 @@ def main():
     """Run contributor map plotting."""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Create a world map image of PyTroll contributor locations"
-    )
+    parser = argparse.ArgumentParser(description="Create a world map image of PyTroll contributor locations")
     parser.add_argument(
         "--map-proj",
         default="+proj=moll",
@@ -150,9 +148,7 @@ def main():
         )
         zip_fn = "ne_110m_admin_0_countries.zip"
         LOG.info("Downloading NaturalEarth Shapefile")
-        with urllib.request.urlopen(url) as response, open(  # nosec: B310
-            zip_fn, "wb"
-        ) as out_file:
+        with urllib.request.urlopen(url) as response, open(zip_fn, "wb") as out_file:  # nosec: B310
             shutil.copyfileobj(response, out_file)
         zip_ref = zipfile.ZipFile(zip_fn, "r")
         zip_ref.extractall(".")
@@ -180,9 +176,7 @@ def main():
     for user in contributors.values():
         if user.location is None or user.location == "":
             LOG.info(
-                "User location not specified:  ID: '{}';\tName: '{}';\tURL: '{}'".format(
-                    user.id, user.name, user.url
-                )
+                "User location not specified:  ID: '{}';\tName: '{}';\tURL: '{}'".format(user.id, user.name, user.url)
             )
             continue
         all_user_locations.append(user.location)
@@ -219,9 +213,7 @@ def main():
                 }
                 yield sr.shape, kwargs
             else:
-                LOG.debug(
-                    "No contributor's from Country: %s, Code: %s", name, shape_country
-                )
+                LOG.debug("No contributor's from Country: %s, Code: %s", name, shape_country)
                 yield sr.shape, None
 
     LOG.info("Applying contributor locations to map image...")

@@ -87,9 +87,7 @@ class _CoordConverter:
             "image": self._image_to_pixels,
         }
         if coord_ref not in convert_methods:
-            pretty_coord_refs = [
-                f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())
-            ]
+            pretty_coord_refs = [f"'{cr_name}'" for cr_name in sorted(convert_methods.keys())]
             raise ValueError(f"'coord_ref' must be one of {pretty_coord_refs}.")
         self._convert_method = convert_methods[coord_ref]
 
@@ -119,8 +117,7 @@ class _CoordConverter:
             y += area_def.height
         if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
             raise ValueError(
-                "Image pixel coords out of image bounds "
-                f"(width={area_def.width}, height={area_def.height})."
+                "Image pixel coords out of image bounds " f"(width={area_def.width}, height={area_def.height})."
             )
         return x, y
 
@@ -202,9 +199,7 @@ class ContourWriterBase(object):
     ):
         """Add a lat lon grid to image."""
         draw = self._get_canvas(image)
-        grid_drawer = _GridDrawer(
-            self, draw, area_def, Dlon, Dlat, dlon, dlat, font, write_text, kwargs
-        )
+        grid_drawer = _GridDrawer(self, draw, area_def, Dlon, Dlat, dlon, dlat, font, write_text, kwargs)
         grid_drawer.draw_grid()
         self._finalize(draw)
 
@@ -213,18 +208,12 @@ class ContourWriterBase(object):
         lats = [y for (x, y) in xys]
         return [min(lons), min(lats), max(lons), max(lats)]
 
-    def _add_shapefile_shapes(
-        self, image, area_def, filename, feature_type=None, **kwargs
-    ):
+    def _add_shapefile_shapes(self, image, area_def, filename, feature_type=None, **kwargs):
         """Draw all shapes (polygon/poly-lines) from a shape file onto a PIL Image."""
         sf = shapefile.Reader(filename)
-        return self.add_shapes(
-            image, area_def, sf.shapes(), feature_type=feature_type, **kwargs
-        )
+        return self.add_shapes(image, area_def, sf.shapes(), feature_type=feature_type, **kwargs)
 
-    def _add_shapefile_shape(
-        self, image, area_def, filename, shape_id, feature_type=None, **kwargs
-    ):
+    def _add_shapefile_shape(self, image, area_def, filename, shape_id, feature_type=None, **kwargs):
         """Draw a single shape (polygon/poly-line) definition.
 
         Accesses single shape using shape_id from a custom shape file.
@@ -232,9 +221,7 @@ class ContourWriterBase(object):
         """
         sf = shapefile.Reader(filename)
         shape = sf.shape(shape_id)
-        return self.add_shapes(
-            image, area_def, [shape], feature_type=feature_type, **kwargs
-        )
+        return self.add_shapes(image, area_def, [shape], feature_type=feature_type, **kwargs)
 
     def _add_line(self, image, area_def, lonlats, **kwargs):
         """Draw a custom polyline.
@@ -310,9 +297,7 @@ class ContourWriterBase(object):
         prj = Proj(proj_def)
 
         # Calculate min and max lons and lats of interest
-        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(
-            area_extent, x_size, y_size, prj
-        )
+        lon_min, lon_max, lat_min, lat_max = _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj)
 
         # Iterate through shapes
         for shape in shapes:
@@ -393,9 +378,7 @@ class ContourWriterBase(object):
             for index_array in index_arrays:
                 if ftype == "polygon" and not is_reduced:
                     # Draw polygon if dataset has not been reduced
-                    self._draw_polygon(
-                        draw, index_array.flatten().tolist(), **new_kwargs
-                    )
+                    self._draw_polygon(draw, index_array.flatten().tolist(), **new_kwargs)
                 elif ftype == "line" or is_reduced:
                     # Draw line
                     self._draw_line(draw, index_array.flatten().tolist(), **new_kwargs)
@@ -430,9 +413,7 @@ class ContourWriterBase(object):
         **kwargs,
     ):
         """Add a contour feature to image."""
-        shape_generator = self._iterate_db(
-            db_name, tag, resolution, level, zero_pad, db_root_path=db_root_path
-        )
+        shape_generator = self._iterate_db(db_name, tag, resolution, level, zero_pad, db_root_path=db_root_path)
 
         return self.add_shapes(
             image,
@@ -451,15 +432,11 @@ class ContourWriterBase(object):
         if db_root_path is None:
             raise ValueError("'db_root_path' must be specified to use this method")
         levels = range(1, level + 1) if not isinstance(level, list) else level
-        format_string, format_params = self._get_db_shapefile_format_and_params(
-            db_name, resolution, tag, zero_pad
-        )
+        format_string, format_params = self._get_db_shapefile_format_and_params(db_name, resolution, tag, zero_pad)
         shapefile_root_dir = os.path.join(db_root_path, f"{db_name}_shp", resolution)
         for i in levels:
             level_format_params = format_params + (i,)
-            shapefilename = os.path.join(
-                shapefile_root_dir, format_string % level_format_params
-            )
+            shapefilename = os.path.join(shapefile_root_dir, format_string % level_format_params)
             try:
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
@@ -522,9 +499,7 @@ class ContourWriterBase(object):
                         overlays[section][option] = val
         return overlays
 
-    def add_overlay_from_dict(
-        self, overlays, area_def, cache_epoch=None, background=None
-    ):
+    def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
         """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
 
         Optionally caches overlay results for faster rendering of images with
@@ -569,9 +544,7 @@ class ContourWriterBase(object):
                   of an already cached file.
 
         """
-        overlay_helper = _OverlaysFromDict(
-            self, overlays, area_def, cache_epoch, background
-        )
+        overlay_helper = _OverlaysFromDict(self, overlays, area_def, cache_epoch, background)
         return overlay_helper.apply_overlays()
 
     def add_overlay_from_config(self, config_file, area_def, background=None):
@@ -585,9 +558,7 @@ class ContourWriterBase(object):
 
         """
         overlays = self._config_to_dict(config_file)
-        return self.add_overlay_from_dict(
-            overlays, area_def, os.path.getmtime(config_file), background
-        )
+        return self.add_overlay_from_dict(overlays, area_def, os.path.getmtime(config_file), background)
 
     def draw_star(self, draw, symbol, x, y, ptsize, **kwargs):
         # 5 <= n <= 8, symbol = string in ['star8', 'star7', 'star6', 'star5']
@@ -718,22 +689,16 @@ class ContourWriterBase(object):
         try:
             from pyresample.geometry import AreaDefinition
         except ImportError:
-            raise ImportError(
-                "Missing required 'pyresample' module, please install it."
-            )
+            raise ImportError("Missing required 'pyresample' module, please install it.")
 
         if not isinstance(area_def, AreaDefinition):
-            raise ValueError(
-                "Expected 'area_def' is an instance of AreaDefinition object"
-            )
+            raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
 
         draw = self._get_canvas(image)
 
         # cities.red is a reduced version of the files avalable at http://download.geonames.org
         # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
-        cities_filename = os.path.join(
-            db_root_path, os.path.join("CITIES", "cities.txt")
-        )
+        cities_filename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
         cities_parser = GeoNamesCitiesParser(cities_filename)
         for city_name, lon, lat in cities_parser.iter_cities_names_lon_lat(cities_list):
             try:
@@ -871,9 +836,7 @@ class ContourWriterBase(object):
             try:
                 x, y = coord_converter(x, y)
             except ValueError:
-                logger.info(
-                    f"Point ({x}, {y}) is out of the image area, it will not be added to the image."
-                )
+                logger.info(f"Point ({x}, {y}) is out of the image area, it will not be added to the image.")
                 continue
             if ptsize != 0:
                 half_ptsize = int(round(ptsize / 2.0))
@@ -901,9 +864,7 @@ class ContourWriterBase(object):
                     fill_opacity,
                 )
             elif desc is None:
-                logger.error(
-                    "'ptsize' is 0 and 'desc' is None, nothing will be added to the image."
-                )
+                logger.error("'ptsize' is 0 and 'desc' is None, nothing will be added to the image.")
 
             if desc is not None:
                 text_position = [
@@ -1034,9 +995,7 @@ class ContourWriterBase(object):
 
 def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
     """Get extreme lon and lat values."""
-    bbox_lons, bbox_lats = _get_bounding_box_lonlat_sides(
-        area_extent, x_size, y_size, prj
-    )
+    bbox_lons, bbox_lats = _get_bounding_box_lonlat_sides(area_extent, x_size, y_size, prj)
     lons_s1, lons_s2, lons_s3, lons_s4 = bbox_lons
     lats_s1, lats_s2, lats_s3, lats_s4 = bbox_lats
     angle_sum = _get_angle_sum(lons_s1, lons_s2, lons_s3, lons_s4)
@@ -1055,19 +1014,13 @@ def _get_lon_lat_bounding_box(area_extent, x_size, y_size, prj):
         lon_max = 180
     elif round(angle_sum) == 0:
         # Covers no poles
-        if (
-            np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1
-            and lons_s1.min() * lons_s1.max() < -25000
-        ):
+        if np.sign(lons_s1[0]) * np.sign(lons_s1[-1]) == -1 and lons_s1.min() * lons_s1.max() < -25000:
             # End points of left side on different side of dateline
             lon_min = lons_s1[lons_s1 > 0].min()
         else:
             lon_min = lons_s1.min()
 
-        if (
-            np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1
-            and lons_s3.min() * lons_s3.max() < -25000
-        ):
+        if np.sign(lons_s3[0]) * np.sign(lons_s3[-1]) == -1 and lons_s3.min() * lons_s3.max() < -25000:
             # End points of right side on different side of dateline
             lon_max = lons_s3[lons_s3 < 0].max()
         else:
@@ -1190,14 +1143,10 @@ class GeoNamesCitiesParser:
     def __init__(self, cities_filename: str):
         self._cities_file = open(cities_filename, mode="r", encoding="utf-8")
 
-    def iter_cities_names_lon_lat(
-        self, cities_list: list[str]
-    ) -> Generator[tuple[str, float, float], None, None]:
+    def iter_cities_names_lon_lat(self, cities_list: list[str]) -> Generator[tuple[str, float, float], None, None]:
         for city_row in self._cities_file:
             city_info = city_row.split("\t")
-            if not city_info or not (
-                city_info[1] in cities_list or city_info[2] in cities_list
-            ):
+            if not city_info or not (city_info[1] in cities_list or city_info[2] in cities_list):
                 continue
             city_name, lon, lat = city_info[1], float(city_info[5]), float(city_info[4])
             yield city_name, lon, lat
@@ -1216,9 +1165,7 @@ class _OverlaysFromDict:
 
         foreground = None
         if "cache" in overlays:
-            cache_filename, foreground = self._get_cached_filename_and_foreground(
-                cache_epoch
-            )
+            cache_filename, foreground = self._get_cached_filename_and_foreground(cache_epoch)
             self._cache_filename = cache_filename
             self._is_cached = foreground is not None
 
@@ -1239,9 +1186,7 @@ class _OverlaysFromDict:
             self._overlays,
         )
         regenerate = self._overlays["cache"].get("regenerate", False)
-        foreground = self._apply_cached_image(
-            cache_file, cache_epoch, self._background, regenerate=regenerate
-        )
+        foreground = self._apply_cached_image(cache_file, cache_epoch, self._background, regenerate=regenerate)
         return cache_file, foreground
 
     @staticmethod
@@ -1258,9 +1203,7 @@ class _OverlaysFromDict:
                 return foreground
             logger.info("Regenerating cache file.")
         except OSError:
-            logger.info(
-                "No overlay image found, new overlay image will be saved in cache."
-            )
+            logger.info("No overlay image found, new overlay image will be saved in cache.")
         return None
 
     def _write_and_apply_new_cached_image(self):
@@ -1589,17 +1532,13 @@ class _GridDrawer:
         maj_lats = np.arange(round_lat_min + increase_min_lat, lat_max, Dlat)
 
         # minor lon lines (ticks)
-        min_lats = np.arange(
-            round_lat_min + increase_min_lat, lat_max - shorten_max_lat, dlat
-        )
+        min_lats = np.arange(round_lat_min + increase_min_lat, lat_max - shorten_max_lat, dlat)
 
         # Get min_lats not in maj_lats
         min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
 
         # lons along major lat lines (extended slightly to avoid missing the end)
-        lin_lons = np.linspace(
-            lon_min, lon_max + Dlon / 5.0, max(self._x_size, self._y_size) // 5
-        )
+        lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(self._x_size, self._y_size) // 5)
 
         self._min_lons = min_lons
         self._min_lats = min_lats
@@ -1706,17 +1645,13 @@ class _GridDrawer:
             label_placement,
         )
 
-    def _draw_major_lines(
-        self, major_lines_lonlats, label_gen_func, label_placement_definition
-    ):
+    def _draw_major_lines(self, major_lines_lonlats, label_gen_func, label_placement_definition):
         for lonlats in major_lines_lonlats:
             index_arrays = self._grid_line_index_array_generator(
                 [lonlats],
             )
             for index_array in index_arrays:
-                self._cw._draw_line(
-                    self._draw, index_array.flatten().tolist(), **self._kwargs
-                )
+                self._cw._draw_line(self._draw, index_array.flatten().tolist(), **self._kwargs)
 
             # add lon text markings at each end of longitude line
             if self._write_text:
@@ -1797,9 +1732,7 @@ class _GridDrawer:
             self._add_pole_crosslats(crosslats)
 
     def _add_pole_crosslats(self, crosslats):
-        cross_lines = [
-            [(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)
-        ]
+        cross_lines = [[(lon, x) for x in crosslats] for lon in (0.0, 90.0, 180.0, -90.0)]
         self._draw_minor_grid_lines(
             cross_lines,
             self._kwargs,

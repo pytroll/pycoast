@@ -73,9 +73,7 @@ class ContourWriterPIL(ContourWriterBase):
     ):
         """Add text box in xy."""
         if box_outline is not None:
-            logger.warning(
-                "Box background will not be added; please use ContourWriterAGG module"
-            )
+            logger.warning("Box background will not be added; please use ContourWriterAGG module")
 
         self._draw_text(draw, text_position, text, font, align="no", fill=outline)
 
