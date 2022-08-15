@@ -9,75 +9,51 @@ that this script be run from the directory it is stored in. Example:
 
 """
 import getpass
+import json
 import logging
 import os
 import sys
+from collections import Counter
+from time import sleep
 
-import json
 import geocoder
-import numpy as np
+import pycountry
 from github import Github
 from PIL import Image
 from pyproj import Proj
-from time import sleep
-import pycountry
-from collections import Counter
 
-from pycoast import ContourWriter, ContourWriterAGG
+from pycoast import ContourWriterAGG
 
 LOG = logging.getLogger(__name__)
 geocoders = [geocoder.google, geocoder.arcgis_reverse.ArcgisReverse]
-MAX_CONTRIBUTORS = 10.
+MAX_CONTRIBUTORS = 10.0
 
 
-def get_all_pytroll_contributors(user):
-    g = Github(user, getpass.getpass('GitHub Password: '))
-    pytroll_org = g.get_organization('pytroll')
+def _get_all_pytroll_contributors(user):
+    g = Github(user, getpass.getpass("GitHub Password: "))
+    pytroll_org = g.get_organization("pytroll")
     LOG.info("Getting all PyTroll repositories...")
-    pytroll_repos = [x for x in pytroll_org.get_repos() if x.name != u'aggdraw']
+    pytroll_repos = [x for x in pytroll_org.get_repos() if x.name != "aggdraw"]
     LOG.info("Getting all PyTroll contributors...")
-    all_pytroll_contributors = [
-        u for r in pytroll_repos for u in r.get_contributors()]
+    all_pytroll_contributors = [u for r in pytroll_repos for u in r.get_contributors()]
     set_pytroll_contributors = {u.login: u for u in all_pytroll_contributors}
     return set_pytroll_contributors
 
 
-def get_country(locations, cache_file='countries.json'):
-    """Return 3-digit country code for each location provided.
-    """
+def _get_country(locations, cache_file="countries.json"):
+    """Return 3-digit country code for each location provided."""
     # cache country results because most APIs have query limits
     if os.path.isfile(cache_file):
-        json_cache = json.load(open(cache_file, 'r'))
+        json_cache = json.load(open(cache_file, "r"))
     else:
         json_cache = {}
 
     need_sleep = False
     for loc in locations:
         for gcoder in geocoders:
-            if loc in json_cache:
-                yield json_cache[loc]
-                need_sleep = False
-                break
-            else:
-                need_sleep = True
-                LOG.debug("Finding: %s", loc)
-                result = gcoder(loc)
-                if not result.ok or result.country is None:
-                    LOG.debug("Bad result using %r, country %r", gcoder, result.country)
-                    continue
-                country = result.country
-                if len(country) == 2:
-                    country = pycountry.countries.get(alpha_2=country).alpha_3
-                else:
-                    try:
-                        country = pycountry.countries.get(alpha_3=country).alpha_3
-                    except KeyError:
-                        LOG.error("Invalid country code: %s", country)
-                        continue
-                if country is not None:
-                    json_cache[loc] = country
-                yield country
-                break
+            country, need_sleep = _get_gcoder_country(loc, gcoder, json_cache)
+            if country is None:
+                continue
         else:
             try:
                 # last resort
@@ -92,45 +68,97 @@ def get_country(locations, cache_file='countries.json'):
         if need_sleep:
             sleep(1.0)
 
-    json.dump(json_cache, open(cache_file, 'w'), indent=4, sort_keys=True)
+    json.dump(json_cache, open(cache_file, "w"), indent=4, sort_keys=True)
+
+
+def _get_gcoder_country(loc, gcoder, json_cache):
+    need_sleep = False
+    if loc in json_cache:
+        return json_cache[loc], need_sleep
+    need_sleep = True
+    LOG.debug("Finding: %s", loc)
+    result = gcoder(loc)
+    if not result.ok or result.country is None:
+        LOG.debug("Bad result using %r, country %r", gcoder, result.country)
+        return None, need_sleep
+    country = result.country
+    if len(country) == 2:
+        country = pycountry.countries.get(alpha_2=country).alpha_3
+    else:
+        try:
+            country = pycountry.countries.get(alpha_3=country).alpha_3
+        except KeyError:
+            LOG.error("Invalid country code: %s", country)
+            return None, need_sleep
+    if country is not None:
+        json_cache[loc] = country
+    return country, need_sleep
 
 
 def main():
+    """Run contributor map plotting."""
     import argparse
-    parser = argparse.ArgumentParser(
-        description="Create a world map image of PyTroll contributor locations")
-    parser.add_argument('--map-proj', default="+proj=moll",
-                        help='PROJ.4 map projection string to use for the output image')
-    parser.add_argument('--output-size', default=(1200, 600), nargs=2, type=int,
-                        help='\'width height\' of output image')
-    parser.add_argument('--contributor-color', default=(255, 127, 127),
-                        help='Color of dots for each contributor')
-    parser.add_argument('--bg-color', default=None, nargs=3, type=int,
-                        help='Background color of image \'R G B\' 0-255 (default: transparent)')
-    parser.add_argument('-o', '--output', default='contributors_map.png',
-                        help='Output filename to save the image to')
-    parser.add_argument('-u', '--github-user', required=True,
-                        help='github username')
+
+    parser = argparse.ArgumentParser(description="Create a world map image of PyTroll contributor locations")
+    parser.add_argument(
+        "--map-proj",
+        default="+proj=moll",
+        help="PROJ.4 map projection string to use for the output image",
+    )
+    parser.add_argument(
+        "--output-size",
+        default=(1200, 600),
+        nargs=2,
+        type=int,
+        help="'width height' of output image",
+    )
+    parser.add_argument(
+        "--contributor-color",
+        default=(255, 127, 127),
+        help="Color of dots for each contributor",
+    )
+    parser.add_argument(
+        "--bg-color",
+        default=None,
+        nargs=3,
+        type=int,
+        help="Background color of image 'R G B' 0-255 (default: transparent)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="contributors_map.png",
+        help="Output filename to save the image to",
+    )
+    parser.add_argument("-u", "--github-user", required=True, help="github username")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
 
     # Check if we have the shapefile we want
-    if not os.path.isfile('ne_110m_admin_0_countries.shp'):
+    if not os.path.isfile("ne_110m_admin_0_countries.shp"):
         # Download the NaturalEarth shapefile we are going to use
-        import urllib.request
         import shutil
+        import urllib.request
         import zipfile
-        url = "http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
-        zip_fn = 'ne_110m_admin_0_countries.zip'
+
+        url = (
+            "http://www.naturalearthdata.com/"
+            "http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+        )
+        zip_fn = "ne_110m_admin_0_countries.zip"
         LOG.info("Downloading NaturalEarth Shapefile")
-        with urllib.request.urlopen(url) as response, open(zip_fn, 'wb') as out_file:
+        with urllib.request.urlopen(url) as response, open(zip_fn, "wb") as out_file:  # nosec: B310
             shutil.copyfileobj(response, out_file)
-        zip_ref = zipfile.ZipFile(zip_fn, 'r')
-        zip_ref.extractall('.')
+        zip_ref = zipfile.ZipFile(zip_fn, "r")
+        zip_ref.extractall(".")
         zip_ref.close()
 
-    im = Image.new('RGBA', args.output_size, color=tuple(args.bg_color) if args.bg_color is not None else None)
+    im = Image.new(
+        "RGBA",
+        args.output_size,
+        color=tuple(args.bg_color) if args.bg_color is not None else None,
+    )
     cw = ContourWriterAGG()
     p = Proj(args.map_proj)
     a, _ = p(-180, 0)
@@ -142,38 +170,46 @@ def main():
     area_def = (args.map_proj, extents)
 
     LOG.info("Getting PyTroll contributors...")
-    contributors = get_all_pytroll_contributors(args.github_user)
+    contributors = _get_all_pytroll_contributors(args.github_user)
     LOG.info("Getting all PyTroll contributor locations...")
     all_user_locations = []
     for user in contributors.values():
-        if user.location is None or user.location == '':
-            LOG.info("User location not specified:  ID: '{}';\tName: '{}';\tURL: '{}'".format(user.id, user.name, user.url))
+        if user.location is None or user.location == "":
+            LOG.info(
+                "User location not specified:  ID: '{}';\tName: '{}';\tURL: '{}'".format(user.id, user.name, user.url)
+            )
             continue
         all_user_locations.append(user.location)
-    all_countries = list(get_country(all_user_locations))
+    all_countries = list(_get_country(all_user_locations))
     number_contributors = Counter(all_countries)
     del number_contributors[None]
     all_countries = list(number_contributors.keys())
 
     def shape_generator():
         import shapefile
+
         reader = shapefile.Reader("ne_110m_admin_0_countries.shp")
-        name_idx = [idx for idx, f in enumerate(reader.fields) if f[0] == 'name'][0]
+        name_idx = [idx for idx, f in enumerate(reader.fields) if f[0] == "name"][0]
         for sr in reader.shapeRecords():
             name = sr.record[name_idx]
             if not isinstance(name, str):
                 try:
                     name = name.decode()
                 except UnicodeDecodeError:
-                    name = name.decode('latin-1')
-            shape_country = list(get_country([name]))[0]
+                    name = name.decode("latin-1")
+            shape_country = list(_get_country([name]))[0]
 
             if shape_country is not None and shape_country in all_countries:
-                LOG.info("Contributor country: %s, Code: %s, Number of Contributors: %d", name, shape_country, number_contributors[shape_country])
+                LOG.info(
+                    "Contributor country: %s, Code: %s, Number of Contributors: %d",
+                    name,
+                    shape_country,
+                    number_contributors[shape_country],
+                )
                 num_cont = min(number_contributors[shape_country], MAX_CONTRIBUTORS)
                 kwargs = {
-                    'fill': args.contributor_color,
-                    'fill_opacity': int((num_cont / 10.) * 55 + 200)
+                    "fill": args.contributor_color,
+                    "fill_opacity": int((num_cont / 10.0) * 55 + 200),
                 }
                 yield sr.shape, kwargs
             else:
@@ -181,9 +217,17 @@ def main():
                 yield sr.shape, None
 
     LOG.info("Applying contributor locations to map image...")
-    cw.add_shapes(im, area_def, shape_generator(), feature_type='polygon',
-                  outline=(0, 0, 0), outline_opacity=255, width=1,
-                  fill=(127, 127, 127), fill_opacity=127)
+    cw.add_shapes(
+        im,
+        area_def,
+        shape_generator(),
+        feature_type="polygon",
+        outline=(0, 0, 0),
+        outline_opacity=255,
+        width=1,
+        fill=(127, 127, 127),
+        fill_opacity=127,
+    )
     im.save(args.output, dpi=(300, 300))
 
 

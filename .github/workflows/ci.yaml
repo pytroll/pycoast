@@ -50,7 +50,7 @@ jobs:
       - name: Install Pycoast
         shell: bash -l {0}
         run: |
-          python -m pip install --no-deps -e .
+          python -m pip install -e .[docs]
 
       - name: Run Sphinx Build
         shell: bash -l {0}
@@ -132,4 +132,3 @@ jobs:
         uses: AndreMiras/coveralls-python-action@develop
         with:
           parallel-finished: true
-

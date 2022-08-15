@@ -19,7 +19,7 @@ area and an additional filled box around Iceland.
     >>> cw.add_polygon(img, area_def, REYKJAVIK_ATC, outline='red',width=2)
     >>> cw.add_polygon(img, area_def, ICELAND_BOX, outline='green', fill='gray', width=2)
     >>> cw.add_coastlines(img, area_def, resolution='l', level=4)
-    >>> img.show()  
+    >>> img.show()
 
 .. image:: images/nh_polygons_agg.png
 
@@ -39,4 +39,3 @@ Now we can plot some air traffic routes from Keflavik to Seattle, Moscow and Bei
 .. image:: images/nh_polygons_lines_agg.png
 
 .. _PIL: http://www.pythonware.com/products/pil/
-

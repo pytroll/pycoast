@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools >= 40.9.0", "wheel", "oldest-supported-numpy", "versioneer-518"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 120
+exclude = '''
+(
+  \.git
+  | build
+  | dist
+  | versioneer\.py
+  | pycoast/version\.py
+)
+
+'''

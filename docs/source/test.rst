@@ -1,10 +1,8 @@
 Testing
 -------
 
-The tests can be run using nosetest:
+The tests can be run using pytest:
 
 .. code-block:: bash
 
-    $ cd <pycoast_dir>
-    $ nosetests tests/  
-
+    $ pytest pycoast/tests/
