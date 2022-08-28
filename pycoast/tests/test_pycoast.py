@@ -61,10 +61,19 @@ def fft_proj_rms(a1, a2):
     return rms
 
 
-def fft_metric(data1, data2, max_value=0.1):
+def fft_metric(data1, data2, max_value=0.1, plot_failure=False):
     """Execute FFT metric."""
     rms = fft_proj_rms(data1, data2)
-    return rms <= max_value
+    within_threshold = rms <= max_value
+    if not within_threshold and plot_failure:
+        import matplotlib.pyplot as plt
+
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+        ax1.imshow(data1)
+        ax2.imshow(data2)
+        ax3.imshow(np.abs(data1.astype(np.float64) - data2.astype(np.float64)).astype(np.uint8))
+        plt.show()
+    return within_threshold
 
 
 class _ContourWriterTestBase(unittest.TestCase):
@@ -841,7 +850,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed")
+        self.assertTrue(fft_metric(grid_data, res, plot_failure=True), "Writing of two shapefiles from dict pil failed")
 
     def test_add_one_shapefile_from_cfg_pil(self):
         from pyresample.geometry import AreaDefinition
