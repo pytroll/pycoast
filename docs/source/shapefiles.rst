@@ -8,6 +8,7 @@ found in the file Metareas.shp. We then use the :attr:`add_shapefile_shape` (not
 to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.
 
     >>> from pycoast import ContourWriterAGG
+    >>> from PIL import Image
     >>> img = Image.new('RGB', (600, 600))
     >>> proj4_string = '+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m'
     >>> area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
@@ -16,13 +17,13 @@ to plot only the 3rd and 4th shape_id within the file BR_Regioes.shp.
     ...
     >>> cw.add_coastlines(img, area_def, resolution='l', level=4)
     >>> cw.add_shapefile_shapes(img, area_def,
-                                'test/test_data/shapes/Metareas.shp',
+                                'tests/test_data/shapes/Metareas.shp',
                                 outline='red',width=2)
     >>> cw.add_shapefile_shape(img, area_def,
-                               'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
+                               'tests/test_data/shapes/divisao_politica/BR_Regioes.shp',
                                3, outline='blue')
     >>> cw.add_shapefile_shape(img, area_def,
-                               'test/test_data/shapes/divisao_politica/BR_Regioes.shp',
+                               'tests/test_data/shapes/divisao_politica/BR_Regioes.shp',
                                4, outline='blue', fill='green')
 
 
