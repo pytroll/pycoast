@@ -61,10 +61,19 @@ def fft_proj_rms(a1, a2):
     return rms
 
 
-def fft_metric(data1, data2, max_value=0.1):
+def fft_metric(data1, data2, max_value=0.1, plot_failure=False):
     """Execute FFT metric."""
     rms = fft_proj_rms(data1, data2)
-    return rms <= max_value
+    within_threshold = rms <= max_value
+    if not within_threshold and plot_failure:
+        import matplotlib.pyplot as plt
+
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+        ax1.imshow(data1)
+        ax2.imshow(data2)
+        ax3.imshow(np.abs(data1.astype(np.float64) - data2.astype(np.float64)).astype(np.uint8))
+        plt.show()
+    return within_threshold
 
 
 class _ContourWriterTestBase(unittest.TestCase):
