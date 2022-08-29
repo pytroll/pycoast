@@ -850,7 +850,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res, plot_failure=True), "Writing of two shapefiles from dict pil failed")
+        self.assertTrue(fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed")
 
     def test_add_one_shapefile_from_cfg_pil(self):
         from pyresample.geometry import AreaDefinition
