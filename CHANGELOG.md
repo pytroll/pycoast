@@ -1,3 +1,34 @@
+## Version 1.6.0 (2022/10/17)
+
+### Issues Closed
+
+* [Issue 55](https://github.com/pytroll/pycoast/issues/55) - Additional text overlay options ([PR 56](https://github.com/pytroll/pycoast/pull/56) by [@howff](https://github.com/howff))
+* [Issue 23](https://github.com/pytroll/pycoast/issues/23) - Pycoast v0.5.2  issue when drawing coastlines ([PR 59](https://github.com/pytroll/pycoast/pull/59) by [@lobsiger](https://github.com/lobsiger))
+
+In this release 2 issues were closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 65](https://github.com/pytroll/pycoast/pull/65) - Regenerate shapefile test image for pillow 9.2.0
+* [PR 61](https://github.com/pytroll/pycoast/pull/61) - Fix 'add_cities' to use modern GeoNames data
+* [PR 60](https://github.com/pytroll/pycoast/pull/60) - Fix major/minor grid line parameters not working in add_overlay_from_dict
+* [PR 59](https://github.com/pytroll/pycoast/pull/59) - Fix for horizontal (merc) and vertical (tmerc) scratches in medium si… ([23](https://github.com/pytroll/pycoast/issues/23))
+
+#### Features added
+
+* [PR 63](https://github.com/pytroll/pycoast/pull/63) - Rewrite and refactor all of pycoast to meet minimum modern standards
+* [PR 62](https://github.com/pytroll/pycoast/pull/62) - Add ability to overlay user specific shapefiles from dict
+* [PR 56](https://github.com/pytroll/pycoast/pull/56) - Add 'coords_ref' option to 'add_points' to specify lon/lat or pixel coordinates ([55](https://github.com/pytroll/pycoast/issues/55))
+
+#### Documentation changes
+
+* [PR 63](https://github.com/pytroll/pycoast/pull/63) - Rewrite and refactor all of pycoast to meet minimum modern standards
+
+In this release 8 pull requests were closed.
+
+
 ## Version 1.5.0 (2021/08/18)
 
 ### Issues Closed
