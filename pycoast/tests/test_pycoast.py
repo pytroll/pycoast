@@ -243,6 +243,36 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         res = np.array(img)
         self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours failed")
 
+    def test_grid_geos_with_text(self):
+        from pycoast import ContourWriterPIL
+
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_geos.png"))
+        geos_data = np.array(geos_img)
+        img = Image.new("RGB", (425, 425))
+        proj4_string = "+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0"
+        area_extent = (
+            -5570248.4773392612,
+            -5567248.074173444,
+            5567248.074173444,
+            5570248.4773392612,
+        )
+        area_def = (proj4_string, area_extent)
+        cw = ContourWriterPIL(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, resolution="l")
+        cw.add_grid(
+            img,
+            area_def,
+            (10.0, 10.0),
+            (2.0, 2.0),
+            fill="blue",
+            outline="blue",
+            minor_outline="blue",
+            write_text=True,
+        )
+
+        res = np.array(img)
+        self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours with text failed")
+
     def test_grid_file(self):
         from pycoast import ContourWriterPIL
 
