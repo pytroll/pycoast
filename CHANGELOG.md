@@ -1,3 +1,14 @@
+## Version 1.6.1 (2022/11/07)
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 70](https://github.com/pytroll/pycoast/pull/70) - Fix NameError when writing grid text in certain cases
+
+In this release 1 pull request was closed.
+
+
 ## Version 1.6.0 (2022/10/17)
 
 ### Issues Closed
