@@ -1650,11 +1650,12 @@ class _GridDrawer:
             index_arrays = self._grid_line_index_array_generator(
                 [lonlats],
             )
+            index_array = None
             for index_array in index_arrays:
                 self._cw._draw_line(self._draw, index_array.flatten().tolist(), **self._kwargs)
 
             # add lon text markings at each end of longitude line
-            if self._write_text:
+            if self._write_text and index_array is not None:
                 txt = label_gen_func(lonlats)
                 xys = _find_line_intercepts(
                     index_array,

@@ -20,10 +20,10 @@
 
 import os
 import time
-import unittest
 from glob import glob
 
 import numpy as np
+import pytest
 from PIL import Image, ImageFont
 
 from .utils import set_directory
@@ -76,23 +76,23 @@ def fft_metric(data1, data2, max_value=0.1, plot_failure=False):
     return within_threshold
 
 
-class _ContourWriterTestBase(unittest.TestCase):
+class _ContourWriterTestBase:
     """Base class for test classes that need example images."""
 
-    def setUp(self):
+    def setup_method(self):
         img = Image.new("RGB", (640, 480))
         img.save(test_file)
         img.save(grid_file)
         img_p = Image.new("P", (640, 480))
         img_p.save(p_file_coasts)
 
-    def tearDown(self):
+    def tearown_method(self):
         os.remove(test_file)
         os.remove(grid_file)
         os.remove(p_file_coasts)
 
 
-class ContourWriterTestPIL(_ContourWriterTestBase):
+class TestContourWriterPIL(_ContourWriterTestBase):
     """Test PIL-based contour writer."""
 
     def test_europe(self):
@@ -111,7 +111,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline=(255, 0, 0))
 
         res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res), "Writing of contours failed")
+        assert fft_metric(euro_data, res), "Writing of contours failed"
 
     def test_europe_file(self):
         from pycoast import ContourWriterPIL
@@ -129,7 +129,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         img = Image.open(test_file)
         res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res), "Writing of contours failed")
+        assert fft_metric(euro_data, res), "Writing of contours failed"
 
     def test_geos(self):
         from pycoast import ContourWriterPIL
@@ -150,7 +150,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l")
 
         res = np.array(img)
-        self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours failed")
+        assert fft_metric(geos_data, res), "Writing of geos contours failed"
 
     def test_grid(self):
         from pycoast import ContourWriterPIL
@@ -179,7 +179,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of grid failed")
+        assert fft_metric(grid_data, res), "Writing of grid failed"
 
     def test_grid_germ(self):
         """Check that issue #26 is fixed."""
@@ -211,7 +211,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of grid to germ failed")
+        assert fft_metric(grid_data, res), "Writing of grid to germ failed"
 
     def test_grid_geos(self):
         from pycoast import ContourWriterPIL
@@ -241,7 +241,37 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours failed")
+        assert fft_metric(geos_data, res), "Writing of geos contours failed"
+
+    def test_grid_geos_with_text(self):
+        from pycoast import ContourWriterPIL
+
+        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_geos.png"))
+        geos_data = np.array(geos_img)
+        img = Image.new("RGB", (425, 425))
+        proj4_string = "+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0"
+        area_extent = (
+            -5570248.4773392612,
+            -5567248.074173444,
+            5567248.074173444,
+            5570248.4773392612,
+        )
+        area_def = (proj4_string, area_extent)
+        cw = ContourWriterPIL(gshhs_root_dir)
+        cw.add_coastlines(img, area_def, resolution="l")
+        cw.add_grid(
+            img,
+            area_def,
+            (10.0, 10.0),
+            (2.0, 2.0),
+            fill="blue",
+            outline="blue",
+            minor_outline="blue",
+            write_text=True,
+        )
+
+        res = np.array(img)
+        assert fft_metric(geos_data, res), "Writing of geos contours with text failed"
 
     def test_grid_file(self):
         from pycoast import ContourWriterPIL
@@ -270,7 +300,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
 
         img = Image.open(grid_file)
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of grid failed")
+        assert fft_metric(grid_data, res), "Writing of grid failed"
 
     def test_dateline_cross(self):
         from pycoast import ContourWriterPIL
@@ -302,7 +332,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(dl_data, res), "Writing of dateline crossing data failed")
+        assert fft_metric(dl_data, res), "Writing of dateline crossing data failed"
 
     def test_dateline_boundary_cross(self):
         from pycoast import ContourWriterPIL
@@ -334,10 +364,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(dl_data, res),
-            "Writing of dateline boundary crossing data failed",
-        )
+        assert fft_metric(dl_data, res), "Writing of dateline boundary crossing data failed"
 
     def test_grid_nh(self):
         from pycoast import ContourWriterPIL
@@ -368,7 +395,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh grid failed")
+        assert fft_metric(grid_data, res), "Writing of nh grid failed"
 
     def test_add_polygon(self):
         from pycoast import ContourWriterPIL
@@ -427,7 +454,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=4)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh polygons failed")
+        assert fft_metric(grid_data, res), "Writing of nh polygons failed"
 
     def test_add_points_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -475,7 +502,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh points failed")
+        assert fft_metric(grid_data, res), "Writing of nh points failed"
 
     def test_add_points_coordinate_conversion(self):
         """Check that a point added with lonlat coordinates matches the same point in pixel coordinates."""
@@ -570,18 +597,17 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img1 = Image.new("RGB", shape[::-1], (255, 255, 255))
         cw = ContourWriterPIL(gshhs_root_dir)
         points_list = [((0, 0), "Berlin")]
-        self.assertRaises(
-            ValueError,
-            cw.add_points,
-            img1,
-            area_def,
-            points_list=points_list,
-            font_file=font_file,
-            symbol="asterisk",
-            ptsize=6,
-            outline="red",
-            coord_ref="fake",
-        )
+        with pytest.raises(ValueError):
+            cw.add_points(
+                img1,
+                area_def,
+                points_list=points_list,
+                font_file=font_file,
+                symbol="asterisk",
+                ptsize=6,
+                outline="red",
+                coord_ref="fake",
+            )
 
     def test_add_shapefile_shapes(self):
         from pycoast import ContourWriterPIL
@@ -626,7 +652,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of Brazil shapefiles failed")
+        assert fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
 
     def test_config_file_coasts_and_grid(self):
         from pyresample.geometry import AreaDefinition
@@ -651,7 +677,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = Image.new("RGB", (425, 425))
         img.paste(overlay, mask=overlay)
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh grid failed")
+        assert fft_metric(grid_data, res), "Writing of nh grid failed"
 
     def test_config_file_points_and_borders_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -675,7 +701,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh points failed")
+        assert fft_metric(grid_data, res), "Writing of nh points failed"
 
     def test_add_cities_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -716,7 +742,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh cities_pil failed")
+        assert fft_metric(grid_data, res), "Writing of nh cities_pil failed"
 
     def test_add_cities_cfg_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -740,7 +766,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh cities_cfg_pil failed")
+        assert fft_metric(grid_data, res), "Writing of nh cities_cfg_pil failed"
 
     def test_add_cities_from_dict_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -811,7 +837,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh_cities_from_dict_pil failed")
+        assert fft_metric(grid_data, res), "Writing of nh_cities_from_dict_pil failed"
 
     def test_add_shapefiles_from_dict_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -850,7 +876,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed")
+        assert fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed"
 
     def test_add_one_shapefile_from_cfg_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -873,7 +899,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
             cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing one shapefile from cfg pil failed")
+        assert fft_metric(grid_data, res), "Writing one shapefile from cfg pil failed"
 
     def test_add_grid_from_dict_pil(self):
         from pyresample.geometry import AreaDefinition
@@ -916,7 +942,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing grid from dict pil failed")
+        assert fft_metric(grid_data, res), "Writing grid from dict pil failed"
 
     def test_western_shapes_pil(self):
         from pycoast import ContourWriterPIL
@@ -950,7 +976,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of western shapes pil failed")
+        assert fft_metric(grid_data, res), "Writing of western shapes pil failed"
 
     def test_eastern_shapes_pil(self):
         from pycoast import ContourWriterPIL
@@ -984,7 +1010,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of eastern shapes pil failed")
+        assert fft_metric(grid_data, res), "Writing of eastern shapes pil failed"
 
     def test_no_h_scratch_pil(self):
         # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
@@ -1021,7 +1047,7 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of no_h_scratch_pil failed")
+        assert fft_metric(grid_data, res), "Writing of no_h_scratch_pil failed"
 
     def test_no_v_scratch_pil(self):
         # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
@@ -1058,10 +1084,10 @@ class ContourWriterTestPIL(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of no_v_scratch_pil failed")
+        assert fft_metric(grid_data, res), "Writing of no_v_scratch_pil failed"
 
 
-class ContourWriterTestPILAGG(_ContourWriterTestBase):
+class TestContourWriterPILAGG(_ContourWriterTestBase):
     """Test AGG contour writer."""
 
     def test_europe_agg(self):
@@ -1079,7 +1105,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_rivers(img, area_def, level=5, outline="blue", width=0.5, outline_opacity=127)
         cw.add_borders(img, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
         res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res), "Writing of contours failed for AGG")
+        assert fft_metric(euro_data, res), "Writing of contours failed for AGG"
 
     def test_europe_agg_file(self):
         from pycoast import ContourWriterAGG
@@ -1097,7 +1123,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
 
         img = Image.open(test_file)
         res = np.array(img)
-        self.assertTrue(fft_metric(euro_data, res), "Writing of contours failed for AGG")
+        assert fft_metric(euro_data, res), "Writing of contours failed for AGG"
 
     def test_geos_agg(self):
         from pycoast import ContourWriterAGG
@@ -1117,7 +1143,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw = ContourWriterAGG(gshhs_root_dir)
         cw.add_coastlines(img, (proj4_string, area_extent), resolution="l", width=0.5)
         res = np.array(img)
-        self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours failed for AGG")
+        assert fft_metric(geos_data, res), "Writing of geos contours failed for AGG"
 
     def test_grid_agg(self):
         from pycoast import ContourWriterAGG
@@ -1149,7 +1175,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of grid failed for AGG")
+        assert fft_metric(grid_data, res), "Writing of grid failed for AGG"
 
     def test_grid_agg_txt(self):
         import aggdraw
@@ -1189,7 +1215,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of grid failed for AGG")
+        assert fft_metric(grid_data, res), "Writing of grid failed for AGG"
 
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
@@ -1219,7 +1245,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(geos_data, res), "Writing of geos contours failed")
+        assert fft_metric(geos_data, res), "Writing of geos contours failed"
 
     def test_grid_agg_file(self):
         from pycoast import ContourWriterAGG
@@ -1250,7 +1276,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
         img = Image.open(grid_file)
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of grid failed for AGG")
+        assert fft_metric(grid_data, res), "Writing of grid failed for AGG"
 
     def test_grid_nh_agg(self):
         import aggdraw
@@ -1290,7 +1316,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         # NOTE: Experience inconsistency in ttf font writing between systems.
         # Still trying to figure out why this test sometimes fails to write
         # correct font markings.
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh grid failed for AGG")
+        assert fft_metric(grid_data, res), "Writing of nh grid failed for AGG"
 
     def test_add_polygon_agg(self):
         from pycoast import ContourWriterAGG
@@ -1357,7 +1383,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=4)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh polygons failed")
+        assert fft_metric(grid_data, res), "Writing of nh polygons failed"
 
     def test_add_points_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1398,7 +1424,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh points failed")
+        assert fft_metric(grid_data, res), "Writing of nh points failed"
 
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
@@ -1444,7 +1470,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of Brazil shapefiles failed")
+        assert fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
 
     #    @unittest.skip("All kwargs are not supported, so can't create equal results")
     def test_config_file_coasts_and_grid(self):
@@ -1471,7 +1497,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         img.paste(overlay, mask=overlay)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh grid failed")
+        assert fft_metric(grid_data, res), "Writing of nh grid failed"
 
     def test_config_file_points_and_borders_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1495,10 +1521,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(
-            fft_metric(grid_data, res),
-            "Add points with agg module from a config file failed",
-        )
+        assert fft_metric(grid_data, res), "Add points with agg module from a config file failed"
 
     def test_coastlines_convert_to_rgba_agg(self):
         from pycoast import ContourWriterAGG
@@ -1514,7 +1537,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         image_mode = img.mode
         img.close()
 
-        self.assertTrue(image_mode == "RGBA", "Conversion to RGBA failed.")
+        assert image_mode == "RGBA", "Conversion to RGBA failed."
 
     def test_add_cities_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1556,7 +1579,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh cities_agg failed")
+        assert fft_metric(grid_data, res), "Writing of nh cities_agg failed"
 
     def test_add_cities_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1580,7 +1603,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh cities_cfg_agg failed")
+        assert fft_metric(grid_data, res), "Writing of nh cities_cfg_agg failed"
 
     def test_add_cities_from_dict_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1660,7 +1683,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of nh_cities_from_dict_agg failed")
+        assert fft_metric(grid_data, res), "Writing of nh_cities_from_dict_agg failed"
 
     def test_add_shapefiles_from_dict_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1699,7 +1722,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing two shapefiles from dict agg failed")
+        assert fft_metric(grid_data, res), "Writing two shapefiles from dict agg failed"
 
     def test_add_one_shapefile_from_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
@@ -1721,7 +1744,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_overlay_from_config(config_file, area_def, img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing one shapefile from cfg agg failed")
+        assert fft_metric(grid_data, res), "Writing one shapefile from cfg agg failed"
 
     def test_add_grid_from_dict_agg(self):
         import aggdraw
@@ -1771,7 +1794,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing grid from dict agg failed")
+        assert fft_metric(grid_data, res), "Writing grid from dict agg failed"
 
     def test_western_shapes_agg(self):
         import aggdraw
@@ -1814,7 +1837,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of western shapes agg failed")
+        assert fft_metric(grid_data, res), "Writing of western shapes agg failed"
 
     def test_eastern_shapes_agg(self):
         import aggdraw
@@ -1857,7 +1880,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         )
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of eastern shapes agg failed")
+        assert fft_metric(grid_data, res), "Writing of eastern shapes agg failed"
 
     def test_no_h_scratch_agg(self):
         # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
@@ -1904,7 +1927,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of no_h_scratch_agg failed")
+        assert fft_metric(grid_data, res), "Writing of no_h_scratch_agg failed"
 
     def test_no_v_scratch_agg(self):
         # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
@@ -1951,7 +1974,7 @@ class ContourWriterTestPILAGG(_ContourWriterTestBase):
         cw.add_borders(img, area_def, outline="red")
 
         res = np.array(img)
-        self.assertTrue(fft_metric(grid_data, res), "Writing of no_v_scratch_agg failed")
+        assert fft_metric(grid_data, res), "Writing of no_v_scratch_agg failed"
 
 
 class FakeAreaDef:
