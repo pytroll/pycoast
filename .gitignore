@@ -60,3 +60,9 @@ docs/_build/
 target/
 
 doc/source/api/*.rst
+
+# pycharm
+.idea
+
+# rope
+.ropeproject
