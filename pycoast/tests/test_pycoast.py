@@ -94,15 +94,18 @@ class _ContourWriterTestBase:
 
 
 def europe():
+    """Create a Europe area."""
     proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
     area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
     area_def = (proj4_string, area_extent)
     return area_def
 
+
 EUROPE = europe()
 
 
 def geos():
+    """Create a geos area."""
     proj4_string = "+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0"
     area_extent = (
         -5570248.4773392612,
@@ -118,6 +121,7 @@ GEOS = geos()
 
 
 def germ():
+    """Create an area covering Germany."""
     proj4_string = "+proj=stere +ellps=bessel +lat_0=90.0 +lon_0=5.0 +lat_ts=50.0 +a=6378144.0 +b=6356759.0"
     area_extent = [-155100.436345, -4441495.37946, 868899.563655, -3417495.37946]
     area_def = (proj4_string, area_extent)
@@ -128,6 +132,7 @@ GERM = germ()
 
 
 def dateline_1():
+    """Create an area covering the dateline."""
     proj4_string = "+proj=stere +lon_0=-170.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84"
     area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
     area_def = (proj4_string, area_extent)
@@ -138,6 +143,7 @@ DATELINE_1 = dateline_1()
 
 
 def dateline_2():
+    """Create another area covering the dateline."""
     proj4_string = "+proj=stere +lon_0=140.00 +lat_0=60.00 +lat_ts=50.00 +ellps=WGS84"
     area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
     area_def = (proj4_string, area_extent)
@@ -148,6 +154,7 @@ DATELINE_2 = dateline_2()
 
 
 def nh():
+    """Create the nh area."""
     proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
     area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
     area_def = (proj4_string, area_extent)
@@ -158,6 +165,7 @@ NH = nh()
 
 
 def nh_1024():
+    """Create the nh area in 1024x1024 pixels."""
     proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
     area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
     area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
@@ -168,6 +176,7 @@ NH_1024 = nh_1024()
 
 
 def nh_def(shape):
+    """Create the nh area definition with custom shape."""
     proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
     area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 0.0)
     area_def = AreaDefinition("nh", "nh", "nh", proj4_string, shape[1], shape[0], area_extent)
@@ -175,6 +184,7 @@ def nh_def(shape):
 
 
 def brazil():
+    """Create a Brazil area."""
     proj4_string = "+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m"
     area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
     area_def = (proj4_string, area_extent)
@@ -185,6 +195,7 @@ BRAZIL = brazil()
 
 
 def nh_425():
+    """Create the nh area in 425 pixels size."""
     proj_dict = {
         "proj": "laea",
         "lat_0": 90.0,
@@ -201,6 +212,7 @@ NH_425 = nh_425()
 
 
 def eurasia():
+    """Create a Eurasia area."""
     proj4_string = "+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=-50.0"
     area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
     area_def = (proj4_string, area_extent)
@@ -208,6 +220,7 @@ def eurasia():
 
 
 def north_atlantic():
+    """Create a North Atlantic area."""
     proj4_string = "+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=50.0"
     area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
     area_def = (proj4_string, area_extent)
@@ -215,6 +228,7 @@ def north_atlantic():
 
 
 def uk_and_ireland():
+    """Create an area covering Ireland and the UK."""
     proj4_string = "+proj=stere +ellps=WGS84 +lon_0=-4.532 +lat_0=54.228"
     area_extent = (-600000.0, -600000.0, 600000.0, 600000.0)
     area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 800, 800, area_extent)
@@ -222,6 +236,7 @@ def uk_and_ireland():
 
 
 def south_america():
+    """Create an area covering south America."""
     proj4_string = "+proj=merc +lon_0=-60 +lat_ts=-30.0 +a=6371228.0 +units=m"
     area_extent = (-2000000.0, -5000000.0, 5000000.0, 2000000.0)
     area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 425, 425, area_extent)
@@ -229,6 +244,7 @@ def south_america():
 
 
 def europe_1024():
+    """Create a Europe area in 1024 pixels size."""
     proj4_string = "+proj=stere +ellps=WGS84 +lat_0=51.5 +lon_0=-0.1"
     area_extent = (-2000000.0, -2000000.0, 2000000.0, 2000000.0)
     area_def = AreaDefinition("nh", "nh", "nh", proj4_string, 1024, 1024, area_extent)
@@ -236,6 +252,7 @@ def europe_1024():
 
 
 def bering_straight():
+    """Create an area covering the Bering straight."""
     proj4_string = "+proj=merc +ellps=WGS84 +lon_0=170.0"
     area_extent = [-3899875.0, 1795000.0, 5014125.0, 9600000.0]
     area_def = (proj4_string, area_extent)
@@ -243,6 +260,7 @@ def bering_straight():
 
 
 def hawaii():
+    """Create an area covering Hawai."""
     proj4_string = "+proj=tmerc +ellps=WGS84 +lon_0=-155.0"
     area_extent = [-3503550.0, -556597.5, 3503550.0, 5009377.3]
     area_def = (proj4_string, area_extent)
@@ -251,7 +269,9 @@ def hawaii():
 
 @pytest.fixture(scope="session")
 def cw_pil():
+    """Create a PIL ContourWriter."""
     from pycoast import ContourWriterPIL
+
     cw = ContourWriterPIL(gshhs_root_dir)
     return cw
 
@@ -260,6 +280,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
     """Test PIL-based contour writer."""
 
     def test_europe(self, cw_pil):
+        """Test coastlines, rivers and borders over Europe."""
         euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe.png"))
         euro_data = np.array(euro_img)
 
@@ -274,6 +295,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         assert fft_metric(euro_data, res), "Writing of contours failed"
 
     def test_europe_file(self, cw_pil):
+        """Test coastlines, rivers and borders over Europe on a file."""
         euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe.png"))
         euro_data = np.array(euro_img)
 
