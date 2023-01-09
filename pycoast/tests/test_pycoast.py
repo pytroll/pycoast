@@ -34,6 +34,7 @@ repos_root_dir = os.path.join(os.path.dirname(__file__), "..", "..")
 test_file = "test_image.png"
 grid_file = "test_grid.png"
 p_file_coasts = "test_coasts_p_mode.png"
+font_path = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
 
 
 def fft_proj_rms(a1, a2):
@@ -326,7 +327,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = EUROPE
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
+        font = ImageFont.truetype(font_path, 16)
         cw_pil.add_grid(
             img,
             area_def,
@@ -351,7 +352,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = GERM
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
+        font = ImageFont.truetype(font_path, 16)
         cw_pil.add_grid(
             img,
             area_def,
@@ -415,7 +416,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = EUROPE
 
         cw_pil.add_coastlines_to_file(grid_file, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
+        font = ImageFont.truetype(font_path, 16)
         cw_pil.add_grid_to_file(
             grid_file,
             area_def,
@@ -440,7 +441,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = DATELINE_1
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
+        font = ImageFont.truetype(font_path, 16)
         cw_pil.add_grid(
             img,
             area_def,
@@ -466,7 +467,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = DATELINE_2
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
+        font = ImageFont.truetype(font_path, 16)
         cw_pil.add_grid(
             img,
             area_def,
@@ -491,7 +492,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = NH
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 10)
+        font = ImageFont.truetype(font_path, 10)
         cw_pil.add_grid(
             img,
             area_def,
@@ -563,7 +564,6 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         assert fft_metric(grid_data, res), "Writing of nh polygons failed"
 
     def test_add_points_pil(self, cw_pil):
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_pil.png"))
         grid_data = np.array(grid_img)
 
@@ -579,7 +579,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             img,
             area_def,
             points_list=points_list,
-            font_file=font_file,
+            font_file=font_path,
             symbol="asterisk",
             ptsize=6,
             outline="red",
@@ -591,7 +591,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             img,
             area_def,
             points_list=points_list,
-            font_file=font_file,
+            font_file=font_path,
             symbol="square",
             ptsize=6,
             outline="blue",
@@ -604,8 +604,6 @@ class TestContourWriterPIL(_ContourWriterTestBase):
 
     def test_add_points_coordinate_conversion(self, cw_pil):
         """Check that a point added with lonlat coordinates matches the same point in pixel coordinates."""
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
-
         shape = (512, 1024)
         area_def = nh_def(shape)
         lonlat_coords = (13.4050, 52.5200)
@@ -619,7 +617,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             img1,
             area_def,
             points_list=points_list,
-            font_file=font_file,
+            font_file=font_path,
             symbol="asterisk",
             ptsize=6,
             outline="red",
@@ -636,7 +634,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
                 img2,
                 area_def,
                 points_list=points_list,
-                font_file=font_file,
+                font_file=font_path,
                 symbol="asterisk",
                 ptsize=6,
                 outline="red",
@@ -647,8 +645,6 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             np.testing.assert_allclose(res1, res2)
 
     def test_add_points_bad_image_coords(self, cw_pil):
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
-
         shape = (512, 1024)
         area_def = nh_def(shape)
         for pixel_colrow in (shape[::-1], (-10000, -10000)):
@@ -659,7 +655,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
                 img1,
                 area_def,
                 points_list=points_list,
-                font_file=font_file,
+                font_file=font_path,
                 symbol="asterisk",
                 ptsize=6,
                 outline="red",
@@ -669,8 +665,6 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             np.testing.assert_allclose(res1, 255)  # no added points
 
     def test_add_points_bad_coord_ref(self, cw_pil):
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
-
         shape = (512, 1024)
         area_def = nh_def(shape)
         img1 = Image.new("RGB", shape[::-1], (255, 255, 255))
@@ -680,7 +674,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
                 img1,
                 area_def,
                 points_list=points_list,
-                font_file=font_file,
+                font_file=font_path,
                 symbol="asterisk",
                 ptsize=6,
                 outline="red",
@@ -754,7 +748,6 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         assert fft_metric(grid_data, res), "Writing of nh points failed"
 
     def test_add_cities_pil(self, cw_pil):
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_pil.png"))
         grid_data = np.array(grid_img)
 
@@ -770,7 +763,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             img,
             area_def,
             cities_list=cities_list,
-            font_file=font_file,
+            font_file=font_path,
             font_size=20,
             symbol="square",
             ptsize=16,
@@ -813,7 +806,6 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         overlays = {}
         overlays["coasts"] = {"level": 4, "resolution": "l", "outline": "black"}
         overlays["borders"] = {"level": 1, "outline": "black", "resolution": "c"}
-        font = "pycoast/tests/test_data/DejaVuSerif.ttf"
         cities_list1 = [
             "Berlin",
             "Paris",
@@ -828,7 +820,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         cities_list3 = ["Belp", "Bad Schwalbach", "Edinburgh", "Hilversum"]
         cities_type1 = {
             "cities_list": cities_list1,
-            "font": font,
+            "font": font_path,
             "font_size": 26,
             "symbol": "circle",
             "ptsize": 24,
@@ -838,7 +830,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         }
         cities_type2 = {
             "cities_list": cities_list2,
-            "font": font,
+            "font": font_path,
             "font_size": 24,
             "symbol": "pentagon",
             "ptsize": 24,
@@ -848,7 +840,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         }
         cities_type3 = {
             "cities_list": cities_list3,
-            "font": font,
+            "font": font_path,
             "font_size": 22,
             "symbol": "star5",
             "ptsize": 35,
@@ -917,7 +909,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         img = Image.new("RGB", (800, 800))
         area_def = uk_and_ireland()
 
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 40)
+        font = ImageFont.truetype(font_path, 40)
 
         overlays = {}
         overlays["coasts"] = {"width": 3.0, "level": 4, "resolution": "l"}
@@ -950,9 +942,8 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (1000, 560))
         area_def = north_atlantic()
-
         cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 16)
+        font = ImageFont.truetype(font_path, 16)
 
         cw_pil.add_grid(
             img,
@@ -979,7 +970,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = eurasia()
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20)
+        font = ImageFont.truetype(font_path, 20)
 
         cw_pil.add_grid(
             img,
@@ -1007,7 +998,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = bering_straight()
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20)
+        font = ImageFont.truetype(font_path, 20)
 
         cw_pil.add_grid(
             img,
@@ -1037,7 +1028,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = hawaii()
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"), 20)
+        font = ImageFont.truetype(font_path, 20)
 
         cw_pil.add_grid(
             img,
@@ -1167,7 +1158,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=4)
         font = aggdraw.Font(
             "blue",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             size=16,
             opacity=200,
         )
@@ -1267,7 +1258,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=4)
         font = aggdraw.Font(
             "blue",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             size=10,
         )
         cw.add_grid(
@@ -1362,8 +1353,6 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
-
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_agg.png"))
         grid_data = np.array(grid_img)
 
@@ -1382,7 +1371,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
             img,
             area_def,
             points_list=points_list,
-            font_file=font_file,
+            font_file=font_path,
             symbol="circle",
             ptsize=16,
             outline="black",
@@ -1516,8 +1505,6 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        font_file = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
-
         grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_agg.png"))
         grid_data = np.array(grid_img)
 
@@ -1536,7 +1523,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
             img,
             area_def,
             cities_list=cities_list,
-            font_file=font_file,
+            font_file=font_path,
             font_size=20,
             symbol="square",
             ptsize=16,
@@ -1595,7 +1582,6 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         overlays = {}
         overlays["coasts"] = {"level": 4, "resolution": "l", "outline": "black"}
         overlays["borders"] = {"level": 1, "outline": "black", "resolution": "c"}
-        font = "pycoast/tests/test_data/DejaVuSerif.ttf"
         cities_list1 = [
             "Berlin",
             "Paris",
@@ -1610,7 +1596,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cities_list3 = ["Belp", "Bad Schwalbach", "Edinburgh", "Hilversum"]
         cities_type1 = {
             "cities_list": cities_list1,
-            "font": font,
+            "font": font_path,
             "font_size": 26,
             "symbol": "circle",
             "ptsize": 24,
@@ -1623,7 +1609,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         }
         cities_type2 = {
             "cities_list": cities_list2,
-            "font": font,
+            "font": font_path,
             "font_size": 24,
             "symbol": "pentagon",
             "ptsize": 24,
@@ -1636,7 +1622,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         }
         cities_type3 = {
             "cities_list": cities_list3,
-            "font": font,
+            "font": font_path,
             "font_size": 22,
             "symbol": "star5",
             "ptsize": 35,
@@ -1738,7 +1724,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         font = aggdraw.Font(
             "yellow",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             opacity=255,
             size=40,
         )
@@ -1787,7 +1773,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=2)
         font = aggdraw.Font(
             "orange",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             size=20,
         )
 
@@ -1830,7 +1816,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=2)
         font = aggdraw.Font(
             "orange",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             size=20,
         )
 
@@ -1874,7 +1860,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=2)
         font = aggdraw.Font(
             "yellow",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             opacity=255,
             size=20,
         )
@@ -1921,7 +1907,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_coastlines(img, area_def, resolution="l", level=2)
         font = aggdraw.Font(
             "yellow",
-            os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"),
+            font_path,
             opacity=255,
             size=20,
         )
@@ -2069,7 +2055,7 @@ class TestFromConfig:
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
         cw = ContourWriterPIL(gshhs_root_dir)
 
-        font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf"))
+        font = ImageFont.truetype(font_path)
         overlays = {
             "cache": {"file": os.path.join(tmpdir, "pycoast_cache")},
             "grid": {"font": font},
