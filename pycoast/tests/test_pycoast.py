@@ -352,7 +352,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         area_def = GERM
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(image_path, 16)
+        font = ImageFont.truetype(font_path, 16)
         cw_pil.add_grid(
             img,
             area_def,
