@@ -22,6 +22,7 @@ import os
 import time
 from glob import glob
 
+import aggdraw
 import numpy as np
 import pytest
 from PIL import Image, ImageFont
@@ -29,12 +30,17 @@ from pyresample.geometry import AreaDefinition
 
 from .utils import set_directory
 
-gshhs_root_dir = os.path.join(os.path.dirname(__file__), "test_data", "gshhs")
-repos_root_dir = os.path.join(os.path.dirname(__file__), "..", "..")
-test_file = "test_image.png"
-grid_file = "test_grid.png"
-p_file_coasts = "test_coasts_p_mode.png"
-font_path = os.path.join(os.path.dirname(__file__), "test_data", "DejaVuSerif.ttf")
+LOCAL_DIR = os.path.dirname(__file__)
+
+gshhs_root_dir = os.path.join(LOCAL_DIR, "test_data", "gshhs")
+repos_root_dir = os.path.join(LOCAL_DIR, "..", "..")
+test_filename = "test_image.png"
+grid_filename = "test_grid.png"
+p_coasts_filename = "test_coasts_p_mode.png"
+
+font_path = os.path.join(LOCAL_DIR, "test_data", "DejaVuSerif.ttf")
+agg_font_20 = aggdraw.Font("yellow", font_path, opacity=255, size=20)
+pil_font_20 = ImageFont.truetype(font_path, 20)
 
 
 def fft_proj_rms(a1, a2):
@@ -76,22 +82,6 @@ def fft_metric(data1, data2, max_value=0.1, plot_failure=False):
         ax3.imshow(np.abs(data1.astype(np.float64) - data2.astype(np.float64)).astype(np.uint8))
         plt.show()
     return within_threshold
-
-
-class _ContourWriterTestBase:
-    """Base class for test classes that need example images."""
-
-    def setup_method(self):
-        img = Image.new("RGB", (640, 480))
-        img.save(test_file)
-        img.save(grid_file)
-        img_p = Image.new("P", (640, 480))
-        img_p.save(p_file_coasts)
-
-    def teardown_method(self):
-        os.remove(test_file)
-        os.remove(grid_file)
-        os.remove(p_file_coasts)
 
 
 def europe():
@@ -277,218 +267,201 @@ def cw_pil():
     return cw
 
 
-class TestContourWriterPIL(_ContourWriterTestBase):
+@pytest.fixture(scope="session")
+def cw_agg():
+    """Create a PIL ContourWriter."""
+    from pycoast import ContourWriterAGG
+
+    cw = ContourWriterAGG(gshhs_root_dir)
+    return cw
+
+
+@pytest.fixture
+def new_test_image(request, tmp_path):
+    """Create a new test image, and save it to tmp_path if the test fails."""
+    img_container = []
+
+    def _new_test_image(mode, shape, filename, color=0):
+        img = Image.new(mode, shape, color=color)
+        img_container.append(filename)
+        img_container.append(img)
+        return img
+
+    yield _new_test_image
+    try:
+        filename, img = img_container
+    except ValueError:  # the fixture wasn't used
+        return
+    if request.node.rep_call.failed:
+        img.save(os.path.join(tmp_path, filename))
+
+
+def images_match(ref_image, test_image):
+    """Check is images match."""
+    return fft_metric(np.array(ref_image), np.array(test_image))
+
+
+class _ContourWriterTestBase:
+    """Base class for test classes that need example images."""
+
+    def setup_method(self):
+        img = Image.new("RGB", (640, 480))
+        img.save(test_filename)
+        img.save(grid_filename)
+        img_p = Image.new("P", (640, 480))
+        img_p.save(p_coasts_filename)
+
+    def teardown_method(self):
+        os.remove(test_filename)
+        os.remove(grid_filename)
+        os.remove(p_coasts_filename)
+
+
+@pytest.fixture
+def test_file_path(tmp_path):
+    """Create a test image file on disk."""
+    path = tmp_path / test_filename
+    img = Image.new("RGB", (640, 480))
+    img.save(path)
+    yield path
+
+
+@pytest.fixture
+def grid_file_path(tmp_path):
+    """Create a test grid image file on disk."""
+    path = tmp_path / grid_filename
+    img = Image.new("RGB", (640, 480))
+    img.save(path)
+    yield path
+
+
+@pytest.fixture
+def p_file_path(tmp_path):
+    """Create a test image file in P mode on disk."""
+    path = tmp_path / p_coasts_filename
+    img = Image.new("P", (640, 480))
+    img.save(path)
+    yield path
+
+
+class TestContourWriterPIL:
     """Test PIL-based contour writer."""
 
-    def test_europe(self, cw_pil):
+    def test_europe_coastlines_rivers_and_borders(self, cw_pil, new_test_image):
         """Test coastlines, rivers and borders over Europe."""
-        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe.png"))
-        euro_data = np.array(euro_img)
+        filename = "contours_europe.png"
 
-        img = Image.new("RGB", (640, 480))
+        euro_img = Image.open(os.path.join(LOCAL_DIR, filename))
+
+        img = new_test_image("RGB", (640, 480), filename)
+
         area_def = EUROPE
-
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
         cw_pil.add_rivers(img, area_def, level=5, outline="blue")
-        cw_pil.add_borders(img, area_def, outline=(255, 0, 0))
+        cw_pil.add_borders(img, area_def, outline=(255, 0, 0), level=1)
 
-        res = np.array(img)
-        assert fft_metric(euro_data, res), "Writing of contours failed"
+        assert images_match(euro_img, img), "Writing of contours failed"
 
-    def test_europe_file(self, cw_pil):
+    def test_europe_coastlines_rivers_and_borders_on_file(self, cw_pil, test_file_path):
         """Test coastlines, rivers and borders over Europe on a file."""
-        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe.png"))
-        euro_data = np.array(euro_img)
+        filename = "contours_europe.png"
+        euro_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
         area_def = EUROPE
-        cw_pil.add_coastlines_to_file(test_file, area_def, resolution="l", level=4)
-        cw_pil.add_rivers_to_file(test_file, area_def, level=5, outline="blue")
-        cw_pil.add_borders_to_file(test_file, area_def, outline=(255, 0, 0))
+        cw_pil.add_coastlines_to_file(test_file_path, area_def, resolution="l", level=4)
+        cw_pil.add_rivers_to_file(test_file_path, area_def, level=5, outline="blue")
+        cw_pil.add_borders_to_file(test_file_path, area_def, outline=(255, 0, 0))
 
-        img = Image.open(test_file)
-        res = np.array(img)
-        assert fft_metric(euro_data, res), "Writing of contours failed"
+        img = Image.open(test_file_path)
+        assert images_match(euro_img, img), "Writing of contours to file failed"
 
-    def test_geos(self, cw_pil):
-        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_geos.png"))
-        geos_data = np.array(geos_img)
+    def test_geos(self, cw_pil, new_test_image):
+        filename = "contours_geos.png"
+        geos_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (425, 425))
+        img = new_test_image("RGB", (425, 425), filename)
         area_def = GEOS
         cw_pil.add_coastlines(img, area_def, resolution="l")
 
-        res = np.array(img)
-        assert fft_metric(geos_data, res), "Writing of geos contours failed"
+        assert images_match(geos_img, img), "Writing of geos contours failed"
 
-    def test_grid(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe.png"))
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (640, 480))
-        area_def = EUROPE
+    @pytest.mark.parametrize(
+        "filename, shape, area_def, level, grid_kwargs",
+        [
+            (
+                "grid_europe.png",
+                (640, 480),
+                EUROPE,
+                4,
+                dict(fill="blue", write_text=False, outline="blue", minor_outline="blue"),
+            ),
+            (
+                "grid_geos.png",
+                (425, 425),
+                GEOS,
+                1,
+                dict(fill="blue", write_text=False, outline="blue", minor_outline="blue"),
+            ),
+            (
+                "grid_geos.png",
+                (425, 425),
+                GEOS,
+                1,
+                dict(fill="blue", write_text=True, outline="blue", minor_outline="blue"),
+            ),
+            (
+                "grid_germ.png",
+                (1024, 1024),
+                GERM,
+                4,
+                dict(fill="yellow", write_text=True, outline="red", minor_outline="white"),
+            ),
+            (
+                "dateline_cross.png",
+                (640, 480),
+                DATELINE_1,
+                4,
+                dict(
+                    fill="blue",
+                    write_text=False,
+                    outline="blue",
+                    minor_outline="blue",
+                    lon_placement="b",
+                    lat_placement="lr",
+                ),
+            ),
+            (
+                "dateline_boundary_cross.png",
+                (640, 480),
+                DATELINE_2,
+                4,
+                dict(
+                    fill="blue",
+                    write_text=False,
+                    outline="blue",
+                    minor_outline="blue",
+                    lon_placement="b",
+                    lat_placement="lr",
+                ),
+            ),
+        ],
+    )
+    def test_grid(self, cw_pil, new_test_image, filename, shape, area_def, level, grid_kwargs):
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
+        img = new_test_image("RGB", shape, filename)
+
+        cw_pil.add_coastlines(img, area_def, resolution="l", level=level)
         font = ImageFont.truetype(font_path, 16)
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            font=font,
-            fill="blue",
-            write_text=False,
-            outline="blue",
-            minor_outline="blue",
-        )
+        cw_pil.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, **grid_kwargs)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of grid failed"
+        assert images_match(grid_img, img), "Writing of grid failed"
 
-    def test_grid_germ(self, cw_pil):
-        """Check that issue #26 is fixed."""
-        result_file = os.path.join(os.path.dirname(__file__), "grid_germ.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (1024, 1024))
-        area_def = GERM
+    def test_grid_nh(self, cw_pil, new_test_image):
+        filename = "grid_nh.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(font_path, 16)
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            font=font,
-            fill="yellow",
-            write_text=True,
-            outline="red",
-            minor_outline="white",
-        )
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of grid to germ failed"
-
-    def test_grid_geos(self, cw_pil):
-        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_geos.png"))
-        geos_data = np.array(geos_img)
-        img = Image.new("RGB", (425, 425))
-        area_def = GEOS
-
-        cw_pil.add_coastlines(img, area_def, resolution="l")
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            fill="blue",
-            outline="blue",
-            minor_outline="blue",
-            write_text=False,
-        )
-
-        res = np.array(img)
-        assert fft_metric(geos_data, res), "Writing of geos contours failed"
-
-    def test_grid_geos_with_text(self, cw_pil):
-        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_geos.png"))
-        geos_data = np.array(geos_img)
-        img = Image.new("RGB", (425, 425))
-        area_def = GEOS
-
-        cw_pil.add_coastlines(img, area_def, resolution="l")
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            fill="blue",
-            outline="blue",
-            minor_outline="blue",
-            write_text=True,
-        )
-
-        res = np.array(img)
-        assert fft_metric(geos_data, res), "Writing of geos contours with text failed"
-
-    def test_grid_file(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe.png"))
-        grid_data = np.array(grid_img)
-        area_def = EUROPE
-
-        cw_pil.add_coastlines_to_file(grid_file, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(font_path, 16)
-        cw_pil.add_grid_to_file(
-            grid_file,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            font=font,
-            fill="blue",
-            write_text=False,
-            outline="blue",
-            minor_outline="blue",
-        )
-
-        img = Image.open(grid_file)
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of grid failed"
-
-    def test_dateline_cross(self, cw_pil):
-        dl_img = Image.open(os.path.join(os.path.dirname(__file__), "dateline_cross.png"))
-        dl_data = np.array(dl_img)
-
-        img = Image.new("RGB", (640, 480))
-        area_def = DATELINE_1
-
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(font_path, 16)
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            font=font,
-            fill="blue",
-            write_text=False,
-            outline="blue",
-            minor_outline="blue",
-            lon_placement="b",
-            lat_placement="lr",
-        )
-
-        res = np.array(img)
-        assert fft_metric(dl_data, res), "Writing of dateline crossing data failed"
-
-    def test_dateline_boundary_cross(self, cw_pil):
-        dl_img = Image.open(os.path.join(os.path.dirname(__file__), "dateline_boundary_cross.png"))
-        dl_data = np.array(dl_img)
-
-        img = Image.new("RGB", (640, 480))
-        area_def = DATELINE_2
-
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(font_path, 16)
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (2.0, 2.0),
-            font=font,
-            fill="blue",
-            outline="blue",
-            minor_outline="blue",
-            write_text=False,
-            lon_placement="b",
-            lat_placement="lr",
-        )
-
-        res = np.array(img)
-        assert fft_metric(dl_data, res), "Writing of dateline boundary crossing data failed"
-
-    def test_grid_nh(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_nh.png"))
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (425, 425))
+        img = new_test_image("RGB", (425, 425), filename)
         area_def = NH
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
@@ -507,13 +480,36 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             lat_placement="",
         )
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh grid failed"
+        assert images_match(grid_img, img), "Writing of nh grid failed"
 
-    def test_add_polygon(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_polygons.png"))
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (425, 425))
+    def test_grid_file(self, cw_pil, grid_file_path):
+        filename = "grid_europe.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
+
+        area_def = EUROPE
+
+        cw_pil.add_coastlines_to_file(grid_file_path, area_def, resolution="l", level=4)
+        font = ImageFont.truetype(font_path, 16)
+        cw_pil.add_grid_to_file(
+            grid_file_path,
+            area_def,
+            (10.0, 10.0),
+            (2.0, 2.0),
+            font=font,
+            fill="blue",
+            write_text=False,
+            outline="blue",
+            minor_outline="blue",
+        )
+
+        img = Image.open(grid_file_path)
+        assert images_match(grid_img, img), "Writing of grid failed"
+
+    def test_add_polygon(self, cw_pil, new_test_image):
+        filename = "nh_polygons.png"
+        ref_image = Image.open(os.path.join(LOCAL_DIR, filename))
+
+        img = new_test_image("RGB", (425, 425), filename)
         area_def = NH
 
         polygons = {
@@ -560,14 +556,13 @@ class TestContourWriterPIL(_ContourWriterTestBase):
         cw_pil.add_polygon(img, area_def, polygons["ICELAND_BOX"], outline="green", fill="gray")
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh polygons failed"
+        assert images_match(ref_image, img), "Writing of nh polygons failed"
 
-    def test_add_points_pil(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_pil.png"))
-        grid_data = np.array(grid_img)
+    def test_add_points_pil(self, cw_pil, new_test_image):
+        filename = "nh_points_pil.png"
+        ref_image = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (1024, 1024), (255, 255, 255))
+        img = new_test_image("RGB", (1024, 1024), filename, color=(255, 255, 255))
 
         area_def = NH_1024
 
@@ -599,10 +594,9 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             box_outline="black",
         )
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh points failed"
+        assert images_match(ref_image, img), "Writing of nh points failed"
 
-    def test_add_points_coordinate_conversion(self, cw_pil):
+    def test_add_points_coordinate_conversion(self, cw_pil, new_test_image):
         """Check that a point added with lonlat coordinates matches the same point in pixel coordinates."""
         shape = (512, 1024)
         area_def = nh_def(shape)
@@ -681,25 +675,25 @@ class TestContourWriterPIL(_ContourWriterTestBase):
                 coord_ref="fake",
             )
 
-    def test_add_shapefile_shapes(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "brazil_shapefiles.png"))
-        grid_data = np.array(grid_img)
+    def test_add_shapefile_shapes(self, cw_pil, new_test_image):
+        filename = "brazil_shapefiles.png"
+        ref_image = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (425, 425))
+        img = new_test_image("RGB", (425, 425), filename)
         area_def = BRAZIL
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=4)
         cw_pil.add_shapefile_shapes(
             img,
             area_def,
-            os.path.join(os.path.dirname(__file__), "test_data/shapes/Metareas.shp"),
+            os.path.join(LOCAL_DIR, "test_data/shapes/Metareas.shp"),
             outline="red",
         )
         cw_pil.add_shapefile_shape(
             img,
             area_def,
             os.path.join(
-                os.path.dirname(__file__),
+                LOCAL_DIR,
                 "test_data/shapes/divisao_politica/BR_Regioes.shp",
             ),
             3,
@@ -709,7 +703,7 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             img,
             area_def,
             os.path.join(
-                os.path.dirname(__file__),
+                LOCAL_DIR,
                 "test_data/shapes/divisao_politica/BR_Regioes.shp",
             ),
             4,
@@ -717,41 +711,38 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             fill="green",
         )
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
+        assert images_match(ref_image, img), "Writing of Brazil shapefiles failed"
 
-    def test_config_file_coasts_and_grid(self, cw_pil):
-        overlay_config = os.path.join(os.path.dirname(__file__), "coasts_and_grid.ini")
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_nh.png"))
-        grid_data = np.array(grid_img)
+    def test_config_file_coasts_and_grid(self, cw_pil, new_test_image):
+        overlay_config = os.path.join(LOCAL_DIR, "coasts_and_grid.ini")
+        filename = "grid_nh.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
+
         area_def = NH_425
 
         overlay = cw_pil.add_overlay_from_config(overlay_config, area_def)
-        img = Image.new("RGB", (425, 425))
+        img = new_test_image("RGB", (425, 425), filename)
         img.paste(overlay, mask=overlay)
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh grid failed"
+        assert images_match(grid_img, img), "Writing of nh grid failed"
 
-    def test_config_file_points_and_borders_pil(self, cw_pil):
-        config_file = os.path.join(os.path.dirname(__file__), "nh_points_pil.ini")
+    def test_config_file_points_and_borders_pil(self, cw_pil, new_test_image):
+        config_file = os.path.join(LOCAL_DIR, "nh_points_pil.ini")
+        filename = "nh_points_cfg_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_cfg_pil.png"))
-        grid_data = np.array(grid_img)
-
-        img = Image.new("RGB", (1024, 1024), (255, 255, 255))
+        img = new_test_image("RGB", (1024, 1024), filename, color=(255, 255, 255))
 
         area_def = NH_1024
 
         cw_pil.add_overlay_from_config(config_file, area_def, img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh points failed"
+        assert images_match(grid_img, img), "Writing of nh points failed"
 
-    def test_add_cities_pil(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_pil.png"))
-        grid_data = np.array(grid_img)
+    def test_add_cities_pil(self, cw_pil, new_test_image):
+        filename = "nh_cities_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (1024, 1024), (255, 255, 255))
+        img = new_test_image("RGB", (1024, 1024), filename, color=(255, 255, 255))
 
         area_def = NH_1024
 
@@ -777,29 +768,26 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             box_opacity=200,
         )
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh cities_pil failed"
+        assert images_match(grid_img, img), "Writing of nh cities_pil failed"
 
-    def test_add_cities_cfg_pil(self, cw_pil):
-        config_file = os.path.join(os.path.dirname(__file__), "nh_cities_pil.ini")
+    def test_add_cities_cfg_pil(self, cw_pil, new_test_image):
+        config_file = os.path.join(LOCAL_DIR, "nh_cities_pil.ini")
+        filename = "nh_cities_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_pil.png"))
-        grid_data = np.array(grid_img)
-
-        img = Image.new("RGB", (1024, 1024), (255, 255, 255))
+        img = new_test_image("RGB", (1024, 1024), filename, color=(255, 255, 255))
 
         area_def = NH_1024
 
         cw_pil.add_overlay_from_config(config_file, area_def, img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh cities_cfg_pil failed"
+        assert images_match(grid_img, img), "Writing of nh cities_cfg_pil failed"
 
-    def test_add_cities_from_dict_pil(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_from_dict_pil.png"))
-        grid_data = np.array(grid_img)
+    def test_add_cities_from_dict_pil(self, cw_pil, new_test_image):
+        filename = "nh_cities_from_dict_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (1024, 1024), (255, 255, 255))
+        img = new_test_image("RGB", (1024, 1024), filename, color=(255, 255, 255))
 
         area_def = europe_1024()
 
@@ -853,27 +841,26 @@ class TestContourWriterPIL(_ContourWriterTestBase):
 
         img = cw_pil.add_overlay_from_dict(overlays, area_def, background=img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh_cities_from_dict_pil failed"
+        assert images_match(grid_img, img), "Writing of nh_cities_from_dict_pil failed"
 
-    def test_add_shapefiles_from_dict_pil(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "two_shapefiles_pil.png"))
-        grid_data = np.array(grid_img)
+    def test_add_shapefiles_from_dict_pil(self, cw_pil, new_test_image):
+        filename = "two_shapefiles_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (425, 425))
+        img = new_test_image("RGB", (425, 425), filename)
         area_def = south_america()
 
         overlays = {}
         overlays["coasts"] = {"level": 4, "resolution": "l"}
         overlays["shapefiles"] = [
             {
-                "filename": os.path.join(os.path.dirname(__file__), "test_data/shapes/Metareas.shp"),
+                "filename": os.path.join(LOCAL_DIR, "test_data/shapes/Metareas.shp"),
                 "outline": "magenta",
                 "width": 2.5,
             },
             {
                 "filename": os.path.join(
-                    os.path.dirname(__file__),
+                    LOCAL_DIR,
                     "test_data/shapes/divisao_politica/BR_Regioes.shp",
                 ),
                 "outline": "red",
@@ -884,29 +871,26 @@ class TestContourWriterPIL(_ContourWriterTestBase):
 
         img = cw_pil.add_overlay_from_dict(overlays, area_def, background=img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of two shapefiles from dict pil failed"
+        assert images_match(grid_img, img), "Writing of two shapefiles from dict pil failed"
 
-    def test_add_one_shapefile_from_cfg_pil(self, cw_pil):
-        config_file = os.path.join(os.path.dirname(__file__), "nh_one_shapefile.ini")
+    def test_add_one_shapefile_from_cfg_pil(self, cw_pil, new_test_image):
+        config_file = os.path.join(LOCAL_DIR, "nh_one_shapefile.ini")
+        filename = "one_shapefile_from_cfg_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "one_shapefile_from_cfg_pil.png"))
-        grid_data = np.array(grid_img)
-
-        img = Image.new("RGB", (425, 425))
+        img = new_test_image("RGB", (425, 425), filename)
         area_def = south_america()
 
         with set_directory(repos_root_dir):
             cw_pil.add_overlay_from_config(config_file, area_def, img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing one shapefile from cfg pil failed"
+        assert images_match(grid_img, img), "Writing one shapefile from cfg pil failed"
 
-    def test_add_grid_from_dict_pil(self, cw_pil):
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_from_dict_pil.png"))
-        grid_data = np.array(grid_img)
+    def test_add_grid_from_dict_pil(self, cw_pil, new_test_image):
+        filename = "grid_from_dict_pil.png"
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
-        img = Image.new("RGB", (800, 800))
+        img = new_test_image("RGB", (800, 800), filename)
         area_def = uk_and_ireland()
 
         font = ImageFont.truetype(font_path, 40)
@@ -933,17 +917,20 @@ class TestContourWriterPIL(_ContourWriterTestBase):
 
         img = cw_pil.add_overlay_from_dict(overlays, area_def, background=img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing grid from dict pil failed"
+        assert images_match(grid_img, img), "Writing grid from dict pil failed"
 
-    def test_western_shapes_pil(self, cw_pil):
-        result_file = os.path.join(os.path.dirname(__file__), "western_shapes_pil.png")
+    @pytest.mark.parametrize(
+        "filename, area_def, font_size",
+        [("western_shapes_pil.png", north_atlantic(), 16), ("eastern_shapes_pil.png", eurasia(), 20)],
+    )
+    def test_shapes_pil(self, cw_pil, new_test_image, filename, area_def, font_size):
+        result_file = os.path.join(LOCAL_DIR, filename)
         grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (1000, 560))
-        area_def = north_atlantic()
+
+        img = new_test_image("RGB", (1000, 560), filename)
+
         cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(font_path, 16)
+        font = ImageFont.truetype(font_path, font_size)
 
         cw_pil.add_grid(
             img,
@@ -959,104 +946,90 @@ class TestContourWriterPIL(_ContourWriterTestBase):
             lat_placement="",
         )
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of western shapes pil failed"
-
-    def test_eastern_shapes_pil(self, cw_pil):
-        result_file = os.path.join(os.path.dirname(__file__), "eastern_shapes_pil.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (1000, 560))
-        area_def = eurasia()
-
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(font_path, 20)
-
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            fill="yellow",
-            write_text=True,
-            outline="red",
-            minor_outline="red",
-            lon_placement="lbr",
-            lat_placement="",
-        )
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of eastern shapes pil failed"
-
-    def test_no_h_scratch_pil(self, cw_pil):
-        # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
-        result_file = os.path.join(os.path.dirname(__file__), "no_h_scratch_pil.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (888, 781))
-        area_def = bering_straight()
-
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(font_path, 20)
-
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            fill="yellow",
-            write_text=True,
-            outline="orange",
-            minor_outline="orange",
-            lon_placement="bt",
-            lat_placement="lr",
-        )
-        cw_pil.add_rivers(img, area_def, level=5, outline="blue")
-        cw_pil.add_borders(img, area_def, outline="red")
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of no_h_scratch_pil failed"
-
-    def test_no_v_scratch_pil(self, cw_pil):
-        # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
-        result_file = os.path.join(os.path.dirname(__file__), "no_v_scratch_pil.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (888, 705))
-        area_def = hawaii()
-
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(font_path, 20)
-
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            fill="yellow",
-            write_text=True,
-            outline="orange",
-            minor_outline="orange",
-            lon_placement="bt",
-            lat_placement="lr",
-        )
-        cw_pil.add_rivers(img, area_def, level=5, outline="blue")
-        cw_pil.add_borders(img, area_def, outline="red")
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of no_v_scratch_pil failed"
+        assert images_match(grid_img, img), "Writing of shapes with pil failed"
 
 
-class TestContourWriterPILAGG(_ContourWriterTestBase):
+@pytest.mark.parametrize(
+    "cw, filename, shape, area_def, specific_kwargs",
+    [
+        (  # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
+            pytest.lazy_fixture("cw_pil"),
+            "no_h_scratch_pil.png",
+            (888, 781),
+            bering_straight(),
+            dict(font=pil_font_20, fill="yellow", outline="orange", minor_outline="orange"),
+        ),
+        (  # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
+            pytest.lazy_fixture("cw_pil"),
+            "no_v_scratch_pil.png",
+            (888, 705),
+            hawaii(),
+            dict(font=pil_font_20, fill="yellow", outline="orange", minor_outline="orange"),
+        ),
+        (  # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
+            pytest.lazy_fixture("cw_agg"),
+            "no_h_scratch_agg.png",
+            (888, 781),
+            bering_straight(),
+            dict(
+                font=agg_font_20,
+                outline="green",
+                width=5.0,
+                outline_opacity=100,
+                minor_outline="green",
+                minor_width=5.0,
+                minor_outline_opacity=200,
+            ),
+        ),
+        (  # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
+            pytest.lazy_fixture("cw_agg"),
+            "no_v_scratch_agg.png",
+            (888, 705),
+            hawaii(),
+            dict(
+                font=agg_font_20,
+                outline="green",
+                width=5.0,
+                outline_opacity=100,
+                minor_outline="green",
+                minor_width=5.0,
+                minor_outline_opacity=200,
+            ),
+        ),
+    ],
+)
+def test_no_scratch(new_test_image, cw, filename, shape, area_def, specific_kwargs):
+    """Test no scratches are visible."""
+    result_file = os.path.join(LOCAL_DIR, filename)
+    grid_img = Image.open(result_file)
+
+    img = new_test_image("RGB", shape, filename)
+
+    cw.add_coastlines(img, area_def, resolution="l", level=2)
+
+    cw.add_grid(
+        img,
+        area_def,
+        (10.0, 10.0),
+        (5.0, 5.0),
+        write_text=True,
+        lon_placement="bt",
+        lat_placement="lr",
+        **specific_kwargs,
+    )
+    cw.add_rivers(img, area_def, level=5, outline="blue")
+    cw.add_borders(img, area_def, outline="red")
+
+    assert images_match(grid_img, img), "Writing of no_scratch failed"
+
+
+class TestContourWriterAGG(_ContourWriterTestBase):
     """Test AGG contour writer."""
 
     def test_europe_agg(self):
         from pycoast import ContourWriterAGG
 
-        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_agg.png"))
+        euro_img = Image.open(os.path.join(LOCAL_DIR, "contours_europe_agg.png"))
         euro_data = np.array(euro_img)
 
         img = Image.new("RGB", (640, 480))
@@ -1073,25 +1046,25 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
     def test_europe_agg_file(self):
         from pycoast import ContourWriterAGG
 
-        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_agg.png"))
+        euro_img = Image.open(os.path.join(LOCAL_DIR, "contours_europe_agg.png"))
         euro_data = np.array(euro_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = (proj4_string, area_extent)
         cw = ContourWriterAGG(gshhs_root_dir)
-        cw.add_coastlines_to_file(test_file, area_def, resolution="l", level=4)
-        cw.add_rivers_to_file(test_file, area_def, level=5, outline="blue", width=0.5, outline_opacity=127)
-        cw.add_borders_to_file(test_file, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
+        cw.add_coastlines_to_file(test_filename, area_def, resolution="l", level=4)
+        cw.add_rivers_to_file(test_filename, area_def, level=5, outline="blue", width=0.5, outline_opacity=127)
+        cw.add_borders_to_file(test_filename, area_def, outline=(255, 0, 0), width=3, outline_opacity=32)
 
-        img = Image.open(test_file)
+        img = Image.open(test_filename)
         res = np.array(img)
         assert fft_metric(euro_data, res), "Writing of contours failed for AGG"
 
     def test_geos_agg(self):
         from pycoast import ContourWriterAGG
 
-        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_geos_agg.png"))
+        geos_img = Image.open(os.path.join(LOCAL_DIR, "contours_geos_agg.png"))
         geos_data = np.array(geos_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1111,7 +1084,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
     def test_grid_agg(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_europe_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (640, 480))
@@ -1141,11 +1114,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         assert fft_metric(grid_data, res), "Writing of grid failed for AGG"
 
     def test_grid_agg_txt(self):
-        import aggdraw
-
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe_agg_txt.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_europe_agg_txt.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (640, 480))
@@ -1183,7 +1154,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
 
-        geos_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_geos_agg.png"))
+        geos_img = Image.open(os.path.join(LOCAL_DIR, "grid_geos_agg.png"))
         geos_data = np.array(geos_img)
         img = Image.new("RGB", (425, 425))
         proj4_string = "+proj=geos +lon_0=0.0 +a=6378169.00 +b=6356583.80 +h=35785831.0"
@@ -1213,7 +1184,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
     def test_grid_agg_file(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_europe_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_europe_agg.png"))
         grid_data = np.array(grid_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -1222,9 +1193,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         cw = ContourWriterAGG(gshhs_root_dir)
 
-        cw.add_coastlines_to_file(grid_file, area_def, resolution="l", level=4)
+        cw.add_coastlines_to_file(grid_filename, area_def, resolution="l", level=4)
         cw.add_grid_to_file(
-            grid_file,
+            grid_filename,
             area_def,
             (10.0, 10.0),
             (2.0, 2.0),
@@ -1237,16 +1208,14 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
             minor_width=0.5,
             minor_is_tick=False,
         )
-        img = Image.open(grid_file)
+        img = Image.open(grid_filename)
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of grid failed for AGG"
 
     def test_grid_nh_agg(self):
-        import aggdraw
-
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_nh_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_nh_agg.png"))
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (425, 425))
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
@@ -1284,7 +1253,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
     def test_add_polygon_agg(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_polygons_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "nh_polygons_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1353,7 +1322,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "nh_points_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1390,7 +1359,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
     def test_add_shapefile_shapes_agg(self):
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "brazil_shapefiles_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "brazil_shapefiles_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1404,7 +1373,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         cw.add_shapefile_shapes(
             img,
             area_def,
-            os.path.join(os.path.dirname(__file__), "test_data/shapes/Metareas.shp"),
+            os.path.join(LOCAL_DIR, "test_data/shapes/Metareas.shp"),
             outline="red",
             width=2,
         )
@@ -1412,7 +1381,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
             img,
             area_def,
             os.path.join(
-                os.path.dirname(__file__),
+                LOCAL_DIR,
                 "test_data/shapes/divisao_politica/BR_Regioes.shp",
             ),
             3,
@@ -1422,7 +1391,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
             img,
             area_def,
             os.path.join(
-                os.path.dirname(__file__),
+                LOCAL_DIR,
                 "test_data/shapes/divisao_politica/BR_Regioes.shp",
             ),
             4,
@@ -1439,8 +1408,8 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        overlay_config = os.path.join(os.path.dirname(__file__), "coasts_and_grid_agg.ini")
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_nh_cfg_agg.png"))
+        overlay_config = os.path.join(LOCAL_DIR, "coasts_and_grid_agg.ini")
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_nh_cfg_agg.png"))
         grid_data = np.array(grid_img)
         proj_dict = {
             "proj": "laea",
@@ -1465,9 +1434,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        config_file = os.path.join(os.path.dirname(__file__), "nh_points_agg.ini")
+        config_file = os.path.join(LOCAL_DIR, "nh_points_agg.ini")
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_points_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "nh_points_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1492,9 +1461,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         area_def = (proj4_string, area_extent)
 
         cw = ContourWriterAGG(gshhs_root_dir)
-        cw.add_coastlines_to_file(p_file_coasts, area_def, resolution="l", level=4)
+        cw.add_coastlines_to_file(p_coasts_filename, area_def, resolution="l", level=4)
 
-        img = Image.open(p_file_coasts)
+        img = Image.open(p_coasts_filename)
         image_mode = img.mode
         img.close()
 
@@ -1505,7 +1474,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "nh_cities_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1545,9 +1514,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        config_file = os.path.join(os.path.dirname(__file__), "nh_cities_agg.ini")
+        config_file = os.path.join(LOCAL_DIR, "nh_cities_agg.ini")
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "nh_cities_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1569,7 +1538,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "nh_cities_from_dict_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "nh_cities_from_dict_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (1024, 1024), (255, 255, 255))
@@ -1648,7 +1617,7 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "two_shapefiles_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "two_shapefiles_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1662,13 +1631,13 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         overlays["coasts"] = {"level": 4, "resolution": "l"}
         overlays["shapefiles"] = [
             {
-                "filename": os.path.join(os.path.dirname(__file__), "test_data/shapes/Metareas.shp"),
+                "filename": os.path.join(LOCAL_DIR, "test_data/shapes/Metareas.shp"),
                 "outline": "magenta",
                 "width": 2.5,
             },
             {
                 "filename": os.path.join(
-                    os.path.dirname(__file__),
+                    LOCAL_DIR,
                     "test_data/shapes/divisao_politica/BR_Regioes.shp",
                 ),
                 "outline": "red",
@@ -1687,9 +1656,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
 
         from pycoast import ContourWriterAGG
 
-        config_file = os.path.join(os.path.dirname(__file__), "nh_one_shapefile.ini")
+        config_file = os.path.join(LOCAL_DIR, "nh_one_shapefile.ini")
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "one_shapefile_from_cfg_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "one_shapefile_from_cfg_agg.png"))
         grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (425, 425))
@@ -1705,12 +1674,11 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         assert fft_metric(grid_data, res), "Writing one shapefile from cfg agg failed"
 
     def test_add_grid_from_dict_agg(self):
-        import aggdraw
         from pyresample.geometry import AreaDefinition
 
         from pycoast import ContourWriterAGG
 
-        grid_img = Image.open(os.path.join(os.path.dirname(__file__), "grid_from_dict_agg.png"))
+        grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_from_dict_agg.png"))
 
         grid_data = np.array(grid_img)
 
@@ -1755,11 +1723,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         assert fft_metric(grid_data, res), "Writing grid from dict agg failed"
 
     def test_western_shapes_agg(self):
-        import aggdraw
-
         from pycoast import ContourWriterAGG
 
-        result_file = os.path.join(os.path.dirname(__file__), "western_shapes_agg.png")
+        result_file = os.path.join(LOCAL_DIR, "western_shapes_agg.png")
         grid_img = Image.open(result_file)
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (1000, 560))
@@ -1798,11 +1764,9 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         assert fft_metric(grid_data, res), "Writing of western shapes agg failed"
 
     def test_eastern_shapes_agg(self):
-        import aggdraw
-
         from pycoast import ContourWriterAGG
 
-        result_file = os.path.join(os.path.dirname(__file__), "eastern_shapes_agg.png")
+        result_file = os.path.join(LOCAL_DIR, "eastern_shapes_agg.png")
         grid_img = Image.open(result_file)
         grid_data = np.array(grid_img)
         img = Image.new("RGB", (1000, 560))
@@ -1840,100 +1804,6 @@ class TestContourWriterPILAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of eastern shapes agg failed"
 
-    def test_no_h_scratch_agg(self):
-        # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
-        import aggdraw
-
-        from pycoast import ContourWriterAGG
-
-        result_file = os.path.join(os.path.dirname(__file__), "no_h_scratch_agg.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (888, 781))
-        proj4_string = "+proj=merc +ellps=WGS84 +lon_0=170.0"
-        area_extent = [-3899875.0, 1795000.0, 5014125.0, 9600000.0]
-
-        area_def = (proj4_string, area_extent)
-
-        cw = ContourWriterAGG(gshhs_root_dir)
-
-        cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = aggdraw.Font(
-            "yellow",
-            font_path,
-            opacity=255,
-            size=20,
-        )
-
-        cw.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            write_text=True,
-            outline="green",
-            width=5.0,
-            outline_opacity=100,
-            minor_outline="green",
-            minor_width=5.0,
-            minor_outline_opacity=200,
-            lon_placement="bt",
-            lat_placement="lr",
-        )
-        cw.add_rivers(img, area_def, level=5, outline="blue")
-        cw.add_borders(img, area_def, outline="red")
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of no_h_scratch_agg failed"
-
-    def test_no_v_scratch_agg(self):
-        # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
-        import aggdraw
-
-        from pycoast import ContourWriterAGG
-
-        result_file = os.path.join(os.path.dirname(__file__), "no_v_scratch_agg.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (888, 705))
-        proj4_string = "+proj=tmerc +ellps=WGS84 +lon_0=-155.0"
-        area_extent = [-3503550.0, -556597.5, 3503550.0, 5009377.3]
-
-        area_def = (proj4_string, area_extent)
-
-        cw = ContourWriterAGG(gshhs_root_dir)
-
-        cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = aggdraw.Font(
-            "yellow",
-            font_path,
-            opacity=255,
-            size=20,
-        )
-
-        cw.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            write_text=True,
-            outline="green",
-            width=5.0,
-            outline_opacity=100,
-            minor_outline="green",
-            minor_width=5.0,
-            minor_outline_opacity=200,
-            lon_placement="bt",
-            lat_placement="lr",
-        )
-        cw.add_rivers(img, area_def, level=5, outline="blue")
-        cw.add_borders(img, area_def, outline="red")
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of no_v_scratch_agg failed"
-
 
 class FakeAreaDef:
     """A fake area definition object."""
@@ -1953,7 +1823,7 @@ class TestFromConfig:
         """Test generating a transparent foreground."""
         from pycoast import ContourWriterPIL
 
-        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_alpha.png"))
+        euro_img = Image.open(os.path.join(LOCAL_DIR, "contours_europe_alpha.png"))
         euro_data = np.array(euro_img)
 
         # img = Image.new('RGB', (640, 480))
@@ -1961,7 +1831,7 @@ class TestFromConfig:
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
         cw = ContourWriterPIL(gshhs_root_dir)
-        config_file = os.path.join(os.path.dirname(__file__), "test_data", "test_config.ini")
+        config_file = os.path.join(LOCAL_DIR, "test_data", "test_config.ini")
         img = cw.add_overlay_from_config(config_file, area_def)
 
         res = np.array(img)
@@ -1981,7 +1851,7 @@ class TestFromConfig:
         """Test generating a transparent foreground and cache it."""
         from pycoast import ContourWriterPIL
 
-        euro_img = Image.open(os.path.join(os.path.dirname(__file__), "contours_europe_alpha.png"))
+        euro_img = Image.open(os.path.join(LOCAL_DIR, "contours_europe_alpha.png"))
         euro_data = np.array(euro_img)
 
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
