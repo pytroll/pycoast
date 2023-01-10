@@ -27,6 +27,7 @@ extras_require = {
         "sphinx",
         "pyresample",
         "pytest",
+        "pytest-lazy-fixture",
         "sphinx_rtd_theme",
         "sphinxcontrib-apidoc",
     ],
