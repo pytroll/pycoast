@@ -39,8 +39,10 @@ grid_filename = "test_grid.png"
 p_coasts_filename = "test_coasts_p_mode.png"
 
 font_path = os.path.join(LOCAL_DIR, "test_data", "DejaVuSerif.ttf")
-agg_font_20 = aggdraw.Font("yellow", font_path, opacity=255, size=20)
+agg_font_20_yellow = aggdraw.Font("yellow", font_path, opacity=255, size=20)
+agg_font_20_orange = aggdraw.Font("orange", font_path, opacity=255, size=20)
 pil_font_20 = ImageFont.truetype(font_path, 20)
+pil_font_16 = ImageFont.truetype(font_path, 16)
 
 
 def fft_proj_rms(a1, a2):
@@ -452,7 +454,7 @@ class TestContourWriterPIL:
         img = new_test_image("RGB", shape, filename)
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=level)
-        font = ImageFont.truetype(font_path, 16)
+        font = pil_font_16
         cw_pil.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, **grid_kwargs)
 
         assert images_match(grid_img, img), "Writing of grid failed"
@@ -489,7 +491,7 @@ class TestContourWriterPIL:
         area_def = EUROPE
 
         cw_pil.add_coastlines_to_file(grid_file_path, area_def, resolution="l", level=4)
-        font = ImageFont.truetype(font_path, 16)
+        font = pil_font_16
         cw_pil.add_grid_to_file(
             grid_file_path,
             area_def,
@@ -919,34 +921,73 @@ class TestContourWriterPIL:
 
         assert images_match(grid_img, img), "Writing grid from dict pil failed"
 
-    @pytest.mark.parametrize(
-        "filename, area_def, font_size",
-        [("western_shapes_pil.png", north_atlantic(), 16), ("eastern_shapes_pil.png", eurasia(), 20)],
+
+@pytest.mark.parametrize(
+    "cw, filename, area_def, specific_kwargs",
+    [
+        (
+            pytest.lazy_fixture("cw_pil"),
+            "western_shapes_pil.png",
+            north_atlantic(),
+            dict(font=pil_font_16, fill="yellow", outline="red", minor_outline="red"),
+        ),
+        (
+            pytest.lazy_fixture("cw_pil"),
+            "eastern_shapes_pil.png",
+            eurasia(),
+            dict(font=pil_font_20, fill="yellow", outline="red", minor_outline="red"),
+        ),
+        (
+            pytest.lazy_fixture("cw_agg"),
+            "western_shapes_agg.png",
+            north_atlantic(),
+            dict(
+                font=agg_font_20_orange,
+                outline="blue",
+                width=5.0,
+                outline_opacity=100,
+                minor_outline="blue",
+                minor_width=5.0,
+                minor_outline_opacity=200,
+            ),
+        ),
+        (
+            pytest.lazy_fixture("cw_agg"),
+            "eastern_shapes_agg.png",
+            eurasia(),
+            dict(
+                font=agg_font_20_orange,
+                outline="blue",
+                width=5.0,
+                outline_opacity=100,
+                minor_outline="blue",
+                minor_width=5.0,
+                minor_outline_opacity=200,
+            ),
+        ),
+    ],
+)
+def test_shapes(new_test_image, cw, filename, area_def, specific_kwargs):
+    """Test western/eastern shapes."""
+    result_file = os.path.join(LOCAL_DIR, filename)
+    grid_img = Image.open(result_file)
+
+    img = new_test_image("RGB", (1000, 560), filename)
+
+    cw.add_coastlines(img, area_def, resolution="l", level=2)
+
+    cw.add_grid(
+        img,
+        area_def,
+        (10.0, 10.0),
+        (5.0, 5.0),
+        write_text=True,
+        lon_placement="lbr",
+        lat_placement="",
+        **specific_kwargs,
     )
-    def test_shapes_pil(self, cw_pil, new_test_image, filename, area_def, font_size):
-        result_file = os.path.join(LOCAL_DIR, filename)
-        grid_img = Image.open(result_file)
 
-        img = new_test_image("RGB", (1000, 560), filename)
-
-        cw_pil.add_coastlines(img, area_def, resolution="l", level=2)
-        font = ImageFont.truetype(font_path, font_size)
-
-        cw_pil.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            fill="yellow",
-            write_text=True,
-            outline="red",
-            minor_outline="red",
-            lon_placement="lbr",
-            lat_placement="",
-        )
-
-        assert images_match(grid_img, img), "Writing of shapes with pil failed"
+    assert images_match(grid_img, img), "Writing of shapes failed"
 
 
 @pytest.mark.parametrize(
@@ -972,7 +1013,7 @@ class TestContourWriterPIL:
             (888, 781),
             bering_straight(),
             dict(
-                font=agg_font_20,
+                font=agg_font_20_yellow,
                 outline="green",
                 width=5.0,
                 outline_opacity=100,
@@ -987,7 +1028,7 @@ class TestContourWriterPIL:
             (888, 705),
             hawaii(),
             dict(
-                font=agg_font_20,
+                font=agg_font_20_yellow,
                 outline="green",
                 width=5.0,
                 outline_opacity=100,
@@ -1721,88 +1762,6 @@ class TestContourWriterAGG(_ContourWriterTestBase):
 
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing grid from dict agg failed"
-
-    def test_western_shapes_agg(self):
-        from pycoast import ContourWriterAGG
-
-        result_file = os.path.join(LOCAL_DIR, "western_shapes_agg.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (1000, 560))
-        proj4_string = "+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=50.0"
-        area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
-
-        area_def = (proj4_string, area_extent)
-
-        cw = ContourWriterAGG(gshhs_root_dir)
-
-        cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = aggdraw.Font(
-            "orange",
-            font_path,
-            size=20,
-        )
-
-        cw.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            write_text=True,
-            outline="blue",
-            width=5.0,
-            outline_opacity=100,
-            minor_outline="blue",
-            minor_width=5.0,
-            minor_outline_opacity=200,
-            lon_placement="lbr",
-            lat_placement="",
-        )
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of western shapes agg failed"
-
-    def test_eastern_shapes_agg(self):
-        from pycoast import ContourWriterAGG
-
-        result_file = os.path.join(LOCAL_DIR, "eastern_shapes_agg.png")
-        grid_img = Image.open(result_file)
-        grid_data = np.array(grid_img)
-        img = Image.new("RGB", (1000, 560))
-        proj4_string = "+proj=tmerc +ellps=WGS84 +lat_0=20.0 +lon_0=-50.0"
-        area_extent = [-4865942.5, 1781111.9, 4865942.5, 7235767.2]
-
-        area_def = (proj4_string, area_extent)
-
-        cw = ContourWriterAGG(gshhs_root_dir)
-
-        cw.add_coastlines(img, area_def, resolution="l", level=2)
-        font = aggdraw.Font(
-            "orange",
-            font_path,
-            size=20,
-        )
-
-        cw.add_grid(
-            img,
-            area_def,
-            (10.0, 10.0),
-            (5.0, 5.0),
-            font=font,
-            write_text=True,
-            outline="blue",
-            width=5.0,
-            outline_opacity=100,
-            minor_outline="blue",
-            minor_width=5.0,
-            minor_outline_opacity=200,
-            lon_placement="lbr",
-            lat_placement="",
-        )
-
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of eastern shapes agg failed"
 
 
 class FakeAreaDef:
