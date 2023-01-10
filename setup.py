@@ -30,7 +30,7 @@ extras_require = {
         "sphinx_rtd_theme",
         "sphinxcontrib-apidoc",
     ],
-    "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls"],
+    "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls", "pytest-lazy-fixture"],
 }
 
 with open("README", "r") as readme_file:
