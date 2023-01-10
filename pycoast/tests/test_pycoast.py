@@ -27,6 +27,7 @@ import numpy as np
 import pytest
 from PIL import Image, ImageFont
 from pyresample.geometry import AreaDefinition
+from pytest_lazyfixture import lazy_fixture
 
 from .utils import set_directory
 
@@ -926,19 +927,19 @@ class TestContourWriterPIL:
     "cw, filename, area_def, specific_kwargs",
     [
         (
-            pytest.lazy_fixture("cw_pil"),
+            lazy_fixture("cw_pil"),
             "western_shapes_pil.png",
             north_atlantic(),
             dict(font=pil_font_16, fill="yellow", outline="red", minor_outline="red"),
         ),
         (
-            pytest.lazy_fixture("cw_pil"),
+            lazy_fixture("cw_pil"),
             "eastern_shapes_pil.png",
             eurasia(),
             dict(font=pil_font_20, fill="yellow", outline="red", minor_outline="red"),
         ),
         (
-            pytest.lazy_fixture("cw_agg"),
+            lazy_fixture("cw_agg"),
             "western_shapes_agg.png",
             north_atlantic(),
             dict(
@@ -952,7 +953,7 @@ class TestContourWriterPIL:
             ),
         ),
         (
-            pytest.lazy_fixture("cw_agg"),
+            lazy_fixture("cw_agg"),
             "eastern_shapes_agg.png",
             eurasia(),
             dict(
@@ -994,21 +995,21 @@ def test_shapes(new_test_image, cw, filename, area_def, specific_kwargs):
     "cw, filename, shape, area_def, specific_kwargs",
     [
         (  # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
-            pytest.lazy_fixture("cw_pil"),
+            lazy_fixture("cw_pil"),
             "no_h_scratch_pil.png",
             (888, 781),
             bering_straight(),
             dict(font=pil_font_20, fill="yellow", outline="orange", minor_outline="orange"),
         ),
         (  # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
-            pytest.lazy_fixture("cw_pil"),
+            lazy_fixture("cw_pil"),
             "no_v_scratch_pil.png",
             (888, 705),
             hawaii(),
             dict(font=pil_font_20, fill="yellow", outline="orange", minor_outline="orange"),
         ),
         (  # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
-            pytest.lazy_fixture("cw_agg"),
+            lazy_fixture("cw_agg"),
             "no_h_scratch_agg.png",
             (888, 781),
             bering_straight(),
@@ -1023,7 +1024,7 @@ def test_shapes(new_test_image, cw, filename, area_def, specific_kwargs):
             ),
         ),
         (  # lon=155+/-30 lat=-5..45 | No Eurasia problem (Eurasia has always lat > 0.0)
-            pytest.lazy_fixture("cw_agg"),
+            lazy_fixture("cw_agg"),
             "no_v_scratch_agg.png",
             (888, 705),
             hawaii(),
