@@ -270,7 +270,7 @@ def cw_pil():
     return cw
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def cw_agg():
     """Create a PIL ContourWriter."""
     from pycoast import ContourWriterAGG
@@ -334,15 +334,6 @@ def grid_file_path(tmp_path):
     """Create a test grid image file on disk."""
     path = tmp_path / grid_filename
     img = Image.new("RGB", (640, 480))
-    img.save(path)
-    yield path
-
-
-@pytest.fixture
-def p_file_path(tmp_path):
-    """Create a test image file in P mode on disk."""
-    path = tmp_path / p_coasts_filename
-    img = Image.new("P", (640, 480))
     img.save(path)
     yield path
 
