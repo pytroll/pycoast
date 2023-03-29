@@ -46,6 +46,7 @@ setup(
     author="Esben S. Nielsen",
     author_email="esn@dmi.dk",
     packages=["pycoast", "pycoast.tests"],
+    include_package_data=True,
     install_requires=requires,
     extras_require=extras_require,
     python_requires=">3.7",
