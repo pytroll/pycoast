@@ -11,10 +11,10 @@ formats: all
 
 build:
   os: "ubuntu-22.04"
-  apt_packages:
-    - libfreetype-dev
   tools:
-    python: "3.11"
+    python: "mambaforge-4.10"
+conda:
+  environment: continuous_integration/environment.yml
 
 python:
   install:
