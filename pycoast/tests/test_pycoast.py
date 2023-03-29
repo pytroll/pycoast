@@ -42,6 +42,7 @@ p_coasts_filename = "test_coasts_p_mode.png"
 font_path = os.path.join(LOCAL_DIR, "test_data", "DejaVuSerif.ttf")
 print(os.getcwd())
 print(f"{font_path=}")
+print(glob(os.path.join(LOCAL_DIR, "**", "*")))
 print(os.path.isfile(font_path))
 agg_font_20_yellow = aggdraw.Font("yellow", font_path, opacity=255, size=20)
 agg_font_20_orange = aggdraw.Font("orange", font_path, opacity=255, size=20)
