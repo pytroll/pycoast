@@ -30,6 +30,7 @@ extras_require = {
         "pytest-lazy-fixture",
         "sphinx_rtd_theme",
         "sphinxcontrib-apidoc",
+        "freetype-py",
     ],
     "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls", "pytest-lazy-fixture"],
 }
