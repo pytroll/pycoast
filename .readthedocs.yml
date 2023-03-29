@@ -14,7 +14,7 @@ build:
   tools:
     python: "mambaforge-4.10"
 conda:
-  environment: continuous_integration/environment.yml
+  environment: continuous_integration/environment.yaml
 
 python:
   install:
