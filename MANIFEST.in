@@ -1,7 +1,7 @@
 include docs/Makefile
 recursive-include docs/source *
 include pycoast/tests/*.png
-recursive-include pycoast/tests/test_data *
+recursive-include pycoast/tests/ *
 include LICENSE.txt
 include MANIFEST.in
 

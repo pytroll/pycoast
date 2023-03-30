@@ -31,8 +31,6 @@ from PIL import Image, ImageFont
 from pyresample.geometry import AreaDefinition
 from pytest_lazyfixture import lazy_fixture
 
-from .utils import set_directory
-
 LOCAL_DIR = os.path.dirname(__file__)
 
 gshhs_root_dir = os.path.join(LOCAL_DIR, "test_data", "gshhs")
@@ -46,6 +44,12 @@ agg_font_20_yellow = aggdraw.Font("yellow", font_path, opacity=255, size=20)
 agg_font_20_orange = aggdraw.Font("orange", font_path, opacity=255, size=20)
 pil_font_20 = ImageFont.truetype(font_path, 20)
 pil_font_16 = ImageFont.truetype(font_path, 16)
+
+
+@pytest.fixture
+def cd_test_dir(monkeypatch):
+    """Change directory to the pycoast/tests directory."""
+    monkeypatch.chdir(LOCAL_DIR)
 
 
 def fft_proj_rms(a1, a2):
@@ -442,6 +446,7 @@ class TestContourWriterPIL:
             ),
         ],
     )
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_grid(self, cw_pil, new_test_image, filename, shape, area_def, level, grid_kwargs):
         grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
@@ -709,6 +714,7 @@ class TestContourWriterPIL:
 
         assert images_match(ref_image, img), "Writing of Brazil shapefiles failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_coasts_and_grid(self, cw_pil, new_test_image):
         overlay_config = os.path.join(LOCAL_DIR, "coasts_and_grid.ini")
         filename = "grid_nh.png"
@@ -869,6 +875,7 @@ class TestContourWriterPIL:
 
         assert images_match(grid_img, img), "Writing of two shapefiles from dict pil failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_one_shapefile_from_cfg_pil(self, cw_pil, new_test_image):
         config_file = os.path.join(LOCAL_DIR, "nh_one_shapefile.ini")
         filename = "one_shapefile_from_cfg_pil.png"
@@ -877,11 +884,11 @@ class TestContourWriterPIL:
         img = new_test_image("RGB", (425, 425), filename)
         area_def = south_america()
 
-        with set_directory(repos_root_dir):
-            cw_pil.add_overlay_from_config(config_file, area_def, img)
+        cw_pil.add_overlay_from_config(config_file, area_def, img)
 
         assert images_match(grid_img, img), "Writing one shapefile from cfg pil failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_grid_from_dict_pil(self, cw_pil, new_test_image):
         filename = "grid_from_dict_pil.png"
         grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
@@ -1033,6 +1040,7 @@ def test_shapes(new_test_image, cw, filename, area_def, specific_kwargs):
         ),
     ],
 )
+@pytest.mark.usefixtures("cd_test_dir")
 def test_no_scratch(new_test_image, cw, filename, shape, area_def, specific_kwargs):
     """Test no scratches are visible."""
     result_file = os.path.join(LOCAL_DIR, filename)
@@ -1437,7 +1445,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
 
-    #    @unittest.skip("All kwargs are not supported, so can't create equal results")
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_coasts_and_grid(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1464,6 +1472,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of nh grid failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_points_and_borders_agg(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1544,6 +1553,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of nh cities_agg failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_cities_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1686,6 +1696,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing two shapefiles from dict agg failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_one_shapefile_from_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
 
