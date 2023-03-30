@@ -1941,7 +1941,6 @@ class TestFromConfig:
 
         overlays = {
             "cache": {"file": os.path.join(tmp_path, "pycoast_cache")},
-            # "grid": {"font": agg_font_20_yellow, "width": 3},
             "shapefiles": [
                 {
                     "filename": str(test_shape_filename1),
