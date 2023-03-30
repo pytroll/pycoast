@@ -25,6 +25,7 @@ from glob import glob
 import aggdraw
 import numpy as np
 import pytest
+import shapefile
 from PIL import Image, ImageFont
 from pyresample.geometry import AreaDefinition
 from pytest_lazyfixture import lazy_fixture
@@ -40,10 +41,6 @@ grid_filename = "test_grid.png"
 p_coasts_filename = "test_coasts_p_mode.png"
 
 font_path = os.path.join(LOCAL_DIR, "test_data", "DejaVuSerif.ttf")
-print(os.getcwd())
-print(f"{font_path=}")
-print(glob(os.path.join(LOCAL_DIR, "**", "*")))
-print(os.path.isfile(font_path))
 agg_font_20_yellow = aggdraw.Font("yellow", font_path, opacity=255, size=20)
 agg_font_20_orange = aggdraw.Font("orange", font_path, opacity=255, size=20)
 pil_font_20 = ImageFont.truetype(font_path, 20)
@@ -1802,7 +1799,7 @@ class TestFromConfig:
         res = np.array(img)
         assert fft_metric(euro_data, res), "Writing of contours failed"
 
-    def test_cache(self, tmpdir):
+    def test_cache_generation_reuse(self, tmpdir):
         """Test generating a transparent foreground and cache it."""
         from pycoast import ContourWriterPIL
 
@@ -1874,7 +1871,6 @@ class TestFromConfig:
         """Testing caching when changing parameters."""
         from pycoast import ContourWriterPIL
 
-        # img = Image.new('RGB', (640, 480))
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
@@ -1924,6 +1920,76 @@ class TestFromConfig:
         assert os.path.getmtime(cache_filename) == mtime
         # new cache file should be...new
         assert os.path.getmtime(new_cache_filename) != mtime
+
+    def test_cache_nocache_consistency(self, tmp_path):
+        """Test that an image generated with an image looks the same when using a cached foreground."""
+        from pycoast import ContourWriterAGG
+
+        proj4_string = "+proj=longlat +ellps=WGS84"
+        area_extent = (-10.0, -10.0, 10.0, 10.0)
+        area_def = FakeAreaDef(proj4_string, area_extent, 200, 200)
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        # create test shapefiles
+        test_shape_filename1 = tmp_path / "test_shapes1"
+        with shapefile.Writer(test_shape_filename1) as test_shapes:
+            test_shapes.field("name", "C")
+            test_shapes.poly([[[-10.0, 10.0], [-5.0, 10.0], [-5.0, 5.0], [-10.0, 5.0]]])
+            test_shapes.record("upper-left-box")
+        test_shape_filename2 = tmp_path / "test_shapes2"
+        with shapefile.Writer(test_shape_filename2) as test_shapes:
+            test_shapes.field("name", "C")
+            test_shapes.poly([[[5.0, 10.0], [10.0, 10.0], [10.0, 5.0], [5.0, 5.0]]])
+            test_shapes.record("upper-right-box")
+
+        overlays = {
+            "cache": {"file": os.path.join(tmp_path, "pycoast_cache")},
+            # "grid": {"font": agg_font_20_yellow, "width": 3},
+            "shapefiles": [
+                {
+                    "filename": str(test_shape_filename1),
+                    "fill": (0, 255, 0),
+                    "outline": (255, 255, 255),
+                    "fill_opacity": 255,
+                },
+                {
+                    "filename": str(test_shape_filename2),
+                    "fill": (0, 255, 0),
+                    "outline": (255, 255, 0),
+                    "fill_opacity": 127,
+                },
+            ],
+        }
+
+        # Create the original cache file
+        background_img1 = Image.new("RGBA", (200, 200), (0, 0, 0, 255))
+        cached_image1 = cw.add_overlay_from_dict(overlays, area_def, background=background_img1)
+
+        # Reuse the generated cache file
+        background_img2 = Image.new("RGBA", (200, 200), (0, 0, 0, 255))
+        cached_image2 = cw.add_overlay_from_dict(overlays, area_def, background=background_img2)
+
+        # Create without cache
+        overlays.pop("cache")
+        background_img3 = Image.new("RGBA", (200, 200), (0, 0, 0, 255))
+        cw.add_overlay_from_dict(overlays, area_def, background=background_img3)
+
+        # Manually (no dict, no cache)
+        background_img4 = Image.new("RGBA", (200, 200), (0, 0, 0, 255))
+        for shape_params in overlays["shapefiles"]:
+            cw.add_shapefile_shapes(background_img4, area_def, **shape_params)
+
+        # two transparent overlay images
+        np.testing.assert_allclose(np.array(cached_image1), np.array(cached_image2), atol=0)
+        # cached overlay applied to background image should always be equal
+        np.testing.assert_allclose(np.array(background_img1), np.array(background_img2), atol=0)
+        # cached overlay applied to background image and regenerated overlay on background image should be equal
+        # but due to floating point differences
+        np.testing.assert_allclose(
+            np.array(background_img1, dtype=np.float32), np.array(background_img3, dtype=np.float32), atol=1
+        )
+        # no cache version and manual version should be the same
+        np.testing.assert_allclose(np.array(background_img3), np.array(background_img4), atol=0)
 
     def test_get_resolution(self):
         """Get the automagical resolution computation."""
