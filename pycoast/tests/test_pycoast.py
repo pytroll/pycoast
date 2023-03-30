@@ -727,6 +727,7 @@ class TestContourWriterPIL:
         img.paste(overlay, mask=overlay)
         assert images_match(grid_img, img), "Writing of nh grid failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_points_and_borders_pil(self, cw_pil, new_test_image):
         config_file = os.path.join(LOCAL_DIR, "nh_points_pil.ini")
         filename = "nh_points_cfg_pil.png"
@@ -772,6 +773,7 @@ class TestContourWriterPIL:
 
         assert images_match(grid_img, img), "Writing of nh cities_pil failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_cities_cfg_pil(self, cw_pil, new_test_image):
         config_file = os.path.join(LOCAL_DIR, "nh_cities_pil.ini")
         filename = "nh_cities_pil.png"
