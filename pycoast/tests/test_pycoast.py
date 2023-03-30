@@ -19,6 +19,7 @@
 """Main unit tests for pycoast."""
 
 import os
+import pathlib
 import time
 from glob import glob
 
@@ -1922,7 +1923,8 @@ class TestFromConfig:
         assert os.path.getmtime(new_cache_filename) != mtime
 
     @pytest.mark.parametrize("include_background_pattern", [False, True])
-    def test_cache_nocache_consistency(self, tmp_path, include_background_pattern):
+    @pytest.mark.parametrize("upper_right_opacity", [32, 127, 255])
+    def test_cache_nocache_consistency(self, tmp_path, include_background_pattern, upper_right_opacity):
         """Test that an image generated with an image looks the same when using a cached foreground."""
         from pycoast import ContourWriterAGG
 
@@ -1933,15 +1935,9 @@ class TestFromConfig:
 
         # create test shapefiles
         test_shape_filename1 = tmp_path / "test_shapes1"
-        with shapefile.Writer(test_shape_filename1) as test_shapes:
-            test_shapes.field("name", "C")
-            test_shapes.poly([[[-10.0, 10.0], [-5.0, 10.0], [-5.0, 5.0], [-10.0, 5.0]]])
-            test_shapes.record("upper-left-box")
+        _create_polygon_shapefile(test_shape_filename1, [[[-10.0, 10.0], [-5.0, 10.0], [-5.0, 5.0], [-10.0, 5.0]]])
         test_shape_filename2 = tmp_path / "test_shapes2"
-        with shapefile.Writer(test_shape_filename2) as test_shapes:
-            test_shapes.field("name", "C")
-            test_shapes.poly([[[5.0, 10.0], [10.0, 10.0], [10.0, 5.0], [5.0, 5.0]]])
-            test_shapes.record("upper-right-box")
+        _create_polygon_shapefile(test_shape_filename2, [[[5.0, 10.0], [10.0, 10.0], [10.0, 5.0], [5.0, 5.0]]])
 
         overlays = {
             "cache": {"file": os.path.join(tmp_path, "pycoast_cache")},
@@ -1957,7 +1953,7 @@ class TestFromConfig:
                     "filename": str(test_shape_filename2),
                     "fill": (0, 255, 0),
                     "outline": (255, 255, 0),
-                    "fill_opacity": 127,
+                    "fill_opacity": upper_right_opacity,
                 },
             ],
         }
@@ -1985,7 +1981,7 @@ class TestFromConfig:
         # cached overlay applied to background image should always be equal
         np.testing.assert_allclose(np.array(background_img1), np.array(background_img2), atol=0)
         # cached overlay applied to background image and regenerated overlay on background image should be equal
-        # but due to floating point differences
+        # but due to floating point differences they are off by a little bit
         np.testing.assert_allclose(
             np.array(background_img1, dtype=np.float32), np.array(background_img3, dtype=np.float32), atol=1
         )
@@ -2002,6 +1998,13 @@ class TestFromConfig:
         assert get_resolution_from_area(area_def) == "l"
         area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
         assert get_resolution_from_area(area_def) == "h"
+
+
+def _create_polygon_shapefile(fn: pathlib.Path, polygon_coords: list) -> None:
+    with shapefile.Writer(fn) as test_shapefile:
+        test_shapefile.field("name", "C")
+        test_shapefile.poly(polygon_coords)
+        test_shapefile.record("test")
 
 
 def _create_background_image(add_pattern: bool) -> Image:
