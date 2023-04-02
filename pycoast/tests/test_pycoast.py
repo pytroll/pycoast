@@ -1935,9 +1935,12 @@ class TestFromConfig:
         # new cache file should be...new
         assert os.path.getmtime(new_cache_filename) != mtime
 
+    @pytest.mark.parametrize("background_mode", ["RGB", "RGBA"])
     @pytest.mark.parametrize("include_background_pattern", [False, True])
     @pytest.mark.parametrize("upper_right_opacity", [32, 127, 255])
-    def test_cache_nocache_consistency(self, tmp_path, include_background_pattern, upper_right_opacity):
+    def test_cache_nocache_consistency(
+        self, tmp_path, include_background_pattern, background_mode, upper_right_opacity
+    ):
         """Test that an image generated with an image looks the same when using a cached foreground."""
         from pycoast import ContourWriterAGG
 
@@ -1971,20 +1974,20 @@ class TestFromConfig:
         }
 
         # Create the original cache file
-        background_img1 = _create_background_image(include_background_pattern)
+        background_img1 = _create_background_image(include_background_pattern, background_mode)
         cached_image1 = cw.add_overlay_from_dict(overlays, area_def, background=background_img1)
 
         # Reuse the generated cache file
-        background_img2 = _create_background_image(include_background_pattern)
+        background_img2 = _create_background_image(include_background_pattern, background_mode)
         cached_image2 = cw.add_overlay_from_dict(overlays, area_def, background=background_img2)
 
         # Create without cache
         overlays.pop("cache")
-        background_img3 = _create_background_image(include_background_pattern)
+        background_img3 = _create_background_image(include_background_pattern, background_mode)
         cw.add_overlay_from_dict(overlays, area_def, background=background_img3)
 
         # Manually (no dict, no cache)
-        background_img4 = _create_background_image(include_background_pattern)
+        background_img4 = _create_background_image(include_background_pattern, background_mode)
         for shape_params in overlays["shapefiles"]:
             cw.add_shapefile_shapes(background_img4, area_def, **shape_params)
 
@@ -2019,10 +2022,12 @@ def _create_polygon_shapefile(fn: pathlib.Path, polygon_coords: list) -> None:
         test_shapefile.record("test")
 
 
-def _create_background_image(add_pattern: bool) -> Image:
-    img_data = np.zeros((200, 200, 4), dtype=np.uint8)
-    img_data[..., -1] = 255
+def _create_background_image(add_pattern: bool, background_mode: str) -> Image:
+    num_bands = len(background_mode)
+    img_data = np.zeros((200, 200, num_bands), dtype=np.uint8)
+    if background_mode[-1] == "A":
+        img_data[..., -1] = 255
     if add_pattern:
         img_data[6:30, 6:30, 0] = 127
         img_data[6:30, -30:-6, 0] = 127
-    return Image.fromarray(img_data, mode="RGBA")
+    return Image.fromarray(img_data, mode=background_mode)

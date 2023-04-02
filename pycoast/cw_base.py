@@ -1204,8 +1204,7 @@ class _OverlaysFromDict:
                 foreground = Image.open(cache_file)
                 logger.info("Using image in cache %s", cache_file)
                 if background is not None:
-                    fg = foreground.convert("RGBa")
-                    background.paste(fg, mask=fg)
+                    _apply_cached_foreground_on_background(background, foreground)
                 return foreground
             logger.info("Regenerating cache file.")
         except OSError:
@@ -1218,8 +1217,7 @@ class _OverlaysFromDict:
         except IOError as e:
             logger.error("Can't save cache: %s", str(e))
         if self._background is not None:
-            premult_foreground = self._foreground.convert("RGBa")
-            self._background.paste(premult_foreground, mask=premult_foreground)
+            _apply_cached_foreground_on_background(self._background, self._foreground)
 
     def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
         area_hash = hash(area_def)
@@ -1448,6 +1446,18 @@ class _OverlaysFromDict:
             fill,
             **params,
         )
+
+
+def _apply_cached_foreground_on_background(background, foreground):
+    premult_foreground = foreground.convert("RGBa")
+    if background.mode == "RGBA":
+        # Cached foreground and background are both RGBA, not extra conversions needed
+        background.paste(premult_foreground, mask=premult_foreground)
+        return
+    background_rgba = background.convert("RGBA")
+    background_rgba.paste(premult_foreground, mask=premult_foreground)
+    # overwrite background image in place
+    background.paste(background_rgba)
 
 
 class _GridDrawer:
