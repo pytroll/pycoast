@@ -19,17 +19,17 @@
 """Main unit tests for pycoast."""
 
 import os
+import pathlib
 import time
 from glob import glob
 
 import aggdraw
 import numpy as np
 import pytest
+import shapefile
 from PIL import Image, ImageFont
 from pyresample.geometry import AreaDefinition
 from pytest_lazyfixture import lazy_fixture
-
-from .utils import set_directory
 
 LOCAL_DIR = os.path.dirname(__file__)
 
@@ -44,6 +44,12 @@ agg_font_20_yellow = aggdraw.Font("yellow", font_path, opacity=255, size=20)
 agg_font_20_orange = aggdraw.Font("orange", font_path, opacity=255, size=20)
 pil_font_20 = ImageFont.truetype(font_path, 20)
 pil_font_16 = ImageFont.truetype(font_path, 16)
+
+
+@pytest.fixture
+def cd_test_dir(monkeypatch):
+    """Change directory to the pycoast/tests directory."""
+    monkeypatch.chdir(LOCAL_DIR)
 
 
 def fft_proj_rms(a1, a2):
@@ -440,6 +446,7 @@ class TestContourWriterPIL:
             ),
         ],
     )
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_grid(self, cw_pil, new_test_image, filename, shape, area_def, level, grid_kwargs):
         grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
 
@@ -707,6 +714,7 @@ class TestContourWriterPIL:
 
         assert images_match(ref_image, img), "Writing of Brazil shapefiles failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_coasts_and_grid(self, cw_pil, new_test_image):
         overlay_config = os.path.join(LOCAL_DIR, "coasts_and_grid.ini")
         filename = "grid_nh.png"
@@ -719,6 +727,7 @@ class TestContourWriterPIL:
         img.paste(overlay, mask=overlay)
         assert images_match(grid_img, img), "Writing of nh grid failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_points_and_borders_pil(self, cw_pil, new_test_image):
         config_file = os.path.join(LOCAL_DIR, "nh_points_pil.ini")
         filename = "nh_points_cfg_pil.png"
@@ -764,6 +773,7 @@ class TestContourWriterPIL:
 
         assert images_match(grid_img, img), "Writing of nh cities_pil failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_cities_cfg_pil(self, cw_pil, new_test_image):
         config_file = os.path.join(LOCAL_DIR, "nh_cities_pil.ini")
         filename = "nh_cities_pil.png"
@@ -867,6 +877,7 @@ class TestContourWriterPIL:
 
         assert images_match(grid_img, img), "Writing of two shapefiles from dict pil failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_one_shapefile_from_cfg_pil(self, cw_pil, new_test_image):
         config_file = os.path.join(LOCAL_DIR, "nh_one_shapefile.ini")
         filename = "one_shapefile_from_cfg_pil.png"
@@ -875,11 +886,11 @@ class TestContourWriterPIL:
         img = new_test_image("RGB", (425, 425), filename)
         area_def = south_america()
 
-        with set_directory(repos_root_dir):
-            cw_pil.add_overlay_from_config(config_file, area_def, img)
+        cw_pil.add_overlay_from_config(config_file, area_def, img)
 
         assert images_match(grid_img, img), "Writing one shapefile from cfg pil failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_grid_from_dict_pil(self, cw_pil, new_test_image):
         filename = "grid_from_dict_pil.png"
         grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
@@ -1031,6 +1042,7 @@ def test_shapes(new_test_image, cw, filename, area_def, specific_kwargs):
         ),
     ],
 )
+@pytest.mark.usefixtures("cd_test_dir")
 def test_no_scratch(new_test_image, cw, filename, shape, area_def, specific_kwargs):
     """Test no scratches are visible."""
     result_file = os.path.join(LOCAL_DIR, filename)
@@ -1435,7 +1447,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of Brazil shapefiles failed"
 
-    #    @unittest.skip("All kwargs are not supported, so can't create equal results")
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_coasts_and_grid(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1462,6 +1474,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of nh grid failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_points_and_borders_agg(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1542,6 +1555,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing of nh cities_agg failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_cities_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1684,6 +1698,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing two shapefiles from dict agg failed"
 
+    @pytest.mark.usefixtures("cd_test_dir")
     def test_add_one_shapefile_from_cfg_agg(self):
         from pyresample.geometry import AreaDefinition
 
@@ -1798,7 +1813,7 @@ class TestFromConfig:
         res = np.array(img)
         assert fft_metric(euro_data, res), "Writing of contours failed"
 
-    def test_cache(self, tmpdir):
+    def test_cache_generation_reuse(self, tmpdir):
         """Test generating a transparent foreground and cache it."""
         from pycoast import ContourWriterPIL
 
@@ -1870,7 +1885,6 @@ class TestFromConfig:
         """Testing caching when changing parameters."""
         from pycoast import ContourWriterPIL
 
-        # img = Image.new('RGB', (640, 480))
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
         area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
         area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
@@ -1921,6 +1935,74 @@ class TestFromConfig:
         # new cache file should be...new
         assert os.path.getmtime(new_cache_filename) != mtime
 
+    @pytest.mark.parametrize("background_mode", ["RGB", "RGBA"])
+    @pytest.mark.parametrize("include_background_pattern", [False, True])
+    @pytest.mark.parametrize("upper_right_opacity", [32, 127, 255])
+    def test_cache_nocache_consistency(
+        self, tmp_path, include_background_pattern, background_mode, upper_right_opacity
+    ):
+        """Test that an image generated with an image looks the same when using a cached foreground."""
+        from pycoast import ContourWriterAGG
+
+        proj4_string = "+proj=longlat +ellps=WGS84"
+        area_extent = (-10.0, -10.0, 10.0, 10.0)
+        area_def = FakeAreaDef(proj4_string, area_extent, 200, 200)
+        cw = ContourWriterAGG(gshhs_root_dir)
+
+        # create test shapefiles
+        test_shape_filename1 = tmp_path / "test_shapes1"
+        _create_polygon_shapefile(test_shape_filename1, [[[-10.0, 10.0], [-5.0, 10.0], [-5.0, 5.0], [-10.0, 5.0]]])
+        test_shape_filename2 = tmp_path / "test_shapes2"
+        _create_polygon_shapefile(test_shape_filename2, [[[5.0, 10.0], [10.0, 10.0], [10.0, 5.0], [5.0, 5.0]]])
+
+        overlays = {
+            "cache": {"file": os.path.join(tmp_path, "pycoast_cache")},
+            "shapefiles": [
+                {
+                    "filename": str(test_shape_filename1),
+                    "fill": (0, 255, 0),
+                    "outline": (255, 255, 255),
+                    "fill_opacity": 255,
+                },
+                {
+                    "filename": str(test_shape_filename2),
+                    "fill": (0, 255, 0),
+                    "outline": (255, 255, 0),
+                    "fill_opacity": upper_right_opacity,
+                },
+            ],
+        }
+
+        # Create the original cache file
+        background_img1 = _create_background_image(include_background_pattern, background_mode)
+        cached_image1 = cw.add_overlay_from_dict(overlays, area_def, background=background_img1)
+
+        # Reuse the generated cache file
+        background_img2 = _create_background_image(include_background_pattern, background_mode)
+        cached_image2 = cw.add_overlay_from_dict(overlays, area_def, background=background_img2)
+
+        # Create without cache
+        overlays.pop("cache")
+        background_img3 = _create_background_image(include_background_pattern, background_mode)
+        cw.add_overlay_from_dict(overlays, area_def, background=background_img3)
+
+        # Manually (no dict, no cache)
+        background_img4 = _create_background_image(include_background_pattern, background_mode)
+        for shape_params in overlays["shapefiles"]:
+            cw.add_shapefile_shapes(background_img4, area_def, **shape_params)
+
+        # two transparent overlay images
+        np.testing.assert_allclose(np.array(cached_image1), np.array(cached_image2), atol=0)
+        # cached overlay applied to background image should always be equal
+        np.testing.assert_allclose(np.array(background_img1), np.array(background_img2), atol=0)
+        # cached overlay applied to background image and regenerated overlay on background image should be equal
+        # but due to floating point differences they are off by a little bit
+        np.testing.assert_allclose(
+            np.array(background_img1, dtype=np.float32), np.array(background_img3, dtype=np.float32), atol=1
+        )
+        # no cache version and manual version should be the same
+        np.testing.assert_allclose(np.array(background_img3), np.array(background_img4), atol=0)
+
     def test_get_resolution(self):
         """Get the automagical resolution computation."""
         from pycoast import get_resolution_from_area
@@ -1931,3 +2013,21 @@ class TestFromConfig:
         assert get_resolution_from_area(area_def) == "l"
         area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
         assert get_resolution_from_area(area_def) == "h"
+
+
+def _create_polygon_shapefile(fn: pathlib.Path, polygon_coords: list) -> None:
+    with shapefile.Writer(fn) as test_shapefile:
+        test_shapefile.field("name", "C")
+        test_shapefile.poly(polygon_coords)
+        test_shapefile.record("test")
+
+
+def _create_background_image(add_pattern: bool, background_mode: str) -> Image:
+    num_bands = len(background_mode)
+    img_data = np.zeros((200, 200, num_bands), dtype=np.uint8)
+    if background_mode[-1] == "A":
+        img_data[..., -1] = 255
+    if add_pattern:
+        img_data[6:30, 6:30, 0] = 127
+        img_data[6:30, -30:-6, 0] = 127
+    return Image.fromarray(img_data, mode=background_mode)

@@ -506,10 +506,15 @@ class ContourWriterBase(object):
         the same provided AreaDefinition and parameters. Cached results are
         identified by hashing the AreaDefinition and the overlays dictionary.
 
+        Note that if ``background`` is provided and caching is not used, the
+        result will be the final result of applying the overlays onto the
+        background. This is due to an optimization step avoiding creating a
+        separate overlay image in memory when it isn't needed.
+
         .. warning::
 
             Font objects are ignored in parameter hashing as they can't be easily hashed.
-            Therefore font changes will not trigger a new rendering for the cache.
+            Therefore, font changes will not trigger a new rendering for the cache.
 
         :Parameters:
             overlays : dict
@@ -1199,7 +1204,7 @@ class _OverlaysFromDict:
                 foreground = Image.open(cache_file)
                 logger.info("Using image in cache %s", cache_file)
                 if background is not None:
-                    background.paste(foreground, mask=foreground.split()[-1])
+                    _apply_cached_foreground_on_background(background, foreground)
                 return foreground
             logger.info("Regenerating cache file.")
         except OSError:
@@ -1212,7 +1217,7 @@ class _OverlaysFromDict:
         except IOError as e:
             logger.error("Can't save cache: %s", str(e))
         if self._background is not None:
-            self._background.paste(self._foreground, mask=self._foreground.split()[-1])
+            _apply_cached_foreground_on_background(self._background, self._foreground)
 
     def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
         area_hash = hash(area_def)
@@ -1441,6 +1446,18 @@ class _OverlaysFromDict:
             fill,
             **params,
         )
+
+
+def _apply_cached_foreground_on_background(background, foreground):
+    premult_foreground = foreground.convert("RGBa")
+    if background.mode == "RGBA":
+        # Cached foreground and background are both RGBA, not extra conversions needed
+        background.paste(premult_foreground, mask=premult_foreground)
+        return
+    background_rgba = background.convert("RGBA")
+    background_rgba.paste(premult_foreground, mask=premult_foreground)
+    # overwrite background image in place
+    background.paste(background_rgba)
 
 
 class _GridDrawer:
