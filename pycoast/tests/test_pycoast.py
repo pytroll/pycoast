@@ -28,6 +28,7 @@ import numpy as np
 import pytest
 import shapefile
 from PIL import Image, ImageFont
+from pyproj import CRS
 from pyresample.geometry import AreaDefinition
 from pytest_lazyfixture import lazy_fixture
 
@@ -1770,12 +1771,43 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         res = np.array(img)
         assert fft_metric(grid_data, res), "Writing grid from dict agg failed"
 
+    def test_lonlat_pm_change(self):
+        """Test that a longlat projection with a non-0 prime meridian is handled correctly."""
+        from pyresample.geometry import AreaDefinition
+
+        from pycoast import ContourWriterAGG
+
+        area_def1 = AreaDefinition("", "", "", "+proj=longlat", 640, 480, (-55.0, -35.0, -5.0, 3.0))
+        area_def2 = AreaDefinition("", "", "", "+proj=longlat +pm=180", 640, 480, (-55.0, -35.0, -5.0, 3.0))
+        area_def3 = AreaDefinition("", "", "", "+proj=longlat +pm=180", 640, 480, (125.0, -35.0, 175.0, 3.0))
+        img1 = Image.new("RGBA", (640, 480))
+        img2 = Image.new("RGBA", (640, 480))
+        img3 = Image.new("RGBA", (640, 480))
+
+        cw = ContourWriterAGG(gshhs_root_dir)
+        cw.add_coastlines(img1, area_def1, resolution="l", level=4)
+        cw.add_coastlines(img2, area_def2, resolution="l", level=4)
+        cw.add_coastlines(img3, area_def3, resolution="l", level=4)
+
+        # with a prime meridian shift and extents shift, the images should be the same
+        np.testing.assert_allclose(np.array(img1), np.array(img3))
+        # with only a prime meridian shift and same extents, the images should be completely different
+        _assert_all_notclose(np.array(img1), np.array(img2))
+        # with only an extents change, the images should be completely different
+        _assert_all_notclose(np.array(img2), np.array(img3))
+
+
+def _assert_all_notclose(*args, **kwargs):
+    with pytest.raises(AssertionError):
+        np.testing.assert_allclose(*args, **kwargs)
+
 
 class FakeAreaDef:
     """A fake area definition object."""
 
     def __init__(self, proj4_string, area_extent, x_size, y_size):
-        self.proj_str = self.proj_dict = self.crs = proj4_string
+        self.proj_str = self.proj_dict = proj4_string
+        self.crs = CRS.from_user_input(proj4_string)
         self.area_extent = area_extent
         self.width = x_size
         self.height = y_size
@@ -2003,16 +2035,32 @@ class TestFromConfig:
         # no cache version and manual version should be the same
         np.testing.assert_allclose(np.array(background_img3), np.array(background_img4), atol=0)
 
-    def test_get_resolution(self):
+    @pytest.mark.parametrize(
+        ("crs_input", "extents", "size", "exp_resolution"),
+        [
+            (
+                "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84",
+                (-3363403.31, -2291879.85, 2630596.69, 2203620.1),
+                (640, 480),
+                "l",
+            ),
+            (
+                "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84",
+                (-3363403.31, -2291879.85, 2630596.69, 2203620.1),
+                (6400, 4800),
+                "h",
+            ),
+            ("+proj=longlat +ellps=WGS84", (-45.0, -35.0, 5.0, 3.0), (640, 480), "l"),
+            ("+proj=longlat +pm=180 +ellps=WGS84", (-45.0, -35.0, 5.0, 3.0), (640, 480), "l"),
+        ],
+    )
+    def test_get_resolution(self, crs_input, extents, size, exp_resolution):
         """Get the automagical resolution computation."""
         from pycoast import get_resolution_from_area
 
-        proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
-        area_extent = (-3363403.31, -2291879.85, 2630596.69, 2203620.1)
-        area_def = FakeAreaDef(proj4_string, area_extent, 640, 480)
-        assert get_resolution_from_area(area_def) == "l"
-        area_def = FakeAreaDef(proj4_string, area_extent, 6400, 4800)
-        assert get_resolution_from_area(area_def) == "h"
+        crs = CRS.from_user_input(crs_input)
+        area_def = FakeAreaDef(crs, extents, *size)
+        assert get_resolution_from_area(area_def) == exp_resolution
 
 
 def _create_polygon_shapefile(fn: pathlib.Path, polygon_coords: list) -> None:
