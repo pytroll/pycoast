@@ -154,6 +154,20 @@ def dateline_2():
 DATELINE_2 = dateline_2()
 
 
+def lonlat_0(pm=0):
+    """Create longlat projection over Cuba."""
+    proj4_string = "+proj=longlat +lon_0=0.0 +ellps=WGS84"
+    if pm:
+        proj4_string += f" +pm={pm}"
+    area_extent = (pm + -90.0, 15.0, pm + -70.0, 25.0)
+    area_def = (proj4_string, area_extent)
+    return area_def
+
+
+LONLAT_0 = lonlat_0()
+LONLAT_0_180 = lonlat_0(pm=180)
+
+
 def nh():
     """Create the nh area."""
     proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
@@ -445,18 +459,45 @@ class TestContourWriterPIL:
                     lat_placement="lr",
                 ),
             ),
+            (
+                "lonlat_boundary_cross.png",
+                (640, 480),
+                LONLAT_0,
+                4,
+                dict(
+                    fill="blue",
+                    write_text=False,
+                    outline="blue",
+                    minor_outline="blue",
+                    lon_placement="b",
+                    lat_placement="lr",
+                ),
+            ),
+            (
+                "lonlat_boundary_cross.png",
+                (640, 480),
+                LONLAT_0_180,
+                4,
+                dict(
+                    fill="blue",
+                    write_text=False,
+                    outline="blue",
+                    minor_outline="blue",
+                    lon_placement="b",
+                    lat_placement="lr",
+                ),
+            ),
         ],
     )
     @pytest.mark.usefixtures("cd_test_dir")
     def test_grid(self, cw_pil, new_test_image, filename, shape, area_def, level, grid_kwargs):
-        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
-
         img = new_test_image("RGB", shape, filename)
 
         cw_pil.add_coastlines(img, area_def, resolution="l", level=level)
         font = pil_font_16
         cw_pil.add_grid(img, area_def, (10.0, 10.0), (2.0, 2.0), font=font, **grid_kwargs)
 
+        grid_img = Image.open(os.path.join(LOCAL_DIR, filename))
         assert images_match(grid_img, img), "Writing of grid failed"
 
     def test_grid_nh(self, cw_pil, new_test_image):
