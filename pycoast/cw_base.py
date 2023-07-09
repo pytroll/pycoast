@@ -167,8 +167,11 @@ class ContourWriterBase(object):
 
     def _draw_text(self, draw, position, txt, font, align="cc", **kwargs):
         """Draw text with agg module."""
-        left, top, right, bottom = draw.textbbox(position, txt, font)
-        txt_width, txt_height = right - left, top - bottom
+        if hasattr(draw, "textsize"):
+            txt_width, txt_height = draw.textsize(txt, font)
+        else:
+            left, top, right, bottom = draw.textbbox(position, txt, font)
+            txt_width, txt_height = right - left, top - bottom
         x_pos, y_pos = position
         ax, ay = align.lower()
         if ax == "r":

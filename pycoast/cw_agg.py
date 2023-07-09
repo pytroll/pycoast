@@ -91,8 +91,11 @@ class ContourWriterAGG(ContourWriterBase):
     ):
         """Add a text box at position (x,y)."""
         if box_outline is not None:
-            left, top, right, bottom = draw.textbbox(text_position, text, font)
-            text_size = right - left, top - bottom
+            if hasattr(draw, "textsize"):
+                text_size = draw.textsize(text, font)
+            else:
+                left, top, right, bottom = draw.textbbox(text_position, text, font)
+                text_size = right - left, top - bottom
             margin = 2
             xUL = text_position[0] - margin
             yUL = text_position[1]
