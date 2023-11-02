@@ -34,7 +34,7 @@ rivers, and lakes, shapefiles from the
 installed. Download the zipped GSHHS and WDBII shapefiles. At the time of
 writing the current zip file can be found at:
 
-http://www.soest.hawaii.edu/pwessel/gshhg/gshhg-shp-2.3.7.zip
+https://www.soest.hawaii.edu/pwessel/gshhg/gshhg-shp-2.3.7.zip
 
 Unzip the files to a data directory (hereafter *DB_DATA_ROOT*).
 The absolute path/name of this directory is called *db_root_path*
