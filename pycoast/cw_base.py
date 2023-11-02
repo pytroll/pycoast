@@ -29,9 +29,9 @@ import os
 from typing import Generator
 
 import numpy as np
-import pyproj
 import shapefile
 from PIL import Image
+from pyproj import CRS, Proj
 
 try:
     from pyresample import AreaDefinition
@@ -45,16 +45,11 @@ def get_resolution_from_area(area_def):
     """Get the best resolution for an area definition."""
     x_size = area_def.width
     y_size = area_def.height
-    prj = Proj(area_def.crs if hasattr(area_def, "crs") else area_def.proj_str)
-    if prj.is_latlong():
-        x_ll, y_ll = prj(area_def.area_extent[0], area_def.area_extent[1])
-        x_ur, y_ur = prj(area_def.area_extent[2], area_def.area_extent[3])
-        x_resolution = (x_ur - x_ll) / x_size
-        y_resolution = (y_ur - y_ll) / y_size
-    else:
-        x_resolution = (area_def.area_extent[2] - area_def.area_extent[0]) / x_size
-        y_resolution = (area_def.area_extent[3] - area_def.area_extent[1]) / y_size
+    x_resolution = abs(area_def.area_extent[2] - area_def.area_extent[0]) / x_size
+    y_resolution = abs(area_def.area_extent[3] - area_def.area_extent[1]) / y_size
     res = min(x_resolution, y_resolution)
+    if "degree" in area_def.crs.axis_info[0].unit_name:
+        res = _estimate_metered_resolution_from_degrees(area_def.crs, res)
 
     if res > 25000:
         return "c"
@@ -66,6 +61,12 @@ def get_resolution_from_area(area_def):
         return "h"
     else:
         return "f"
+
+
+def _estimate_metered_resolution_from_degrees(crs: CRS, resolution_degrees: float) -> float:
+    major_radius = crs.datum.ellipsoid.semi_major_metre
+    # estimate by taking the arc length using the radius
+    return major_radius * math.radians(resolution_degrees)
 
 
 class _CoordConverter:
@@ -91,7 +92,8 @@ class _CoordConverter:
             raise ValueError(f"'coord_ref' must be one of {pretty_coord_refs}.")
         self._convert_method = convert_methods[coord_ref]
 
-    def _check_area_def(self, area_def):
+    @staticmethod
+    def _check_area_def(area_def):
         if AreaDefinition is None:
             raise ImportError(
                 "Missing required 'pyresample' module, please "
@@ -128,16 +130,6 @@ def hash_dict(dict_to_hash: dict) -> str:
     encoded = json.dumps(dict_to_hash, sort_keys=True).encode()
     dhash.update(encoded)
     return dhash.hexdigest()
-
-
-class Proj(pyproj.Proj):
-    """Wrapper around pyproj to add in 'is_latlong'."""
-
-    def is_latlong(self):
-        if hasattr(self, "crs"):
-            return self.crs.is_geographic
-        # pyproj<2.0
-        return super(Proj, self).is_latlong()
 
 
 class ContourWriterBase(object):
@@ -510,10 +502,15 @@ class ContourWriterBase(object):
         the same provided AreaDefinition and parameters. Cached results are
         identified by hashing the AreaDefinition and the overlays dictionary.
 
+        Note that if ``background`` is provided and caching is not used, the
+        result will be the final result of applying the overlays onto the
+        background. This is due to an optimization step avoiding creating a
+        separate overlay image in memory when it isn't needed.
+
         .. warning::
 
             Font objects are ignored in parameter hashing as they can't be easily hashed.
-            Therefore font changes will not trigger a new rendering for the cache.
+            Therefore, font changes will not trigger a new rendering for the cache.
 
         :Parameters:
             overlays : dict
@@ -1057,16 +1054,10 @@ def _get_bounding_box_lonlat_sides(area_extent, x_size, y_size, prj):
     x_range = np.linspace(x_ll, x_ur, num=x_size)
     y_range = np.linspace(y_ll, y_ur, num=y_size)
 
-    if prj.is_latlong():
-        lons_s1, lats_s1 = x_ll * np.ones(y_range.size), y_range
-        lons_s2, lats_s2 = x_range, y_ur * np.ones(x_range.size)
-        lons_s3, lats_s3 = x_ur * np.ones(y_range.size), y_range
-        lons_s4, lats_s4 = x_range, y_ll * np.ones(x_range.size)
-    else:
-        lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range, inverse=True)
-        lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur, inverse=True)
-        lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
-        lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
+    lons_s1, lats_s1 = prj(np.ones(y_range.size) * x_ll, y_range, inverse=True)
+    lons_s2, lats_s2 = prj(x_range, np.ones(x_range.size) * y_ur, inverse=True)
+    lons_s3, lats_s3 = prj(np.ones(y_range.size) * x_ur, y_range, inverse=True)
+    lons_s4, lats_s4 = prj(x_range, np.ones(x_range.size) * y_ll, inverse=True)
     return (lons_s1, lons_s2, lons_s3, lons_s4), (lats_s1, lats_s2, lats_s3, lats_s4)
 
 
@@ -1091,12 +1082,7 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj, x_offset=0, y_offs
     shape_data = np.array(shape.points if hasattr(shape, "points") else shape)
     lons = shape_data[:, 0]
     lats = shape_data[:, 1]
-
-    if prj.is_latlong():
-        x_ll, y_ll = prj(area_extent[0], area_extent[1])
-        x_ur, y_ur = prj(area_extent[2], area_extent[3])
-    else:
-        x_ll, y_ll, x_ur, y_ur = area_extent
+    x_ll, y_ll, x_ur, y_ur = area_extent
 
     x, y = prj(lons, lats)
 
@@ -1203,7 +1189,7 @@ class _OverlaysFromDict:
                 foreground = Image.open(cache_file)
                 logger.info("Using image in cache %s", cache_file)
                 if background is not None:
-                    background.paste(foreground, mask=foreground.split()[-1])
+                    _apply_cached_foreground_on_background(background, foreground)
                 return foreground
             logger.info("Regenerating cache file.")
         except OSError:
@@ -1216,7 +1202,7 @@ class _OverlaysFromDict:
         except IOError as e:
             logger.error("Can't save cache: %s", str(e))
         if self._background is not None:
-            self._background.paste(self._foreground, mask=self._foreground.split()[-1])
+            _apply_cached_foreground_on_background(self._background, self._foreground)
 
     def _generate_cache_filename(self, cache_prefix, area_def, overlays_dict):
         area_hash = hash(area_def)
@@ -1445,6 +1431,18 @@ class _OverlaysFromDict:
             fill,
             **params,
         )
+
+
+def _apply_cached_foreground_on_background(background, foreground):
+    premult_foreground = foreground.convert("RGBa")
+    if background.mode == "RGBA":
+        # Cached foreground and background are both RGBA, not extra conversions needed
+        background.paste(premult_foreground, mask=premult_foreground)
+        return
+    background_rgba = background.convert("RGBA")
+    background_rgba.paste(premult_foreground, mask=premult_foreground)
+    # overwrite background image in place
+    background.paste(background_rgba)
 
 
 class _GridDrawer:

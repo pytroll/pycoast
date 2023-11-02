@@ -27,10 +27,11 @@ extras_require = {
         "sphinx",
         "pyresample",
         "pytest",
+        "pytest-lazy-fixture",
         "sphinx_rtd_theme",
         "sphinxcontrib-apidoc",
     ],
-    "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls"],
+    "tests": ["pyresample", "pytest", "pytest-cov", "coverage", "coveralls", "pytest-lazy-fixture"],
 }
 
 with open("README", "r") as readme_file:
@@ -45,6 +46,7 @@ setup(
     author="Esben S. Nielsen",
     author_email="esn@dmi.dk",
     packages=["pycoast", "pycoast.tests"],
+    include_package_data=True,
     install_requires=requires,
     extras_require=extras_require,
     python_requires=">3.7",

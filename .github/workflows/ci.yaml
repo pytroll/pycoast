@@ -3,78 +3,22 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  lint:
-    name: lint and style checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 flake8-docstrings flake8-debugger flake8-bugbear pytest
-      - name: Install Pycoast
-        run: |
-          pip install -e .
-      - name: Run linting
-        run: |
-          flake8 pycoast/
-
-  website:
-    name: build website
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-#      - name: Set up Python 3.9
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: 3.9
-      - name: Setup Conda Environment
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          python-version: 3.9
-          use-mamba: true
-          environment-file: continuous_integration/environment.yaml
-          activate-environment: test-environment
-
-      - name: Install Pycoast
-        shell: bash -l {0}
-        run: |
-          python -m pip install -e .[docs]
-
-      - name: Run Sphinx Build
-        shell: bash -l {0}
-        run: |
-          cd docs; \
-          make html SPHINXOPTS="-W"
-
   test:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
-    needs: [lint]
     strategy:
       fail-fast: true
       matrix:
         os: ["windows-latest", "ubuntu-latest", "macos-latest"]
-        python-version: ["3.7", "3.9"]
+        python-version: ["3.8", "3.11"]
         experimental: [false]
         include:
-          - python-version: "3.9"
+          - python-version: "3.11"
             os: "ubuntu-latest"
             experimental: true
 
     env:
-      PYTHON_VERSION: ${{ matrix.python-version }}
+      PYTHON_VERSION: "${{ matrix.python-version }}"
       OS: ${{ matrix.os }}
       UNSTABLE: ${{ matrix.experimental }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -83,17 +27,12 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
-#      - name: Set up Python ${{ matrix.python-version }}
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: ${{ matrix.python-version }}
-
       - name: Setup Conda Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: ${{ matrix.python-version }}
+          python-version: "${{ matrix.python-version }}"
           use-mamba: true
           environment-file: continuous_integration/environment.yaml
 
