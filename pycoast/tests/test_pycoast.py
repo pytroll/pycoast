@@ -317,7 +317,9 @@ def new_test_image(request, tmp_path):
     except ValueError:  # the fixture wasn't used
         return
     if request.node.rep_call.failed:
-        img.save(os.path.join(tmp_path, filename))
+        failed_path = tmp_path / filename
+        print(f"Failed image saved to: {failed_path}")
+        img.save(failed_path)
 
 
 def images_match(ref_image, test_image):
