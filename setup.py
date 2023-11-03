@@ -49,7 +49,7 @@ setup(
     include_package_data=True,
     install_requires=requires,
     extras_require=extras_require,
-    python_requires=">3.7",
+    python_requires=">3.9",
     zip_safe=False,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
