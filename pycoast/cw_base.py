@@ -163,7 +163,8 @@ class ContourWriterBase(object):
             txt_width, txt_height = draw.textsize(txt, font)
         else:
             left, top, right, bottom = draw.textbbox(position, txt, font)
-            txt_width, txt_height = right - left, top - bottom
+            # origin is upper-left (bottom is greater than top)
+            txt_width, txt_height = right - left, bottom - top
         x_pos, y_pos = position
         ax, ay = align.lower()
         if ax == "r":
