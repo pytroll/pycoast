@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Setuptools-based packaging and installation configuration."""
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 import versioneer
 
@@ -45,7 +45,7 @@ setup(
     long_description=long_description,
     author="Esben S. Nielsen",
     author_email="esn@dmi.dk",
-    packages=["pycoast", "pycoast.tests"],
+    packages=find_packages(),
     include_package_data=True,
     install_requires=requires,
     extras_require=extras_require,
