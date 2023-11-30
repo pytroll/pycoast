@@ -1206,7 +1206,6 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         from pycoast import ContourWriterAGG
 
         grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_europe_agg_txt.png"))
-        grid_data = np.array(grid_img)
 
         img = Image.new("RGB", (640, 480))
         proj4_string = "+proj=stere +lon_0=8.00 +lat_0=50.00 +lat_ts=50.00 +ellps=WGS84"
@@ -1237,8 +1236,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
             minor_is_tick=False,
         )
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of grid failed for AGG"
+        assert images_match(grid_img, img), "Writing of grid failed for AGG"
 
     def test_grid_geos_agg(self):
         from pycoast import ContourWriterAGG
@@ -1305,7 +1303,6 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         from pycoast import ContourWriterAGG
 
         grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_nh_agg.png"))
-        grid_data = np.array(grid_img)
         img = Image.new("RGB", (425, 425))
         proj4_string = "+proj=laea +lat_0=90 +lon_0=0 +a=6371228.0 +units=m"
         area_extent = (-5326849.0625, -5326849.0625, 5326849.0625, 5326849.0625)
@@ -1332,12 +1329,10 @@ class TestContourWriterAGG(_ContourWriterTestBase):
             lat_placement="",
         )
 
-        res = np.array(img)
-
         # NOTE: Experience inconsistency in ttf font writing between systems.
         # Still trying to figure out why this test sometimes fails to write
         # correct font markings.
-        assert fft_metric(grid_data, res), "Writing of nh grid failed for AGG"
+        assert images_match(grid_img, img), "Writing of nh grid failed for AGG"
 
     def test_add_polygon_agg(self):
         from pycoast import ContourWriterAGG
@@ -1499,7 +1494,6 @@ class TestContourWriterAGG(_ContourWriterTestBase):
 
         overlay_config = os.path.join(LOCAL_DIR, "coasts_and_grid_agg.ini")
         grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_nh_cfg_agg.png"))
-        grid_data = np.array(grid_img)
         proj_dict = {
             "proj": "laea",
             "lat_0": 90.0,
@@ -1515,8 +1509,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
         img = Image.new("RGB", (850, 850), (255, 255, 255))
         img.paste(overlay, mask=overlay)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing of nh grid failed"
+        assert images_match(grid_img, img), "Writing of nh cfg grid failed"
 
     @pytest.mark.usefixtures("cd_test_dir")
     def test_config_file_points_and_borders_agg(self):
@@ -1772,8 +1765,6 @@ class TestContourWriterAGG(_ContourWriterTestBase):
 
         grid_img = Image.open(os.path.join(LOCAL_DIR, "grid_from_dict_agg.png"))
 
-        grid_data = np.array(grid_img)
-
         img = Image.new("RGB", (800, 800))
         proj4_string = "+proj=stere +ellps=WGS84 +lon_0=-4.532 +lat_0=54.228"
         area_extent = (-600000.0, -600000.0, 600000.0, 600000.0)
@@ -1811,8 +1802,7 @@ class TestContourWriterAGG(_ContourWriterTestBase):
 
         img = cw.add_overlay_from_dict(overlays, area_def, background=img)
 
-        res = np.array(img)
-        assert fft_metric(grid_data, res), "Writing grid from dict agg failed"
+        assert images_match(grid_img, img), "Writing grid from dict agg failed"
 
     def test_lonlat_pm_change(self):
         """Test that a longlat projection with a non-0 prime meridian is handled correctly."""

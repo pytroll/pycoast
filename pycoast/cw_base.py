@@ -179,7 +179,7 @@ class ContourWriterBase(object):
         if ay == "b":
             y_pos = y_pos - txt_height
         elif ay == "c":
-            y_pos = y_pos - txt_width / 2
+            y_pos = y_pos - txt_height / 2
 
         self._engine_text_draw(draw, x_pos, y_pos, txt, font, **kwargs)
 
