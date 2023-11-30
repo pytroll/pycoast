@@ -1,3 +1,38 @@
+## Version 1.7.0 (2023/11/30)
+
+### Issues Closed
+
+* [Issue 107](https://github.com/pytroll/pycoast/issues/107) - Incompatibility with Pillow 10 ([PR 108](https://github.com/pytroll/pycoast/pull/108) by [@avalentino](https://github.com/avalentino))
+* [Issue 95](https://github.com/pytroll/pycoast/issues/95) - Cached overlays are pale
+* [Issue 82](https://github.com/pytroll/pycoast/issues/82) - Test failure with Pillow 9.4 ([PR 84](https://github.com/pytroll/pycoast/pull/84) by [@mraspaud](https://github.com/mraspaud))
+* [Issue 49](https://github.com/pytroll/pycoast/issues/49) - add install instructions to docs
+
+In this release 4 issues were closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 108](https://github.com/pytroll/pycoast/pull/108) - Fix compatibility with Pillow 10 (Draw.textsize versus Draw.textbbox) ([107](https://github.com/pytroll/pycoast/issues/107))
+* [PR 98](https://github.com/pytroll/pycoast/pull/98) - Remove special handling of geographic (longlat) CRSes
+* [PR 96](https://github.com/pytroll/pycoast/pull/96) - Fix cached images producing different results without caching
+
+#### Features added
+
+* [PR 105](https://github.com/pytroll/pycoast/pull/105) - [pre-commit.ci] pre-commit autoupdate
+* [PR 86](https://github.com/pytroll/pycoast/pull/86) - Fix the pycoast tests further
+* [PR 85](https://github.com/pytroll/pycoast/pull/85) - Cleanup tests
+* [PR 84](https://github.com/pytroll/pycoast/pull/84) - Fix reference images for pillow 9.4 ([82](https://github.com/pytroll/pycoast/issues/82))
+* [PR 83](https://github.com/pytroll/pycoast/pull/83) - Factorize font path computation
+
+#### Documentation changes
+
+* [PR 113](https://github.com/pytroll/pycoast/pull/113) - Update shapefile URL in docs to HTTPS
+* [PR 96](https://github.com/pytroll/pycoast/pull/96) - Fix cached images producing different results without caching
+
+In this release 10 pull requests were closed.
+
+
 ## Version 1.6.1 (2022/11/07)
 
 ### Pull Requests Merged
