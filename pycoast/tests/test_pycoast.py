@@ -324,10 +324,7 @@ def new_test_image(request, tmp_path):
 
 def images_match(ref_image, test_image):
     """Check is images match."""
-    res = fft_metric(np.array(ref_image), np.array(test_image))
-    if not res:
-        test_image.save(ref_image.filename)
-    return res
+    return fft_metric(np.array(ref_image), np.array(test_image))
 
 
 class _ContourWriterTestBase:
