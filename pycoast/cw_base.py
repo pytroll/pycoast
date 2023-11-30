@@ -162,11 +162,13 @@ class ContourWriterBase(object):
         if hasattr(draw, "textsize"):
             txt_width, txt_height = draw.textsize(txt, font)
         else:
-            # Only Pillow has "textbbox" at the moment
             left, top, right, bottom = draw.textbbox(position, txt, font)
-            # origin is upper-left (bottom is greater than top)
-            txt_width, txt_height = right - left, bottom - top
-            txt_height *= 1.25  # workaround backwards incompatible changes in pillow
+            # bbox is based on "left ascender" anchor for horizontal text
+            # but does not include the ascender to top distance.
+            # In order to include that additional distance we take height from
+            # anchor (`position`) to the bottom of the text. See:
+            # https://pillow.readthedocs.io/en/stable/handbook/text-anchors.html#text-anchors
+            txt_width, txt_height = right - left, bottom - position[1]
         x_pos, y_pos = position
         ax, ay = align.lower()
         if ax == "r":
