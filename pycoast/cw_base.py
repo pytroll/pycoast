@@ -159,7 +159,16 @@ class ContourWriterBase(object):
 
     def _draw_text(self, draw, position, txt, font, align="cc", **kwargs):
         """Draw text with agg module."""
-        txt_width, txt_height = draw.textsize(txt, font)
+        if hasattr(draw, "textsize"):
+            txt_width, txt_height = draw.textsize(txt, font)
+        else:
+            left, top, right, bottom = draw.textbbox(position, txt, font)
+            # bbox is based on "left ascender" anchor for horizontal text
+            # but does not include the ascender to top distance.
+            # In order to include that additional distance we take height from
+            # anchor (`position`) to the bottom of the text. See:
+            # https://pillow.readthedocs.io/en/stable/handbook/text-anchors.html#text-anchors
+            txt_width, txt_height = right - left, bottom - position[1]
         x_pos, y_pos = position
         ax, ay = align.lower()
         if ax == "r":
@@ -170,7 +179,7 @@ class ContourWriterBase(object):
         if ay == "b":
             y_pos = y_pos - txt_height
         elif ay == "c":
-            y_pos = y_pos - txt_width / 2
+            y_pos = y_pos - txt_height / 2
 
         self._engine_text_draw(draw, x_pos, y_pos, txt, font, **kwargs)
 
