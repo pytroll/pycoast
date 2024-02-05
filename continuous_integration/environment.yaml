@@ -10,6 +10,6 @@ dependencies:
   - aggdraw
   - pyshp
   - pyresample
-  - pytest
+  - pytest <8.0
   - pytest-cov
   - pytest-lazy-fixture
