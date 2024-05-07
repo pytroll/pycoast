@@ -2,7 +2,7 @@ exclude: '^$'
 fail_fast: false
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 24.4.2
     hooks:
       - id: black
         language_version: python3
@@ -21,7 +21,7 @@ repos:
         additional_dependencies: [flake8-docstrings, flake8-debugger, flake8-bugbear, mccabe]
         args: [--max-complexity, "10"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -33,7 +33,7 @@ repos:
       - id: bandit
         args: [--ini, .bandit]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.9.0'  # Use the sha / tag you want to point at
+    rev: 'v1.10.0'  # Use the sha / tag you want to point at
     hooks:
       - id: mypy
         additional_dependencies:
