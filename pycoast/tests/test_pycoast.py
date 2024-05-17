@@ -30,7 +30,7 @@ import shapefile
 from PIL import Image, ImageFont
 from pyproj import CRS
 from pyresample.geometry import AreaDefinition
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf as lazy_fixture
 
 LOCAL_DIR = os.path.dirname(__file__)
 
