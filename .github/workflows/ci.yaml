@@ -49,6 +49,7 @@ jobs:
       - name: Install pycoast
         shell: bash -l {0}
         run: |
+          python -m pip install pytest-lazy-fixtures
           python -m pip install --no-deps -e .
 
       - name: Run unit tests

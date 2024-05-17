@@ -12,4 +12,3 @@ dependencies:
   - pyresample
   - pytest <8.0
   - pytest-cov
-  - pytest-lazy-fixture
