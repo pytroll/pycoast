@@ -1521,7 +1521,7 @@ class _GridDrawer:
         min_lons[min_lons > 180] = min_lons[min_lons > 180] - 360
 
         # Get min_lons not in maj_lons
-        min_lons = np.lib.arraysetops.setdiff1d(min_lons, maj_lons)
+        min_lons = np.setdiff1d(min_lons, maj_lons)
 
         # lats along major lon lines
         lin_lats = np.arange(
@@ -1542,7 +1542,7 @@ class _GridDrawer:
         min_lats = np.arange(round_lat_min + increase_min_lat, lat_max - shorten_max_lat, dlat)
 
         # Get min_lats not in maj_lats
-        min_lats = np.lib.arraysetops.setdiff1d(min_lats, maj_lats)
+        min_lats = np.setdiff1d(min_lats, maj_lats)
 
         # lons along major lat lines (extended slightly to avoid missing the end)
         lin_lons = np.linspace(lon_min, lon_max + Dlon / 5.0, max(self._x_size, self._y_size) // 5)
