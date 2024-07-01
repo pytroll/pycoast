@@ -14,3 +14,9 @@ exclude = '''
 )
 
 '''
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    "ignore:numpy.ndarray size changed:RuntimeWarning",
+]

@@ -1900,6 +1900,7 @@ class TestFromConfig:
         # Create the original cache file
         img = cw.add_overlay_from_dict(overlays, area_def)
         res = np.array(img)
+        img.close()
         cache_glob = glob(os.path.join(tmpdir, "pycoast_cache_*.png"))
         assert len(cache_glob) == 1
         cache_filename = cache_glob[0]
@@ -1910,22 +1911,26 @@ class TestFromConfig:
         # Reuse the generated cache file
         img = cw.add_overlay_from_dict(overlays, area_def)
         res = np.array(img)
+        img.close()
         assert fft_metric(euro_data, res), "Writing of contours failed"
         assert os.path.isfile(cache_filename)
         assert os.path.getmtime(cache_filename) == mtime
 
         # Regenerate cache file
         current_time = time.time()
-        cw.add_overlay_from_dict(overlays, area_def, current_time)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def, current_time)
+        fg_img.close()
         mtime = os.path.getmtime(cache_filename)
         assert mtime > current_time
         assert fft_metric(euro_data, res), "Writing of contours failed"
 
-        cw.add_overlay_from_dict(overlays, area_def, current_time)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def, current_time)
+        fg_img.close()
         assert os.path.getmtime(cache_filename) == mtime
         assert fft_metric(euro_data, res), "Writing of contours failed"
         overlays["cache"]["regenerate"] = True
-        cw.add_overlay_from_dict(overlays, area_def)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def)
+        fg_img.close()
 
         assert os.path.getmtime(cache_filename) != mtime
         assert fft_metric(euro_data, res), "Writing of contours failed"
@@ -1943,7 +1948,8 @@ class TestFromConfig:
             "lat_placement": "lr",
             "lon_placement": "b",
         }
-        cw.add_overlay_from_dict(overlays, area_def)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def)
+        fg_img.close()
         os.remove(cache_filename)
 
     def test_caching_with_param_changes(self, tmpdir):
@@ -1962,7 +1968,8 @@ class TestFromConfig:
         }
 
         # Create the original cache file
-        cw.add_overlay_from_dict(overlays, area_def)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def)
+        fg_img.close()
         cache_glob = glob(os.path.join(tmpdir, "pycoast_cache_*.png"))
         assert len(cache_glob) == 1
         cache_filename = cache_glob[0]
@@ -1970,7 +1977,8 @@ class TestFromConfig:
         mtime = os.path.getmtime(cache_filename)
 
         # Reuse the generated cache file
-        cw.add_overlay_from_dict(overlays, area_def)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def)
+        fg_img.close()
         cache_glob = glob(os.path.join(tmpdir, "pycoast_cache_*.png"))
         assert len(cache_glob) == 1
         assert os.path.isfile(cache_filename)
@@ -1979,7 +1987,8 @@ class TestFromConfig:
         # Remove the font option, should produce the same result
         # font is not considered when caching
         del overlays["grid"]["font"]
-        cw.add_overlay_from_dict(overlays, area_def)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def)
+        fg_img.close()
         cache_glob = glob(os.path.join(tmpdir, "pycoast_cache_*.png"))
         assert len(cache_glob) == 1
         assert os.path.isfile(cache_filename)
@@ -1990,7 +1999,8 @@ class TestFromConfig:
             "cache": {"file": os.path.join(tmpdir, "pycoast_cache")},
             "grid": {"width": 2.0},
         }
-        cw.add_overlay_from_dict(overlays, area_def)
+        fg_img = cw.add_overlay_from_dict(overlays, area_def)
+        fg_img.close()
         cache_glob = glob(os.path.join(tmpdir, "pycoast_cache_*.png"))
         assert len(cache_glob) == 2
         assert os.path.isfile(cache_filename)

@@ -26,6 +26,7 @@ import json
 import logging
 import math
 import os
+from pathlib import Path
 from typing import Generator
 
 import numpy as np
@@ -501,11 +502,11 @@ class ContourWriterBase(object):
         return overlays
 
     def add_overlay_from_dict(self, overlays, area_def, cache_epoch=None, background=None):
-        """Create and return a transparent image adding all the overlays contained in the `overlays` dict.
+        """Create and return a transparent image adding all the overlays contained in the ``overlays`` dict.
 
         Optionally caches overlay results for faster rendering of images with
         the same provided AreaDefinition and parameters. Cached results are
-        identified by hashing the AreaDefinition and the overlays dictionary.
+        identified by hashing the AreaDefinition and the ``overlays`` dictionary.
 
         Note that if ``background`` is provided and caching is not used, the
         result will be the final result of applying the overlays onto the
@@ -530,24 +531,33 @@ class ContourWriterBase(object):
                 provided dictionary (see below).
             background: pillow image instance
                 The image on which to write the overlays on. If it's None (default),
-                a new image is created, otherwise the provide background is
+                a new image is created, otherwise the provided background is
                 used and changed *in place*.
 
+        The keys in ``overlays`` that will be taken into account are:
+        cache, coasts, rivers, borders, shapefiles, grid, cities, points
 
-            The keys in `overlays` that will be taken into account are:
-            cache, coasts, rivers, borders, shapefiles, grid, cities, points
+        For all of them except ``cache``, the items are the same as the
+        corresponding functions in pycoast, so refer to the docstrings of
+        these functions (add_coastlines, add_rivers, add_borders,
+        add_shapefile_shapes, add_grid, add_cities, add_points).
+        For cache, two parameters are configurable:
 
-            For all of them except `cache`, the items are the same as the
-            corresponding functions in pycoast, so refer to the docstrings of
-            these functions (add_coastlines, add_rivers, add_borders,
-            add_shapefile_shapes, add_grid, add_cities, add_points).
-            For cache, two parameters are configurable:
+        - `file`:
+            specify the directory and the prefix
+            of the file to save the caches decoration to (for example
+            /var/run/black_coasts_red_borders)
+        - `regenerate`:
+            True or False (default) to force the overwriting
+            of an already cached file.
 
-            - `file`: specify the directory and the prefix
-                  of the file to save the caches decoration to (for example
-                  /var/run/black_coasts_red_borders)
-            - `regenerate`: True or False (default) to force the overwriting
-                  of an already cached file.
+        :Returns: PIL.Image.Image
+
+            Resulting overlays as an Image object. If caching was used then
+            the Image wraps an open file and should be closed by the caller.
+            If caching was not used or the cached image was recreated then
+            this is an in-memory Image object. Regardless, it can be closed
+            by calling the ``.close()`` method of the Image.
 
         """
         overlay_helper = _OverlaysFromDict(self, overlays, area_def, cache_epoch, background)
@@ -556,11 +566,21 @@ class ContourWriterBase(object):
     def add_overlay_from_config(self, config_file, area_def, background=None):
         """Create and return a transparent image adding all the overlays contained in a configuration file.
 
+        See :meth:`add_overlay_from_dict` for more information.
+
         :Parameters:
             config_file : str
                 Configuration file name
             area_def : object
                 Area Definition of the creating image
+
+        :Returns: PIL.Image.Image
+
+            Resulting overlays as an Image object. If caching was used then
+            the Image wraps an open file and should be closed by the caller.
+            If caching was not used or the cached image was recreated then
+            this is an in-memory Image object. Regardless, it can be closed
+            by calling the ``.close()`` method of the Image.
 
         """
         overlays = self._config_to_dict(config_file)
@@ -705,8 +725,7 @@ class ContourWriterBase(object):
         # cities.red is a reduced version of the files avalable at http://download.geonames.org
         # Fields: 0=name (UTF-8), 1=asciiname, 2=longitude [°E], 3=latitude [°N], 4=countrycode
         cities_filename = os.path.join(db_root_path, os.path.join("CITIES", "cities.txt"))
-        cities_parser = GeoNamesCitiesParser(cities_filename)
-        for city_name, lon, lat in cities_parser.iter_cities_names_lon_lat(cities_list):
+        for city_name, lon, lat in iter_cities_names_lon_lat(cities_filename, cities_list):
             try:
                 x, y = area_def.get_array_indices_from_lonlat(lon, lat)
             except ValueError:
@@ -1132,14 +1151,12 @@ def _get_pixel_index(shape, area_extent, x_size, y_size, prj, x_offset=0, y_offs
     return index_arrays, is_reduced
 
 
-class GeoNamesCitiesParser:
-    """Helper for parsing citiesN.txt files from GeoNames.org."""
-
-    def __init__(self, cities_filename: str):
-        self._cities_file = open(cities_filename, mode="r", encoding="utf-8")
-
-    def iter_cities_names_lon_lat(self, cities_list: list[str]) -> Generator[tuple[str, float, float], None, None]:
-        for city_row in self._cities_file:
+def iter_cities_names_lon_lat(
+    cities_filename: str | Path, cities_list: list[str]
+) -> Generator[tuple[str, float, float], None, None]:
+    """Iterate over citiesN.txt files from GeoNames.org."""
+    with open(cities_filename, mode="r", encoding="utf-8") as cities_file:
+        for city_row in cities_file:
             city_info = city_row.split("\t")
             if not city_info or not (city_info[1] in cities_list or city_info[2] in cities_list):
                 continue
@@ -1441,7 +1458,7 @@ class _OverlaysFromDict:
 def _apply_cached_foreground_on_background(background, foreground):
     premult_foreground = foreground.convert("RGBa")
     if background.mode == "RGBA":
-        # Cached foreground and background are both RGBA, not extra conversions needed
+        # Cached foreground and background are both RGBA, no extra conversions needed
         background.paste(premult_foreground, mask=premult_foreground)
         return
     background_rgba = background.convert("RGBA")
