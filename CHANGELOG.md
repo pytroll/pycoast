@@ -1,3 +1,24 @@
+## Version 1.7.1 (2024/07/01)
+
+### Issues Closed
+
+* [Issue 57](https://github.com/pytroll/pycoast/issues/57) - Test failure on debian sid
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+#### Bugs fixed
+
+* [PR 126](https://github.com/pytroll/pycoast/pull/126) - Fix numpy 2 compatibility
+
+#### Features added
+
+* [PR 124](https://github.com/pytroll/pycoast/pull/124) - Switch to pytest-lazy-fixtures
+
+In this release 2 pull requests were closed.
+
+
 ## Version 1.7.0 (2023/11/30)
 
 ### Issues Closed
