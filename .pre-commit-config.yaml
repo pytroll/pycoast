@@ -2,7 +2,7 @@ exclude: '^$'
 fail_fast: false
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 24.10.0
     hooks:
       - id: black
         language_version: python3
@@ -21,14 +21,14 @@ repos:
         additional_dependencies: [flake8-docstrings, flake8-debugger, flake8-bugbear, mccabe]
         args: [--max-complexity, "10"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
         args: [--unsafe]
   - repo: https://github.com/PyCQA/bandit
-    rev: '1.7.9'
+    rev: '1.7.10'
     hooks:
       - id: bandit
         args: [--ini, .bandit]
