@@ -2121,4 +2121,4 @@ def _create_background_image(add_pattern: bool, background_mode: str) -> Image:
     if add_pattern:
         img_data[6:30, 6:30, 0] = 127
         img_data[6:30, -30:-6, 0] = 127
-    return Image.fromarray(img_data, mode=background_mode)
+    return Image.fromarray(img_data)
