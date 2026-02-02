@@ -8,6 +8,7 @@ that this script be run from the directory it is stored in. Example:
     python create_contributor_map.py -u davidh-ssec
 
 """
+
 import getpass
 import json
 import logging

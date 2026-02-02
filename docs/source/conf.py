@@ -11,6 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 """Sphinx configuration file for generating package documentation."""
+
 from __future__ import annotations
 
 import os
