@@ -89,23 +89,23 @@ class ContourWriterPIL(ContourWriterBase):
         outline = kwargs.get("outline", "white")
 
         # draw '|'
-        (x_bm, y_bm) = (x, y - half_ptsize)  # bottom middle point
-        (x_tm, y_tm) = (x, y + half_ptsize)  # top middle point
+        x_bm, y_bm = (x, y - half_ptsize)  # bottom middle point
+        x_tm, y_tm = (x, y + half_ptsize)  # top middle point
         self._draw_line(draw, [x_bm, y_bm, x_tm, y_tm], outline=outline)
 
         # draw '-'
-        (x_lm, y_lm) = (x - half_ptsize, y)  # left middle point
-        (x_rm, y_rm) = (x + half_ptsize, y)  # right middle point
+        x_lm, y_lm = (x - half_ptsize, y)  # left middle point
+        x_rm, y_rm = (x + half_ptsize, y)  # right middle point
         self._draw_line(draw, [x_lm, y_lm, x_rm, y_rm], outline=outline)
 
         # draw '/'
-        (x_bl, y_bl) = (x - half_ptsize, y - half_ptsize)  # bottom left point
-        (x_tr, y_tr) = (x + half_ptsize, y + half_ptsize)  # top right point
+        x_bl, y_bl = (x - half_ptsize, y - half_ptsize)  # bottom left point
+        x_tr, y_tr = (x + half_ptsize, y + half_ptsize)  # top right point
         self._draw_line(draw, [x_bl, y_bl, x_tr, y_tr], outline=outline)
 
         # draw '\'
-        (x_tl, y_tl) = (x - half_ptsize, y + half_ptsize)  # top left point
-        (x_br, y_br) = (x + half_ptsize, y - half_ptsize)  # bottom right point
+        x_tl, y_tl = (x - half_ptsize, y + half_ptsize)  # top left point
+        x_br, y_br = (x + half_ptsize, y - half_ptsize)  # bottom right point
         self._draw_line(draw, [x_tl, y_tl, x_br, y_br], outline=outline)
 
     def add_shapefile_shapes(

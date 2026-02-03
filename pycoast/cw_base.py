@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Base class for contour writers."""
+
 from __future__ import annotations
 
 import ast
