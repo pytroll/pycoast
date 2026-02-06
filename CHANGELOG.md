@@ -1,3 +1,20 @@
+## Version 1.8.0 (2026/02/06)
+
+### Issues Closed
+
+* [Issue 146](https://github.com/pytroll/pycoast/issues/146) - Relicense to Apache Version 2 ([PR 153](https://github.com/pytroll/pycoast/pull/153) by [@djhoese](https://github.com/djhoese))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+#### Features added
+
+* [PR 153](https://github.com/pytroll/pycoast/pull/153) - Relicense to Apache 2.0 ([146](https://github.com/pytroll/pycoast/issues/146))
+
+In this release 1 pull request was closed.
+
+
 ## Version 1.7.1 (2024/07/01)
 
 ### Issues Closed
