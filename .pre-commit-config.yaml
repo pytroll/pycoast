@@ -10,7 +10,7 @@ repos:
         args:
           - --target-version=py38
   - repo: https://github.com/pycqa/isort
-    rev: 7.0.0
+    rev: 8.0.1
     hooks:
       - id: isort
         language_version: python3
@@ -28,7 +28,7 @@ repos:
       - id: check-yaml
         args: [--unsafe]
   - repo: https://github.com/PyCQA/bandit
-    rev: '1.9.3'
+    rev: '1.9.4'
     hooks:
       - id: bandit
         args: [--ini, .bandit]
