@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 line-length = 120
+target-version = "py312"
 extend-exclude = ["versioneer.py", "pycoast/version.py"]
 
 [tool.ruff.lint]
