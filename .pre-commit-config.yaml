@@ -15,7 +15,7 @@ repos:
         args: [--unsafe]
       - id: no-commit-to-branch
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v2.1.0'  # Use the sha / tag you want to point at
+    rev: 'v2.3.0'  # Use the sha / tag you want to point at
     hooks:
       - id: mypy
         additional_dependencies:
