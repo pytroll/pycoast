@@ -331,7 +331,7 @@ def test_file_path(tmp_path):
     path = tmp_path / test_filename
     img = Image.new("RGB", (640, 480))
     img.save(path)
-    yield path
+    return path
 
 
 @pytest.fixture
@@ -340,7 +340,7 @@ def grid_file_path(tmp_path):
     path = tmp_path / grid_filename
     img = Image.new("RGB", (640, 480))
     img.save(path)
-    yield path
+    return path
 
 
 class TestContourWriterPIL:
@@ -385,7 +385,7 @@ class TestContourWriterPIL:
         assert images_match(geos_img, img), "Writing of geos contours failed"
 
     @pytest.mark.parametrize(
-        "filename, shape, area_def, level, grid_kwargs",
+        ("filename", "shape", "area_def", "level", "grid_kwargs"),
         [
             (
                 "grid_europe.png",
@@ -690,7 +690,7 @@ class TestContourWriterPIL:
         area_def = nh_def(shape)
         img1 = Image.new("RGB", shape[::-1], (255, 255, 255))
         points_list = [((0, 0), "Berlin")]
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="'coord_ref' must be one of"):
             cw_pil.add_points(
                 img1,
                 area_def,
@@ -952,7 +952,7 @@ class TestContourWriterPIL:
 
 
 @pytest.mark.parametrize(
-    "cw, filename, area_def, specific_kwargs",
+    ("cw", "filename", "area_def", "specific_kwargs"),
     [
         (
             lazy_fixture("cw_pil"),
@@ -1020,7 +1020,7 @@ def test_shapes(new_test_image, cw, filename, area_def, specific_kwargs):
 
 
 @pytest.mark.parametrize(
-    "cw, filename, shape, area_def, specific_kwargs",
+    ("cw", "filename", "shape", "area_def", "specific_kwargs"),
     [
         (  # lon=175 +/-40, lat=16..65 | Avoid Eurasia scratch with asymmetric area_extent
             lazy_fixture("cw_pil"),
