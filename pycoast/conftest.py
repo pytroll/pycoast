@@ -1,9 +1,9 @@
 """The conftest file."""
 
-from pytest import hookimpl
+import pytest
 
 
-@hookimpl(tryfirst=True, hookwrapper=True)
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """Add test status in the report for fixtures to use."""
     # execute all other hooks to obtain the report object

@@ -103,7 +103,7 @@ class _CoordConverter:
             y += area_def.height
         if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
             raise ValueError(
-                "Image pixel coords out of image bounds " f"(width={area_def.width}, height={area_def.height})."
+                f"Image pixel coords out of image bounds (width={area_def.width}, height={area_def.height})."
             )
         return x, y
 
@@ -425,8 +425,8 @@ class ContourWriterBase(object):
             try:
                 s = shapefile.Reader(shapefilename)
                 shapes = s.shapes()
-            except AttributeError:
-                raise ValueError("Could not find shapefile %s" % shapefilename)
+            except AttributeError as err:
+                raise ValueError("Could not find shapefile %s" % shapefilename) from err
 
             yield from shapes
 
@@ -697,8 +697,8 @@ class ContourWriterBase(object):
 
         try:
             from pyresample.geometry import AreaDefinition
-        except ImportError:
-            raise ImportError("Missing required 'pyresample' module, please install it.")
+        except ImportError as err:
+            raise ImportError("Missing required 'pyresample' module, please install it.") from err
 
         if not isinstance(area_def, AreaDefinition):
             raise ValueError("Expected 'area_def' is an instance of AreaDefinition object")
@@ -1268,6 +1268,7 @@ class _OverlaysFromDict:
         for section, fun in zip(
             ["coasts", "rivers", "borders"],
             [self._cw.add_coastlines, self._cw.add_rivers, self._cw.add_borders],
+            strict=True,
         ):
             if section not in overlays:
                 continue

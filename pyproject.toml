@@ -2,18 +2,28 @@
 requires = ["setuptools >= 40.9.0", "wheel", "oldest-supported-numpy", "versioneer-518"]
 build-backend = "setuptools.build_meta"
 
-[tool.black]
+[tool.ruff]
 line-length = 120
-exclude = '''
-(
-  \.git
-  | build
-  | dist
-  | versioneer\.py
-  | pycoast/version\.py
-)
+target-version = "py312"
+extend-exclude = ["versioneer.py", "pycoast/version.py"]
 
-'''
+[tool.ruff.lint]
+# See https://docs.astral.sh/ruff/rules/
+select = ["A", "B", "D", "E", "W", "F", "I", "N", "PT", "S", "TID", "C90", "Q", "T10", "T20"]
+# D102/D107 were already ignored under flake8; the affected legacy methods are being replaced
+ignore = ["D102", "D107"]
+
+[tool.ruff.lint.per-file-ignores]
+"pycoast/tests/*" = ["S101", "T201"]  # assert and diagnostic prints allowed in tests
+"docs/source/conf.py" = ["D100", "A001"]
+# Dlon/Dlat & co are public API until 2.0; DEFAULT_* locals go away with the legacy modules
+"pycoast/cw_*.py" = ["N803", "N806"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
 
 [tool.pytest.ini_options]
 filterwarnings = [
