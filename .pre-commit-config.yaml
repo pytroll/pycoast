@@ -6,6 +6,7 @@ repos:
     rev: 'v0.15.11'
     hooks:
       - id: ruff-check
+      - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -13,7 +14,6 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
         args: [--unsafe]
-      - id: no-commit-to-branch
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: 'v2.3.0'  # Use the sha / tag you want to point at
     hooks:

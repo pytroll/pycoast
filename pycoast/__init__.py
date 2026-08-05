@@ -25,7 +25,7 @@ class ContourWriter(ContourWriterPIL):
         import warnings
 
         warnings.warn(
-            "'ContourWriter' has been deprecated please use " "'ContourWriterPIL' or 'ContourWriterAGG' instead",
+            "'ContourWriter' has been deprecated please use 'ContourWriterPIL' or 'ContourWriterAGG' instead",
             DeprecationWarning,
             stacklevel=2,
         )

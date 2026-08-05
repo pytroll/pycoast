@@ -103,7 +103,7 @@ class _CoordConverter:
             y += area_def.height
         if x < 0 or y < 0 or x >= area_def.width or y >= area_def.height:
             raise ValueError(
-                "Image pixel coords out of image bounds " f"(width={area_def.width}, height={area_def.height})."
+                f"Image pixel coords out of image bounds (width={area_def.width}, height={area_def.height})."
             )
         return x, y
 
